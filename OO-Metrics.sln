@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Core", "OOM.Core\OOM.Core.csproj", "{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{00E7A7C9-F13B-4245-A82D-57663C368381}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{81DFA2F2-961A-4013-BEC8-E31D926C40BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{6B0D4986-7706-4094-B724-69EFD27CD55E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{E3F92479-EA69-428F-9C3A-AC932184A97B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF} = {00E7A7C9-F13B-4245-A82D-57663C368381}
+	EndGlobalSection
+EndGlobal
