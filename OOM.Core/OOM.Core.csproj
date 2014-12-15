@@ -54,7 +54,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\IRepository.cs" />
+    <Compile Include="Repositories\Protocols\SubversionRepository.cs" />
+    <Compile Include="Repositories\Protocols\MercurialRepository.cs" />
+    <Compile Include="Repositories\Protocols\GitRepository.cs" />
+    <Compile Include="Repositories\Repository.cs" />
+    <Compile Include="Repositories\RepositoryConfiguration.cs" />
+    <Compile Include="Repositories\RepositoryFactory.cs" />
+    <Compile Include="Security\HashExtensions.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

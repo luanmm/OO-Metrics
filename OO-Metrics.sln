@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{6B0D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{E3F92479-EA69-428F-9C3A-AC932184A97B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{695E5257-6640-4DF6-9B18-A6DF2C3E9277}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Tests", "OOM.Tests\OOM.Tests.csproj", "{DD8E7065-D932-4FA4-9A72-C01E76131546}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +27,16 @@ Global
 		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD8E7065-D932-4FA4-9A72-C01E76131546}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD8E7065-D932-4FA4-9A72-C01E76131546}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD8E7065-D932-4FA4-9A72-C01E76131546}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD8E7065-D932-4FA4-9A72-C01E76131546}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF} = {00E7A7C9-F13B-4245-A82D-57663C368381}
+		{DD8E7065-D932-4FA4-9A72-C01E76131546} = {695E5257-6640-4DF6-9B18-A6DF2C3E9277}
 	EndGlobalSection
 EndGlobal
