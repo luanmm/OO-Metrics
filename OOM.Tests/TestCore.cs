@@ -8,14 +8,30 @@ namespace OOM.Tests
     public class TestCore
     {
         [TestMethod]
-        public void TestRepositoriesConnection()
+        public void TestGitRepository()
         {
-            var gitRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Git, new RepositoryConfiguration("https://luanmm@bitbucket.org/luanmm/repominer.git", "luanmm", "bLitbucket?!"));
-            Assert.IsTrue(gitRepository.Update());
+            using (var gitRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Git, new RepositoryConfiguration("https://luanmm@bitbucket.org/luanmm/repominer.git", "luanmm", "bLitbucket?!")))
+            { 
+                Assert.IsTrue(gitRepository.Update());
+            }
+        }
 
-            //var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, "");
+        [TestMethod]
+        public void TestMercurialRepository()
+        {
+            using (var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/gbmhunter/mercurial-ignore-file-for-altium")))
+            {
+                Assert.IsTrue(mercurialRepository.Update());
+            }
+        }
 
-            //var svnRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Subversion, "");
+        [TestMethod]
+        public void TestSubversionRepository()
+        {
+            using (var svnRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Subversion, new RepositoryConfiguration("http://svg-edit.googlecode.com/svn/trunk/")))
+            {
+                Assert.IsTrue(svnRepository.Update());
+            }
         }
     }
 }

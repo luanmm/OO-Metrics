@@ -7,7 +7,7 @@ using LibGit2Sharp;
 
 namespace OOM.Core.Repositories.Protocols
 {
-    public class GitRepository : Repository, IDisposable
+    public class GitRepository : Repository
     {
         private RepositoryConfiguration _repositoryConfig;
         private LibGit2Sharp.Repository _repository;
@@ -45,7 +45,7 @@ namespace OOM.Core.Repositories.Protocols
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _repository.Dispose();
         }
@@ -56,6 +56,7 @@ namespace OOM.Core.Repositories.Protocols
         {
             if (!LibGit2Sharp.Repository.IsValid(LocalPath))
             {
+                base.EmptyRepository();
                 LibGit2Sharp.Repository.Clone(_repositoryConfig.RemotePath, LocalPath, new CloneOptions
                 {
                     CredentialsProvider = PrivateRepositoryCredentials,

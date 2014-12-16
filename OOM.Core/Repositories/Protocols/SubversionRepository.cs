@@ -7,24 +7,24 @@ using SharpSvn;
 
 namespace OOM.Core.Repositories.Protocols
 {
-    public class SubversionRepository : Repository, IDisposable
+    public class SubversionRepository : Repository
     {
-        private SvnTarget _target;
         private SvnClient _client;
 
         public SubversionRepository(RepositoryConfiguration configuration)
             : base(configuration)
         {
-            //_target = SvnTarget.FromString(configuration);
-            //_client = new SvnClient();
+            _client = new SvnClient();
+            if (!_client.CheckOut(new Uri(configuration.RemotePath), LocalPath))
+                throw new Exception("An error has ocurred when trying to setup the Subversion repository.");
         }
 
         public override bool Update()
         {
-            return true;
+            return _client.Update(LocalPath);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _client.Dispose();
         }

@@ -13,7 +13,7 @@ namespace OOM.Core.Security
         {
             using (var md5 = MD5.Create())
             {
-                return BitConverter.ToString(md5.ComputeHash(Encoding.Default.GetBytes(data))).Replace("-", String.Empty);
+                return BitConverter.ToString(md5.ComputeHash(Encoding.Default.GetBytes(data))).Replace("-", String.Empty).ToLowerInvariant();
             }
         }
 
@@ -21,7 +21,7 @@ namespace OOM.Core.Security
         {
             using (var sha1 = SHA1.Create())
             {
-                return BitConverter.ToString(sha1.ComputeHash(Encoding.Default.GetBytes(data))).Replace("-", String.Empty);
+                return BitConverter.ToString(sha1.ComputeHash(Encoding.Default.GetBytes(data))).Replace("-", String.Empty).ToLowerInvariant();
             }
         }
     }

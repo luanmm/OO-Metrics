@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace OOM.Core.Repositories
 {
-    public abstract class Repository
+    public abstract class Repository : IDisposable
     {
         #region Properties
 
@@ -46,6 +46,25 @@ namespace OOM.Core.Repositories
             {
                 return false;
             }
+        }
+
+        public void EmptyRepository()
+        {
+            var path = new DirectoryInfo(LocalPath);
+            foreach (var file in path.GetFiles())
+                file.Delete();
+
+            foreach (var dir in path.GetDirectories())
+                dir.Delete(true);
+        }
+
+        #endregion
+
+        #region Privates
+
+        public virtual void Dispose()
+        {
+
         }
 
         #endregion
