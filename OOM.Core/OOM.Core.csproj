@@ -35,9 +35,6 @@
     <Reference Include="LibGit2Sharp">
       <HintPath>..\packages\LibGit2Sharp.0.20.0.0\lib\net40\LibGit2Sharp.dll</HintPath>
     </Reference>
-    <Reference Include="Mercurial.Net">
-      <HintPath>..\packages\Mercurial.Net.1.1.1.607\lib\net35-Client\Mercurial.Net.dll</HintPath>
-    </Reference>
     <Reference Include="SharpSvn, Version=1.8991.3368.110, Culture=neutral, PublicKeyToken=d729672594885a28, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpSvn.1.9-x86.1.8991.3368.110\lib\net40\SharpSvn.dll</HintPath>
@@ -62,6 +59,8 @@
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\RepositoryConfiguration.cs" />
     <Compile Include="Repositories\RepositoryFactory.cs" />
+    <Compile Include="Repositories\RepositoryMiner.cs" />
+    <Compile Include="Repositories\RepositoryNode.cs" />
     <Compile Include="Security\HashExtensions.cs" />
   </ItemGroup>
   <ItemGroup />

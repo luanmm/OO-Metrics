@@ -19,7 +19,7 @@ namespace OOM.Tests
         [TestMethod]
         public void TestMercurialRepository()
         {
-            using (var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/gbmhunter/mercurial-ignore-file-for-altium")))
+            using (var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/creaceed/mercurial-xcode-plugin")))
             {
                 Assert.IsTrue(mercurialRepository.Update());
             }
