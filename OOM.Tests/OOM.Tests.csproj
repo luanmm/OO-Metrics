@@ -58,6 +58,13 @@
       <Project>{f25aea72-1f44-4c46-ad72-bbe97cc123df}</Project>
       <Name>OOM.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OOM.Model\OOM.Model.csproj">
+      <Project>{5170a8d5-cb7d-430f-9547-f5cc66d57327}</Project>
+      <Name>OOM.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

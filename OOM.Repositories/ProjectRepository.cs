@@ -9,5 +9,12 @@ namespace OOM.Repositories
 {
     public class ProjectRepository : EntityFrameworkRepository<Project, int>
     {
+        public Project GetByUri(string uri)
+        {
+            using (var context = new OOMetricsContext())
+            {
+                return context.Set<Project>().FirstOrDefault(p => p.URI == uri);
+            }
+        }
     }
 }

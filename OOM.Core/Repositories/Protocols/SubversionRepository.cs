@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SharpSvn;
 using System.Collections;
 using System.Collections.ObjectModel;
+using SharpSvn;
 
 namespace OOM.Core.Repositories.Protocols
 {
@@ -17,7 +17,7 @@ namespace OOM.Core.Repositories.Protocols
         public SubversionRepository(RepositoryConfiguration configuration)
             : base(configuration)
         {
-            _target = SvnTarget.FromString(configuration.RemotePath);
+            _target = SvnTarget.FromString(Configuration.RemotePath);
 
             _client = new SvnClient();
             GetRepoTreeNodes();
@@ -27,11 +27,13 @@ namespace OOM.Core.Repositories.Protocols
 
             //_client.
             //_client.CheckOut
+
+            _client.Update(LocalPath);
         }
 
-        public override bool Update()
+        public override IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null)
         {
-            return _client.Update(LocalPath);
+            return null;
         }
 
         public override void Dispose()
@@ -47,9 +49,11 @@ namespace OOM.Core.Repositories.Protocols
 
             var revision = new SvnRevision(10);
 
+            /*
             Collection<SvnLogEventArgs> items2 = null;
             _client.GetLog("", out items2);
             items2.FirstOrDefault().
+            */
 
             var args = new SvnListArgs();
             args.Revision = revision;

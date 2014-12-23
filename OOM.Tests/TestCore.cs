@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OOM.Core.Repositories;
+using System.Collections.Generic;
+using OOM.Model;
 
 namespace OOM.Tests
 {
@@ -12,7 +14,7 @@ namespace OOM.Tests
         {
             using (var gitRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Git, new RepositoryConfiguration("https://luanmm@bitbucket.org/luanmm/repominer.git", "luanmm", "bLitbucket?!")))
             { 
-                Assert.IsTrue(gitRepository.Update());
+                //List<Revision> list = new List<Revision>(gitRepository.ListRevisions("41d33b9ecd1f577a1a3fd91d83c043ee66d5e972"));
             }
         }
 
@@ -21,7 +23,7 @@ namespace OOM.Tests
         {
             using (var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/creaceed/mercurial-xcode-plugin")))
             {
-                Assert.IsTrue(mercurialRepository.Update());
+                //Assert.IsTrue(mercurialRepository.Update());
             }
         }
 
@@ -30,7 +32,7 @@ namespace OOM.Tests
         {
             using (var svnRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Subversion, new RepositoryConfiguration("http://svg-edit.googlecode.com/svn/trunk/")))
             {
-                Assert.IsTrue(svnRepository.Update());
+                //Assert.IsTrue(svnRepository.Update());
             }
         }
     }

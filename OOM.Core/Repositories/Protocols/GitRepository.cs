@@ -9,40 +9,36 @@ namespace OOM.Core.Repositories.Protocols
 {
     public class GitRepository : Repository
     {
-        private RepositoryConfiguration _repositoryConfig;
         private LibGit2Sharp.Repository _repository;
 
         public GitRepository(RepositoryConfiguration configuration)
             : base(configuration)
         {
-            _repositoryConfig = configuration;
             _repository = InitializeRepository();
         }
 
-        public override bool Update()
+        public override IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null)
         {
-            try
+            IEnumerable<Commit> commitLog = _repository.Commits;
+            if (!String.IsNullOrWhiteSpace(fromCommit))
             {
-                _repository.Reset(ResetMode.Hard);
-                _repository.Network.Pull(new Signature("OO-Metrics", "mail@oo-metrics.project.com", new DateTimeOffset(2011, 06, 16, 10, 58, 27, TimeSpan.FromHours(2))), new PullOptions
+                var referenceCommit = _repository.Commits.FirstOrDefault(c => c.Sha == fromCommit);
+                commitLog = _repository.Commits.Where(c => c.Committer.When.CompareTo(referenceCommit.Committer.When) < 0);
+            }
+
+            var revisionList = new List<RepositoryRevision>();
+            foreach (var commit in commitLog)
+            {
+                revisionList.Add(new RepositoryRevision
                 {
-                    MergeOptions = new MergeOptions
-                    {
-                        FastForwardStrategy = FastForwardStrategy.FastForwardOnly,
-                        FileConflictStrategy = CheckoutFileConflictStrategy.Theirs
-                    },
-                    FetchOptions = new FetchOptions
-                    {
-                        CredentialsProvider = PrivateRepositoryCredentials,
-                        TagFetchMode = TagFetchMode.None
-                    }
+                    RID = commit.Sha,
+                    Message = commit.Message,
+                    Author = String.IsNullOrWhiteSpace(commit.Author.Email) ? commit.Author.Name : String.Format("{0} <{1}>", commit.Author.Name, commit.Author.Email),
+                    CreatedAt = commit.Committer.When.DateTime
                 });
-                return true;
             }
-            catch (Exception) 
-            {
-                return false;
-            }
+
+            return revisionList.OrderBy(r => r.CreatedAt);
         }
 
         public override void Dispose()
@@ -57,19 +53,25 @@ namespace OOM.Core.Repositories.Protocols
             if (!LibGit2Sharp.Repository.IsValid(LocalPath))
             {
                 base.EmptyRepository();
-                LibGit2Sharp.Repository.Clone(_repositoryConfig.RemotePath, LocalPath, new CloneOptions
+                LibGit2Sharp.Repository.Clone(Configuration.RemotePath, LocalPath, new CloneOptions
                 {
                     CredentialsProvider = PrivateRepositoryCredentials,
-                    Checkout = true
+                    IsBare = true
                 });
             }
 
-            return new LibGit2Sharp.Repository(LocalPath);
+            var repository = new LibGit2Sharp.Repository(LocalPath);
+            repository.Fetch(_repository.Head.Remote.Name, new FetchOptions
+            {
+                CredentialsProvider = PrivateRepositoryCredentials
+            });
+
+            return repository;
         }
 
         private LibGit2Sharp.Credentials PrivateRepositoryCredentials(string url, string usernameFromUrl, SupportedCredentialTypes types) 
         {
-            return new UsernamePasswordCredentials { Username = _repositoryConfig.User, Password = _repositoryConfig.Password };
+            return new UsernamePasswordCredentials { Username = Configuration.User, Password = Configuration.Password };
         }
 
         #endregion

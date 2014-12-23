@@ -29,10 +29,9 @@ namespace OOM.Core.Repositories.Protocols
             InitializeRepository();
         }
 
-        public override bool Update()
+        public override IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null)
         {
-            var result = ExecuteCmd("update --clean null");
-            return result.ExitCode == 0;
+            return null;
         }
 
         #region Privates

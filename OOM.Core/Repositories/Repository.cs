@@ -15,6 +15,7 @@ namespace OOM.Core.Repositories
         #region Properties
 
         protected string LocalPath { get; private set; }
+        protected RepositoryConfiguration Configuration { get; private set; }
 
         #endregion
 
@@ -27,13 +28,14 @@ namespace OOM.Core.Repositories
                 Directory.CreateDirectory(localPath);
 
             LocalPath = localPath;
+            Configuration = configuration;
         }
 
         #endregion
 
         #region Methods
 
-        public abstract bool Update();
+        public abstract IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null);
 
         public bool Delete()
         {
