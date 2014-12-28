@@ -1,4 +1,4 @@
-﻿namespace OOM.Miner
+﻿namespace OOM.Worker
 {
     partial class ProjectInstaller
     {

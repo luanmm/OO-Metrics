@@ -22,7 +22,10 @@
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="RepositoryProtocol" Type="int" Nullable="false" />
           <Property Name="URI" Type="nvarchar" MaxLength="500" Nullable="false" />
+          <Property Name="User" Type="nvarchar" MaxLength="250" />
+          <Property Name="Password" Type="nvarchar" MaxLength="250" />
         </EntityType>
         <EntityType Name="Revision">
           <Key>
@@ -89,7 +92,7 @@
             <End Role="Revision" EntitySet="Revisions" />
           </AssociationSet>
         </EntityContainer>
-        <EnumType Name="NodeTypes">
+        <EnumType Name="NodeType">
           <Member Name="File" Value="1" />
           <Member Name="Directory" Value="2" />
           <Member Name="Unknown" Value="3" />
@@ -112,7 +115,10 @@
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Name" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="RepositoryProtocol" Type="OOMetricsModel.RepositoryProtocol" Nullable="false" />
           <Property Name="URI" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="User" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Nodes" Relationship="OOMetricsModel.FK_Node_Project" FromRole="Project" ToRole="Node" />
           <NavigationProperty Name="Revisions" Relationship="OOMetricsModel.FK_Revision_Project" FromRole="Project" ToRole="Revision" />
         </EntityType>
@@ -152,10 +158,10 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EnumType Name="NodeType">
-          <Member Name="File" Value="1" />
-          <Member Name="Directory" Value="2" />
-          <Member Name="Unknown" Value="3" />
+        <EnumType Name="RepositoryProtocol">
+          <Member Name="Git" Value="1" />
+          <Member Name="Mercurial" Value="2" />
+          <Member Name="Subversion" Value="3" />
         </EnumType>
       </Schema>
     </edmx:ConceptualModels>
@@ -180,7 +186,10 @@
           <EntitySetMapping Name="Projects">
             <EntityTypeMapping TypeName="OOMetricsModel.Project">
               <MappingFragment StoreEntitySet="Project">
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="User" ColumnName="User" />
                 <ScalarProperty Name="URI" ColumnName="URI" />
+                <ScalarProperty Name="RepositoryProtocol" ColumnName="RepositoryProtocol" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>

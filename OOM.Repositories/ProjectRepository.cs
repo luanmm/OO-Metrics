@@ -13,7 +13,7 @@ namespace OOM.Repositories
         {
             using (var context = new OOMetricsContext())
             {
-                return context.Set<Project>().FirstOrDefault(p => p.URI == uri);
+                return context.Set<Project>().Include("Revisions").Include("Nodes").FirstOrDefault(p => p.URI == uri);
             }
         }
     }

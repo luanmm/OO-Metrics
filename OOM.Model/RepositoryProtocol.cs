@@ -11,10 +11,10 @@ namespace OOM.Model
 {
     using System;
     
-    public enum NodeTypes : int
+    public enum RepositoryProtocol : int
     {
-        File = 1,
-        Directory = 2,
-        Unknown = 3
+        Git = 1,
+        Mercurial = 2,
+        Subversion = 3
     }
 }

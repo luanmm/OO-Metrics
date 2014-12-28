@@ -1,4 +1,5 @@
 ﻿using OOM.Core.Repositories.Protocols;
+using OOM.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,29 +10,22 @@ namespace OOM.Core.Repositories
 {
     public static class RepositoryFactory
     {
-        public static Repository CreateRepository(ReporitoryProtocol protocol, RepositoryConfiguration configuration)
+        public static Repository CreateRepository(RepositoryProtocol protocol, RepositoryConfiguration configuration)
         {
             Repository repository = null;
             switch (protocol)
             {
-                case ReporitoryProtocol.Git:
+                case RepositoryProtocol.Git:
                     repository = new GitRepository(configuration);
                     break;
-                case ReporitoryProtocol.Mercurial:
+                case RepositoryProtocol.Mercurial:
                     repository = new MercurialRepository(configuration);
                     break;
-                case ReporitoryProtocol.Subversion:
+                case RepositoryProtocol.Subversion:
                     repository = new SubversionRepository(configuration);
                     break;
             }
             return repository;
         }
-    }
-
-    public enum ReporitoryProtocol
-    {
-        Git,
-        Mercurial,
-        Subversion
     }
 }

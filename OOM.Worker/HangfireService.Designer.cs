@@ -1,6 +1,6 @@
-﻿namespace OOM.Miner
+﻿namespace OOM.Worker
 {
-    partial class MiningService
+    partial class HangfireService
     {
         /// <summary> 
         /// Required designer variable.

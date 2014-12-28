@@ -10,13 +10,13 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OOM.Miner
+namespace OOM.Worker
 {
-    partial class MiningService : ServiceBase
+    partial class HangfireService : ServiceBase
     {
         private readonly BackgroundJobServer _server;
 
-        public MiningService()
+        public HangfireService()
         {
             InitializeComponent();
 

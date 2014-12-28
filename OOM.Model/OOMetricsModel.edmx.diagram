@@ -4,9 +4,9 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="677b2e24ec714b4a8f8d53a6782eaef6" Name="Diagram1" >
+      <Diagram DiagramId="677b2e24ec714b4a8f8d53a6782eaef6" Name="ModelDiagram" >
         <EntityTypeShape EntityType="OOMetricsModel.Node" Width="1.5" PointX="3" PointY="4.25" />
-        <EntityTypeShape EntityType="OOMetricsModel.Project" Width="1.5" PointX="0.75" PointY="2.875" />
+        <EntityTypeShape EntityType="OOMetricsModel.Project" Width="1.5" PointX="0.75" PointY="2.5" />
         <EntityTypeShape EntityType="OOMetricsModel.Revision" Width="1.5" PointX="3" PointY="1.125" />
         <AssociationConnector Association="OOMetricsModel.FK_Node_Project" />
         <AssociationConnector Association="OOMetricsModel.FK_Revision_Project" />

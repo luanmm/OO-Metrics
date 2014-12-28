@@ -52,12 +52,7 @@ namespace OOM.Core.Repositories
 
         public void EmptyRepository()
         {
-            var path = new DirectoryInfo(LocalPath);
-            foreach (var file in path.GetFiles())
-                file.Delete();
-
-            foreach (var dir in path.GetDirectories())
-                dir.Delete(true);
+            Directory.Delete(LocalPath, true);
         }
 
         #endregion

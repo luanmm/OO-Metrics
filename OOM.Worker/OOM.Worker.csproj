@@ -58,11 +58,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MiningService.cs">
+    <Compile Include="HangfireService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MiningService.Designer.cs">
-      <DependentUpon>MiningService.cs</DependentUpon>
+    <Compile Include="HangfireService.Designer.cs">
+      <DependentUpon>HangfireService.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">

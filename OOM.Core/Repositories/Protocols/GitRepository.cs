@@ -23,7 +23,7 @@ namespace OOM.Core.Repositories.Protocols
             if (!String.IsNullOrWhiteSpace(fromCommit))
             {
                 var referenceCommit = _repository.Commits.FirstOrDefault(c => c.Sha == fromCommit);
-                commitLog = _repository.Commits.Where(c => c.Committer.When.CompareTo(referenceCommit.Committer.When) < 0);
+                commitLog = _repository.Commits.Where(c => c.Committer.When.CompareTo(referenceCommit.Committer.When) > 0);
             }
 
             var revisionList = new List<RepositoryRevision>();
@@ -50,23 +50,14 @@ namespace OOM.Core.Repositories.Protocols
 
         private LibGit2Sharp.Repository InitializeRepository()
         {
-            if (!LibGit2Sharp.Repository.IsValid(LocalPath))
+            base.EmptyRepository();
+            LibGit2Sharp.Repository.Clone(Configuration.RemotePath, LocalPath, new CloneOptions
             {
-                base.EmptyRepository();
-                LibGit2Sharp.Repository.Clone(Configuration.RemotePath, LocalPath, new CloneOptions
-                {
-                    CredentialsProvider = PrivateRepositoryCredentials,
-                    IsBare = true
-                });
-            }
-
-            var repository = new LibGit2Sharp.Repository(LocalPath);
-            repository.Fetch(_repository.Head.Remote.Name, new FetchOptions
-            {
-                CredentialsProvider = PrivateRepositoryCredentials
+                CredentialsProvider = PrivateRepositoryCredentials,
+                IsBare = true
             });
 
-            return repository;
+            return new LibGit2Sharp.Repository(LocalPath);
         }
 
         private LibGit2Sharp.Credentials PrivateRepositoryCredentials(string url, string usernameFromUrl, SupportedCredentialTypes types) 

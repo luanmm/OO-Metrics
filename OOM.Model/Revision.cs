@@ -12,7 +12,7 @@ namespace OOM.Model
     using System;
     using System.Collections.Generic;
     
-    public partial class Revision
+    public partial class Revision : IEntity<int>
     {
         public int Id { get; set; }
         public int ProjectId { get; set; }

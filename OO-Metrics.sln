@@ -23,7 +23,7 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "OOM.Database", "OOM.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Repositories", "OOM.Repositories\OOM.Repositories.csproj", "{79B96F6B-2C0C-4AA4-AB46-7AD30B400F2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Miner", "OOM.Miner\OOM.Miner.csproj", "{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Worker", "OOM.Worker\OOM.Worker.csproj", "{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

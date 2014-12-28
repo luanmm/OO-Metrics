@@ -6,5 +6,6 @@
     [Message] NVARCHAR(500) NULL, 
     [Author] NVARCHAR(250) NULL, 
     [CreatedAt] DATETIME NOT NULL, 
-    CONSTRAINT [FK_Revision_Project] FOREIGN KEY ([ProjectId]) REFERENCES [Project]([Id])
+    CONSTRAINT [FK_Revision_Project] FOREIGN KEY ([ProjectId]) REFERENCES [Project]([Id]), 
+    CONSTRAINT [AK_Revision_RID] UNIQUE ([ProjectId],[RID])
 )

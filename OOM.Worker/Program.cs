@@ -5,7 +5,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OOM.Miner
+namespace OOM.Worker
 {
     static class Program
     {
@@ -17,7 +17,7 @@ namespace OOM.Miner
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 
-                new MiningService() 
+                new HangfireService() 
             };
             ServiceBase.Run(ServicesToRun);
         }

@@ -12,7 +12,7 @@ namespace OOM.Model
     using System;
     using System.Collections.Generic;
     
-    public partial class Project
+    public partial class Project : IEntity<int>
     {
         public Project()
         {
@@ -22,7 +22,10 @@ namespace OOM.Model
     
         public int Id { get; set; }
         public string Name { get; set; }
+        public RepositoryProtocol RepositoryProtocol { get; set; }
         public string URI { get; set; }
+        public string User { get; set; }
+        public string Password { get; set; }
     
         public virtual ICollection<Node> Nodes { get; set; }
         public virtual ICollection<Revision> Revisions { get; set; }

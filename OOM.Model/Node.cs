@@ -12,7 +12,7 @@ namespace OOM.Model
     using System;
     using System.Collections.Generic;
     
-    public partial class Node
+    public partial class Node : IEntity<int>
     {
         public int Id { get; set; }
         public int ProjectId { get; set; }

@@ -59,12 +59,23 @@
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\RepositoryConfiguration.cs" />
     <Compile Include="Repositories\RepositoryFactory.cs" />
+    <Compile Include="Repositories\RepositoryMiner.cs" />
     <Compile Include="Repositories\RepositoryNode.cs" />
     <Compile Include="Repositories\RepositoryRevision.cs" />
     <Compile Include="Security\HashExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OOM.Model\OOM.Model.csproj">
+      <Project>{5170a8d5-cb7d-430f-9547-f5cc66d57327}</Project>
+      <Name>OOM.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OOM.Repositories\OOM.Repositories.csproj">
+      <Project>{79b96f6b-2c0c-4aa4-ab46-7ad30b400f2c}</Project>
+      <Name>OOM.Repositories</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

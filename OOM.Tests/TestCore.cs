@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OOM.Core.Repositories;
 using System.Collections.Generic;
 using OOM.Model;
+using OOM.Repositories;
 
 namespace OOM.Tests
 {
@@ -12,16 +13,30 @@ namespace OOM.Tests
         [TestMethod]
         public void TestGitRepository()
         {
-            using (var gitRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Git, new RepositoryConfiguration("https://luanmm@bitbucket.org/luanmm/repominer.git", "luanmm", "bLitbucket?!")))
-            { 
-                //List<Revision> list = new List<Revision>(gitRepository.ListRevisions("41d33b9ecd1f577a1a3fd91d83c043ee66d5e972"));
+            var repositoryUri = "https://luanmm@bitbucket.org/luanmm/repominer.git";
+            var projectRepository = new ProjectRepository();
+            var project = projectRepository.GetByUri(repositoryUri);
+            if (project == null)
+            {
+                project = new Project
+                { 
+                    Name = "RepoMiner",
+                    URI = repositoryUri,
+                    RepositoryProtocol = RepositoryProtocol.Git,
+                    User = "luanmm",
+                    Password = "bLitbucket?!"
+                };
+                projectRepository.Create(project);
             }
+
+            var miner = new RepositoryMiner(project);
+            miner.StartMining();
         }
 
         [TestMethod]
         public void TestMercurialRepository()
         {
-            using (var mercurialRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/creaceed/mercurial-xcode-plugin")))
+            using (var mercurialRepository = RepositoryFactory.CreateRepository(RepositoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/creaceed/mercurial-xcode-plugin")))
             {
                 //Assert.IsTrue(mercurialRepository.Update());
             }
@@ -30,7 +45,7 @@ namespace OOM.Tests
         [TestMethod]
         public void TestSubversionRepository()
         {
-            using (var svnRepository = RepositoryFactory.CreateRepository(ReporitoryProtocol.Subversion, new RepositoryConfiguration("http://svg-edit.googlecode.com/svn/trunk/")))
+            using (var svnRepository = RepositoryFactory.CreateRepository(RepositoryProtocol.Subversion, new RepositoryConfiguration("http://svg-edit.googlecode.com/svn/trunk/")))
             {
                 //Assert.IsTrue(svnRepository.Update());
             }
