@@ -14,6 +14,11 @@ namespace OOM.Model
     
     public partial class Revision : IEntity<int>
     {
+        public Revision()
+        {
+            this.Nodes = new HashSet<Node>();
+        }
+    
         public int Id { get; set; }
         public int ProjectId { get; set; }
         public string RID { get; set; }
@@ -21,6 +26,7 @@ namespace OOM.Model
         public string Author { get; set; }
         public System.DateTime CreatedAt { get; set; }
     
+        public virtual ICollection<Node> Nodes { get; set; }
         public virtual Project Project { get; set; }
     }
 }

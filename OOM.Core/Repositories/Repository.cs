@@ -35,7 +35,11 @@ namespace OOM.Core.Repositories
 
         #region Methods
 
-        public abstract IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null);
+        public abstract IEnumerable<RepositoryRevision> ListRevisions(string fromRevision = null);
+
+        public abstract IEnumerable<RepositoryNode> ListRevisionNodes(string revision);
+
+        public abstract Stream GetNodeContent(RepositoryNode node);
 
         public bool Delete()
         {

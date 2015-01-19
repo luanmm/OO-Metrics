@@ -16,7 +16,6 @@ namespace OOM.Model
     {
         public Project()
         {
-            this.Nodes = new HashSet<Node>();
             this.Revisions = new HashSet<Revision>();
         }
     
@@ -27,7 +26,6 @@ namespace OOM.Model
         public string User { get; set; }
         public string Password { get; set; }
     
-        public virtual ICollection<Node> Nodes { get; set; }
         public virtual ICollection<Revision> Revisions { get; set; }
     }
 }

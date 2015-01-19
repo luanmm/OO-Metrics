@@ -29,9 +29,19 @@ namespace OOM.Core.Repositories.Protocols
             InitializeRepository();
         }
 
-        public override IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null)
+        public override IEnumerable<RepositoryRevision> ListRevisions(string fromRevision = null)
         {
-            return null;
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<RepositoryNode> ListRevisionNodes(string revision)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Stream GetNodeContent(RepositoryNode node)
+        {
+            throw new NotImplementedException();
         }
 
         #region Privates

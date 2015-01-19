@@ -10,11 +10,10 @@
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="ProjectId" Type="int" Nullable="false" />
+          <Property Name="RevisionId" Type="int" Nullable="false" />
           <Property Name="NodeType" Type="int" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="250" Nullable="false" />
-          <Property Name="CreatedAt" Type="datetime" Nullable="false" />
-          <Property Name="DeletedAt" Type="datetime" Nullable="false" />
+          <Property Name="Path" Type="nvarchar" MaxLength="500" Nullable="false" />
         </EntityType>
         <EntityType Name="Project">
           <Key>
@@ -38,15 +37,15 @@
           <Property Name="Author" Type="nvarchar" MaxLength="250" />
           <Property Name="CreatedAt" Type="datetime" Nullable="false" />
         </EntityType>
-        <Association Name="FK_Node_Project">
-          <End Role="Project" Type="Self.Project" Multiplicity="1" />
+        <Association Name="FK_Node_Revision">
+          <End Role="Revision" Type="Self.Revision" Multiplicity="1" />
           <End Role="Node" Type="Self.Node" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Project">
+            <Principal Role="Revision">
               <PropertyRef Name="Id" />
             </Principal>
             <Dependent Role="Node">
-              <PropertyRef Name="ProjectId" />
+              <PropertyRef Name="RevisionId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -66,8 +65,8 @@
           <EntitySet Name="Node" EntityType="Self.Node" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Project" EntityType="Self.Project" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Revision" EntityType="Self.Revision" Schema="dbo" store:Type="Tables" />
-          <AssociationSet Name="FK_Node_Project" Association="Self.FK_Node_Project">
-            <End Role="Project" EntitySet="Project" />
+          <AssociationSet Name="FK_Node_Revision" Association="Self.FK_Node_Revision">
+            <End Role="Revision" EntitySet="Revision" />
             <End Role="Node" EntitySet="Node" />
           </AssociationSet>
           <AssociationSet Name="FK_Revision_Project" Association="Self.FK_Revision_Project">
@@ -83,8 +82,8 @@
           <EntitySet Name="Nodes" EntityType="OOMetricsModel.Node" />
           <EntitySet Name="Projects" EntityType="OOMetricsModel.Project" />
           <EntitySet Name="Revisions" EntityType="OOMetricsModel.Revision" />
-          <AssociationSet Name="FK_Node_Project" Association="OOMetricsModel.FK_Node_Project">
-            <End Role="Project" EntitySet="Projects" />
+          <AssociationSet Name="FK_Node_Revision" Association="OOMetricsModel.FK_Node_Revision">
+            <End Role="Revision" EntitySet="Revisions" />
             <End Role="Node" EntitySet="Nodes" />
           </AssociationSet>
           <AssociationSet Name="FK_Revision_Project" Association="OOMetricsModel.FK_Revision_Project">
@@ -97,17 +96,21 @@
           <Member Name="Directory" Value="2" />
           <Member Name="Unknown" Value="3" />
         </EnumType>
+        <EnumType Name="RepositoryProtocol">
+          <Member Name="Git" Value="1" />
+          <Member Name="Mercurial" Value="2" />
+          <Member Name="Subversion" Value="3" />
+        </EnumType>
         <EntityType Name="Node">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="ProjectId" Type="Int32" Nullable="false" />
+          <Property Name="RevisionId" Type="Int32" Nullable="false" />
           <Property Name="NodeType" Type="OOMetricsModel.NodeType" Nullable="false" />
           <Property Name="Name" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
-          <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="DeletedAt" Type="DateTime" Nullable="false" Precision="3" />
-          <NavigationProperty Name="Project" Relationship="OOMetricsModel.FK_Node_Project" FromRole="Node" ToRole="Project" />
+          <Property Name="Path" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Revision" Relationship="OOMetricsModel.FK_Node_Revision" FromRole="Node" ToRole="Revision" />
         </EntityType>
         <EntityType Name="Project">
           <Key>
@@ -119,7 +122,6 @@
           <Property Name="URI" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="User" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Nodes" Relationship="OOMetricsModel.FK_Node_Project" FromRole="Project" ToRole="Node" />
           <NavigationProperty Name="Revisions" Relationship="OOMetricsModel.FK_Revision_Project" FromRole="Project" ToRole="Revision" />
         </EntityType>
         <EntityType Name="Revision">
@@ -132,17 +134,18 @@
           <Property Name="Message" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Author" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="Nodes" Relationship="OOMetricsModel.FK_Node_Revision" FromRole="Revision" ToRole="Node" />
           <NavigationProperty Name="Project" Relationship="OOMetricsModel.FK_Revision_Project" FromRole="Revision" ToRole="Project" />
         </EntityType>
-        <Association Name="FK_Node_Project">
-          <End Type="OOMetricsModel.Project" Role="Project" Multiplicity="1" />
+        <Association Name="FK_Node_Revision">
+          <End Type="OOMetricsModel.Revision" Role="Revision" Multiplicity="1" />
           <End Type="OOMetricsModel.Node" Role="Node" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Project">
+            <Principal Role="Revision">
               <PropertyRef Name="Id" />
             </Principal>
             <Dependent Role="Node">
-              <PropertyRef Name="ProjectId" />
+              <PropertyRef Name="RevisionId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -158,11 +161,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EnumType Name="RepositoryProtocol">
-          <Member Name="Git" Value="1" />
-          <Member Name="Mercurial" Value="2" />
-          <Member Name="Subversion" Value="3" />
-        </EnumType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -174,11 +172,10 @@
           <EntitySetMapping Name="Nodes">
             <EntityTypeMapping TypeName="OOMetricsModel.Node">
               <MappingFragment StoreEntitySet="Node">
-                <ScalarProperty Name="DeletedAt" ColumnName="DeletedAt" />
-                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+                <ScalarProperty Name="Path" ColumnName="Path" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="NodeType" ColumnName="NodeType" />
-                <ScalarProperty Name="ProjectId" ColumnName="ProjectId" />
+                <ScalarProperty Name="RevisionId" ColumnName="RevisionId" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>

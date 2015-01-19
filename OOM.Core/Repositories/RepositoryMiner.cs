@@ -2,8 +2,10 @@
 using OOM.Repositories;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OOM.Core.Repositories
@@ -33,10 +35,11 @@ namespace OOM.Core.Repositories
                 lastRevisionRID = lastRevision.RID;
 
             var revisionRepository = new RevisionRepository();
+            var nodeRepository = new NodeRepository();
             var revisions = _repository.ListRevisions(lastRevisionRID);
-            foreach (var revision in revisions) 
+            foreach (var revision in revisions)
             {
-                revisionRepository.Create(new Revision
+                var revisionId = revisionRepository.Create(new Revision
                 {
                     RID = revision.RID,
                     Message = revision.Message,
@@ -44,6 +47,29 @@ namespace OOM.Core.Repositories
                     CreatedAt = revision.CreatedAt,
                     ProjectId = _project.Id
                 });
+
+                var nodes = _repository.ListRevisionNodes(revision.RID);
+                foreach (var node in nodes)
+                {
+                    if (Regex.IsMatch(node.Name, ".[cC]{1}[sS]{1}$"))
+                    {
+                        var analyzer = new OOM.Core.Analyzers.CSharp.CSharpCodeAnalyzer();
+                        var contentStream = _repository.GetNodeContent(node);
+                        using (var tr = new StreamReader(contentStream, Encoding.UTF8))
+                        {
+                            string content = tr.ReadToEnd();
+                            analyzer.Analyze(content);
+                        }
+                    }
+
+                    nodeRepository.Create(new Node
+                    {
+                        Name = node.Name,
+                        NodeType = node.Type,
+                        Path = node.Path,
+                        RevisionId = revisionId
+                    });
+                }
             }
         }
 

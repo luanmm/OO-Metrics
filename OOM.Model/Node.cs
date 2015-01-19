@@ -15,12 +15,11 @@ namespace OOM.Model
     public partial class Node : IEntity<int>
     {
         public int Id { get; set; }
-        public int ProjectId { get; set; }
+        public int RevisionId { get; set; }
         public NodeType NodeType { get; set; }
         public string Name { get; set; }
-        public System.DateTime CreatedAt { get; set; }
-        public System.DateTime DeletedAt { get; set; }
+        public string Path { get; set; }
     
-        public virtual Project Project { get; set; }
+        public virtual Revision Revision { get; set; }
     }
 }

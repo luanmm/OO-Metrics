@@ -38,7 +38,7 @@ namespace OOM.Repositories
             }
         }
 
-        public virtual PagedResult<TEntity> Find<TEntity, TResult>(IQueryable<TEntity> query, int pageNum, int pageSize,
+        public virtual PagedResult<TEntity> Find<TResult>(IQueryable<TEntity> query, int pageNum, int pageSize,
                 Expression<Func<TEntity, TResult>> orderByProperty, bool isAscendingOrder, out int rowsCount)
         {
             if (pageSize <= 0) pageSize = 20;

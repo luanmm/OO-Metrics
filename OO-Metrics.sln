@@ -25,6 +25,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Repositories", "OOM.Rep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Worker", "OOM.Worker\OOM.Worker.csproj", "{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Web", "OOM.Web\OOM.Web.csproj", "{C45EB161-2976-4B53-BA91-EE897251265C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{B4073C0E-3813-4A51-8C06-3E70719EB8FA}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\AzureWebsitePublishModule.psm1 = PublishScripts\AzureWebsitePublishModule.psm1
+		PublishScripts\Publish-WebApplicationWebsite.ps1 = PublishScripts\Publish-WebApplicationWebsite.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{79544BE2-EEE8-4958-A0F6-2A4929AB41DA}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Configurations\OOMWeb-WAWS-dev.json = PublishScripts\Configurations\OOMWeb-WAWS-dev.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +70,10 @@ Global
 		{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C45EB161-2976-4B53-BA91-EE897251265C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C45EB161-2976-4B53-BA91-EE897251265C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C45EB161-2976-4B53-BA91-EE897251265C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C45EB161-2976-4B53-BA91-EE897251265C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,5 +85,7 @@ Global
 		{724D2F92-3717-48FA-ADF2-9FC8E67C830A} = {E3F92479-EA69-428F-9C3A-AC932184A97B}
 		{79B96F6B-2C0C-4AA4-AB46-7AD30B400F2C} = {E3F92479-EA69-428F-9C3A-AC932184A97B}
 		{AE0311E8-1CE5-46F5-BB22-05CE71F2CDED} = {6B0D4986-7706-4094-B724-69EFD27CD55E}
+		{C45EB161-2976-4B53-BA91-EE897251265C} = {81DFA2F2-961A-4013-BEC8-E31D926C40BA}
+		{79544BE2-EEE8-4958-A0F6-2A4929AB41DA} = {B4073C0E-3813-4A51-8C06-3E70719EB8FA}
 	EndGlobalSection
 EndGlobal

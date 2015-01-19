@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.ObjectModel;
 using SharpSvn;
+using System.IO;
 
 namespace OOM.Core.Repositories.Protocols
 {
@@ -31,9 +32,19 @@ namespace OOM.Core.Repositories.Protocols
             _client.Update(LocalPath);
         }
 
-        public override IEnumerable<RepositoryRevision> ListRevisions(string fromCommit = null)
+        public override IEnumerable<RepositoryRevision> ListRevisions(string fromRevision = null)
         {
-            return null;
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<RepositoryNode> ListRevisionNodes(string revision)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Stream GetNodeContent(RepositoryNode node)
+        {
+            throw new NotImplementedException();
         }
 
         public override void Dispose()
