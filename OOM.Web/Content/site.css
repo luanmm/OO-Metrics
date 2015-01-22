@@ -8238,4 +8238,95 @@ a.list-group-item-danger.active:focus {
 body {
   padding-top: 90px !important;
 }
+/**********************************************************/
+/**********************************************************/
+/* Make clicks pass-through */
+#loading-bar,
+#loading-bar-spinner {
+  pointer-events: none;
+  -webkit-pointer-events: none;
+  -webkit-transition: 350ms linear all;
+  -moz-transition: 350ms linear all;
+  -o-transition: 350ms linear all;
+  transition: 350ms linear all;
+}
+#loading-bar.ng-enter,
+#loading-bar.ng-leave.ng-leave-active,
+#loading-bar-spinner.ng-enter,
+#loading-bar-spinner.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+#loading-bar.ng-enter.ng-enter-active,
+#loading-bar.ng-leave,
+#loading-bar-spinner.ng-enter.ng-enter-active,
+#loading-bar-spinner.ng-leave {
+  opacity: 1;
+}
+#loading-bar .bar {
+  -webkit-transition: width 350ms;
+  -moz-transition: width 350ms;
+  -o-transition: width 350ms;
+  transition: width 350ms;
+  background: rgba(189, 195, 199, 0.5);
+  position: fixed;
+  z-index: 10002;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-bottom-right-radius: 1px;
+  border-top-right-radius: 1px;
+}
+#loading-bar-spinner {
+  display: block;
+  position: fixed;
+  z-index: 10002;
+  top: 10px;
+  left: 10px;
+}
+#loading-bar-spinner .spinner-icon {
+  width: 25px;
+  height: 25px;
+  position: relative;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 100%;
+  border-color: rgba(189, 195, 199, 0.5) rgba(189, 195, 199, 0.5) #bdc3c7 #bdc3c7;
+  -webkit-animation: loading-bar-spinner 600ms linear infinite;
+  -moz-animation: loading-bar-spinner 600ms linear infinite;
+  -ms-animation: loading-bar-spinner 600ms linear infinite;
+  -o-animation: loading-bar-spinner 600ms linear infinite;
+  animation: loading-bar-spinner 600ms linear infinite;
+}
+@-webkit-keyframes loading-bar-spinner {
+  to {
+    -webkit-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+@-moz-keyframes loading-bar-spinner {
+  to {
+    -moz-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+@-o-keyframes loading-bar-spinner {
+  to {
+    -o-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+@-ms-keyframes loading-bar-spinner {
+  to {
+    -ms-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+@keyframes loading-bar-spinner {
+  to {
+    -webkit-transform: rotate(360deg) translateZ(0);
+    -ms-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
+  }
+}
 /*# sourceMappingURL=site.css.map */

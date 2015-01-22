@@ -1,5 +1,7 @@
 ﻿angular.module('oomApp', [
     'ngRoute',
+    'ngAnimate',
+    'angular-loading-bar',
     'ui.bootstrap',
     'oomApp.controllers.home'
 ])
@@ -13,7 +15,7 @@
             })
             .when('/projects', {
                 title: 'Projects',
-                templateUrl: 'Projects/Index'
+                templateUrl: 'Projects/List'
             })
             .when('/metrics', {
                 title: 'Metrics',

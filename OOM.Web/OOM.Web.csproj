@@ -145,6 +145,8 @@
     </Content>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\angular-animate.js" />
+    <Content Include="Scripts\angular-animate.min.js" />
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\angular-mocks.min.js">
       <DependentUpon>angular-mocks.js</DependentUpon>
@@ -268,6 +270,7 @@
     <Content Include="Scripts\app\controllers\home.js" />
     <Content Include="Scripts\html5shiv-printshiv.js" />
     <Content Include="Scripts\html5shiv.js" />
+    <Content Include="Scripts\loading-bar.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
@@ -294,6 +297,8 @@
       <DependentUpon>ui-bootstrap.min.js</DependentUpon>
     </Content>
     <Content Include="Views\Home\Base.cshtml" />
+    <Content Include="Scripts\angular-animate.min.js.map" />
+    <Content Include="Views\Projects\List.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -302,6 +307,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OOM.Core\OOM.Core.csproj">
+      <Project>{f25aea72-1f44-4c46-ad72-bbe97cc123df}</Project>
+      <Name>OOM.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OOM.Model\OOM.Model.csproj">
+      <Project>{5170a8d5-cb7d-430f-9547-f5cc66d57327}</Project>
+      <Name>OOM.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OOM.Repositories\OOM.Repositories.csproj">
+      <Project>{79b96f6b-2c0c-4aa4-ab46-7ad30b400f2c}</Project>
+      <Name>OOM.Repositories</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

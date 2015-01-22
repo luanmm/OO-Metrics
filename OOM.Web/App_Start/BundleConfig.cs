@@ -11,10 +11,12 @@ namespace OOM.Web
             bundles.Add(new ScriptBundle("~/bundles/angular").Include(
                       "~/Scripts/angular.js",
                       "~/Scripts/angular-mocks.js",
-                      "~/Scripts/angular-route.js"));
+                      "~/Scripts/angular-route.js",
+                      "~/Scripts/angular-animate.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/angular-ui").Include(
-                      "~/Scripts/angular-ui/ui-bootstrap.js"));
+                      "~/Scripts/angular-ui/ui-bootstrap.js",
+                      "~/Scripts/loading-bar.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/app")
                 .IncludeDirectory("~/Scripts/app/controllers", "*.js")

@@ -1,0 +1,30 @@
+﻿<div class="container">
+    <div class="page-header">
+        <div class="row">
+            <div class="col-lg-8 col-md-7 col-sm-6">
+                <h1>Projects page</h1>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Repository type</th>
+                            <th>URI</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var project in ViewBag.Projects)
+                        {
+                            <tr>
+                                <td>@project.Name</td>
+                                <td>@project.RepositoryProtocol</td>
+                                <td>@project.URI</td>
+                                <td>#</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
