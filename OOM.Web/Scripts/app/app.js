@@ -15,7 +15,7 @@
             })
             .when('/projects', {
                 title: 'Projects',
-                templateUrl: 'Projects/List'
+                templateUrl: 'Projects/Index'
             })
             .when('/metrics', {
                 title: 'Metrics',

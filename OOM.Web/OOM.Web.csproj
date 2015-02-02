@@ -137,13 +137,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
+    <Content Include="Content\images\logo.png" />
     <Content Include="Content\site.css">
       <DependentUpon>site.less</DependentUpon>
     </Content>
     <Content Include="Content\site.min.css">
       <DependentUpon>site.css</DependentUpon>
     </Content>
-    <Content Include="favicon.ico" />
+    <Content Include="favicon.png" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\angular-animate.js" />
     <Content Include="Scripts\angular-animate.min.js" />
@@ -164,7 +165,6 @@
       <DependentUpon>ui-bootstrap.js</DependentUpon>
     </Content>
     <Content Include="Scripts\angular.js" />
-    <Content Include="Content\bootstrap\bootswatch.less" />
     <Content Include="Content\bootstrap\variables.less" />
     <Content Include="Content\bootstrap\alerts.less" />
     <Content Include="Content\bootstrap\badges.less" />
@@ -236,9 +236,6 @@
     <Content Include="Content\bootstrap\utilities.less" />
     <Content Include="Content\bootstrap\wells.less" />
     <Content Include="Content\site.less" />
-    <Content Include="Content\site.css.map">
-      <DependentUpon>site.css</DependentUpon>
-    </Content>
     <Content Include="Content\font-awesome\bordered-pulled.less" />
     <Content Include="Content\font-awesome\core.less" />
     <Content Include="Content\font-awesome\fixed-width.less" />
@@ -252,6 +249,11 @@
     <Content Include="Content\font-awesome\spinning.less" />
     <Content Include="Content\font-awesome\stacked.less" />
     <Content Include="Content\font-awesome\variables.less" />
+    <Content Include="Content\bootswatch\bootswatch.less" />
+    <Content Include="Content\bootswatch\variables.less" />
+    <Content Include="Content\site.css.map">
+      <DependentUpon>site.css</DependentUpon>
+    </Content>
     <Content Include="Content\fonts\fontawesome-webfont.eot" />
     <Content Include="Content\fonts\fontawesome-webfont.ttf" />
     <Content Include="Content\fonts\fontawesome-webfont.woff" />
@@ -298,7 +300,10 @@
     </Content>
     <Content Include="Views\Home\Base.cshtml" />
     <Content Include="Scripts\angular-animate.min.js.map" />
-    <Content Include="Views\Projects\List.cshtml" />
+    <Content Include="Views\Projects\Create.cshtml" />
+    <Content Include="Views\Projects\Delete.cshtml" />
+    <Content Include="Views\Projects\Details.cshtml" />
+    <Content Include="Views\Projects\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

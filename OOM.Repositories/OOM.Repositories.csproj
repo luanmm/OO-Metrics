@@ -48,7 +48,6 @@
   <ItemGroup>
     <Compile Include="Base\EntityFrameworkRepository.cs" />
     <Compile Include="Base\IRepository.cs" />
-    <Compile Include="Base\PagedResult.cs" />
     <Compile Include="NodeRepository.cs" />
     <Compile Include="ProjectRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

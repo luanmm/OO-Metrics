@@ -38,22 +38,6 @@ namespace OOM.Repositories
             }
         }
 
-        public virtual PagedResult<TEntity> Find<TResult>(IQueryable<TEntity> query, int pageNum, int pageSize,
-                Expression<Func<TEntity, TResult>> orderByProperty, bool isAscendingOrder, out int rowsCount)
-        {
-            if (pageSize <= 0) pageSize = 20;
-
-            rowsCount = query.Count();
-
-            if (rowsCount <= pageSize || pageNum <= 0) pageNum = 1;
-
-            int excludedRows = (pageNum - 1) * pageSize;
-
-            query = isAscendingOrder ? query.OrderBy(orderByProperty) : query.OrderByDescending(orderByProperty);
-
-            return new PagedResult<TEntity>(query.Skip(excludedRows).Take(pageSize), rowsCount);
-        }
-
         public virtual TKey Create(TEntity entity)
         {
             this.Insert<TEntity>(entity);

@@ -1,6 +1,8 @@
-// Darkly 3.3.1
+// Flatly 3.3.2
 // Bootswatch
 // -----------------------------------------------------
+
+@import url("//fonts.googleapis.com/css?family=Lato:400,700,400italic");
 
 // Navbar =====================================================================
 
@@ -24,17 +26,7 @@
   }
 
   &-brand {
-    padding: 18.5px 15px 20.5px;
-  }
-
-  &-form {
-    .form-control {
-      background-color: white;
-
-      &:focus {
-        border-color: white;
-      }
-    }
+    line-height: 1;
   }
 }
 
@@ -52,7 +44,7 @@
 
 .text-primary,
 .text-primary:hover {
-  color: lighten(@brand-primary, 10%);
+  color: @brand-primary;
 }
 
 .text-success,
@@ -120,15 +112,9 @@ table,
 
 // Forms ======================================================================
 
-input,
-textarea {
-  color: @input-color;
-}
-
 .form-control,
-input,
-textarea {
-  border: none;
+input, {
+  border-width: 2px;
   .box-shadow(none);
 
   &:focus {
@@ -149,7 +135,7 @@ textarea {
 
   .form-control,
   .form-control:focus {
-    .box-shadow(none);
+    border: 2px solid @brand-warning;
   }
 
   .input-group-addon {
@@ -170,7 +156,7 @@ textarea {
 
   .form-control,
   .form-control:focus {
-    .box-shadow(none);
+    border: 2px solid @brand-danger;
   }
 
   .input-group-addon {
@@ -191,16 +177,12 @@ textarea {
 
   .form-control,
   .form-control:focus {
-    .box-shadow(none);
+    border: 2px solid @brand-success;
   }
 
   .input-group-addon {
     border-color: @brand-success;
   }
-}
-
-.input-group-addon {
-  color: @text-color;
 }
 
 // Navs =======================================================================
@@ -209,13 +191,8 @@ textarea {
   .open > a,
   .open > a:hover,
   .open > a:focus {
-    border-color: @nav-tabs-border-color;
+    border-color: transparent;
   }
-}
-
-.nav-tabs > li > a,
-.nav-pills > li > a {
-  color: #fff;
 }
 
 .pager {
@@ -234,24 +211,22 @@ textarea {
   }
 }
 
-.breadcrumb a {
-  color: #fff;
-}
-
 // Indicators =================================================================
 
 .close {
+  color: #fff;
   text-decoration: none;
-  text-shadow: none;
   opacity: 0.4;
 
   &:hover,
   &:focus {
+    color: #fff;
     opacity: 1;
   }
 }
 
 .alert {
+
   .alert-link {
     color: #fff;
     text-decoration: underline;
@@ -317,10 +292,20 @@ a.list-group-item {
   }
 }
 
-.popover {
-  color: @text-color;
+.panel {
+  &-default {
+    .close {
+      color: @text-color;
+    }
+  }
 }
 
-.panel-default > .panel-heading {
-  background-color: @panel-footer-bg;
+.modal {
+  .close {
+    color: @text-color;
+  }
+}
+
+.popover {
+  color: @text-color;
 }
