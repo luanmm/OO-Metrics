@@ -94,7 +94,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analyzers\AnalyzedCode.cs" />
+    <Compile Include="Analyzers\CodeAnalyzer.cs" />
+    <Compile Include="Analyzers\CodeAnalyzerConfiguration.cs" />
+    <Compile Include="Analyzers\CodeAnalyzerFactory.cs" />
     <Compile Include="Analyzers\CSharp\CSharpCodeAnalyzer.cs" />
+    <Compile Include="Analyzers\Java\JavaCodeAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\Protocols\SubversionRepository.cs" />
     <Compile Include="Repositories\Protocols\MercurialRepository.cs" />

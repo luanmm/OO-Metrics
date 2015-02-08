@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OOM.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,23 +10,67 @@ using System.Threading.Tasks;
 
 namespace OOM.Core.Analyzers.CSharp
 {
-    public class CSharpCodeAnalyzer
+    public class CSharpCodeAnalyzer : CodeAnalyzer
     {
-        public void Analyze(string code)
+        public CSharpCodeAnalyzer(CodeAnalyzerConfiguration configuration)
+            : base(configuration)
+        {
+
+        }
+
+        public override AnalyzedCode Analyze(string code)
         {
             var tree = CSharpSyntaxTree.ParseText(code);
             var root = (CompilationUnitSyntax)tree.GetRoot();
 
-            var classes = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
-            foreach (var c in classes) 
+            var analyzedNamespaces = new List<AnalyzedNamespace>();
+            var namespaces = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>();
+            foreach (var n in namespaces)
             {
-                var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
-                foreach (var m in methods)
+                var analyzedClasses = new List<AnalyzedClass>();
+                var classes = n.DescendantNodes().OfType<ClassDeclarationSyntax>();
+                foreach (var c in classes)
                 {
-                    var linesOfCode = m.DescendantNodes().OfType<StatementSyntax>().ToList().Count;
-                    Console.WriteLine(String.Format("Class: {0}, Method: {1}, Lines of code: {2}", c.Identifier, m.Identifier, linesOfCode));
+                    var analyzedAttributes = new List<AnalyzedAttribute>();
+                    var attributes = c.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                    foreach (var a in attributes)
+                    {
+                        analyzedAttributes.Add(new AnalyzedAttribute
+                        {
+                            Identifier = a.Identifier.ToString()
+                        });
+                    }
+
+                    var analyzedMethods = new List<AnalyzedMethod>();
+                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                    foreach (var m in methods)
+                    {
+                        analyzedMethods.Add(new AnalyzedMethod
+                        {
+                            Identifier = m.Identifier.ToString(),
+                            LineCount = m.DescendantNodes().OfType<StatementSyntax>().ToList().Count
+                        });
+                    }
+
+                    analyzedClasses.Add(new AnalyzedClass
+                    { 
+                        Identifier = c.Identifier.ToString(),
+                        Attributes = analyzedAttributes,
+                        Methods = analyzedMethods
+                    });
                 }
+
+                analyzedNamespaces.Add(new AnalyzedNamespace
+                {
+                    Identifier = n.Name.ToString(), 
+                    Classes = analyzedClasses
+                });
             }
+
+            return new AnalyzedCode
+            { 
+                Namespaces = analyzedNamespaces
+            };
         }
     }
 }

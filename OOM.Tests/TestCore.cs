@@ -19,7 +19,7 @@ namespace OOM.Tests
             if (project == null)
             {
                 project = new Project
-                { 
+                {
                     Name = "RepoMiner",
                     URI = repositoryUri,
                     RepositoryProtocol = RepositoryProtocol.Git,

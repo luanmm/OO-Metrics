@@ -47,11 +47,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base\EntityFrameworkRepository.cs" />
-    <Compile Include="Base\IRepository.cs" />
-    <Compile Include="NodeRepository.cs" />
-    <Compile Include="ProjectRepository.cs" />
+    <Compile Include="Interfaces\IRepository.cs" />
+    <Compile Include="Repositories\AttributeRepository.cs" />
+    <Compile Include="Repositories\MethodRepository.cs" />
+    <Compile Include="Repositories\NamespaceRepository.cs" />
+    <Compile Include="Repositories\ClassRepository.cs" />
+    <Compile Include="Repositories\NodeRepository.cs" />
+    <Compile Include="Repositories\ProjectRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RevisionRepository.cs" />
+    <Compile Include="Repositories\RevisionRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OOM.Model\OOM.Model.csproj">

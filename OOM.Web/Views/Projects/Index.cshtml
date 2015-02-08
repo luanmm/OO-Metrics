@@ -1,45 +1,57 @@
 ﻿@model IEnumerable<OOM.Model.Project>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Projects";
 }
 
-<h2>Index</h2>
+<div class="page-header">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                Projects
+                <div class="pull-right">
+                    <a href="@Url.Action("Create New", "Create")" class="btn btn-primary">
+                        <i class="icon-star icon-white"></i> Create
+                    </a>
+                </div>
+            </h1>
+            <br />
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.RepositoryProtocol)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.URI)
+                        </th>
+                        <th></th>
+                    </tr>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.RepositoryProtocol)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.URI)
-        </th>
-        <th></th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.RepositoryProtocol)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.URI)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-            </td>
-        </tr>
-    }
-</table>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.RepositoryProtocol)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.URI)
+                            </td>
+                            <td>
+                                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
