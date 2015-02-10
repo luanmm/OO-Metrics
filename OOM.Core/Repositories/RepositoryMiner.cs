@@ -1,6 +1,5 @@
 ﻿using OOM.Core.Analyzers;
 using OOM.Model;
-using OOM.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,32 +12,17 @@ namespace OOM.Core.Repositories
 {
     public class RepositoryMiner : IDisposable
     {
+        private OOMetricsContext _db = new OOMetricsContext();
         private Project _project;
         private Repository _repository;
 
-        private ProjectRepository _projectRepository;
-        private RevisionRepository _revisionRepository;
-        private NodeRepository _nodeRepository;
-        private NamespaceRepository _namespaceRepository;
-        private ClassRepository _classRepository;
-        private AttributeRepository _attributeRepository;
-        private MethodRepository _methodRepository;
-
         public RepositoryMiner(Project project)
         {
-            _projectRepository = new ProjectRepository();
-            _project = _projectRepository.GetByUri(project.URI);
+            _project = _db.Projects.FirstOrDefault(x => x.URI == project.URI);
             if (_project == null)
                 throw new Exception("The specified project could not be found in the database or is invalid.");
 
             _repository = RepositoryFactory.CreateRepository(_project.RepositoryProtocol, new RepositoryConfiguration(_project.URI, _project.User, _project.Password));
-
-            _revisionRepository = new RevisionRepository();
-            _nodeRepository = new NodeRepository();
-            _namespaceRepository = new NamespaceRepository();
-            _classRepository = new ClassRepository();
-            _attributeRepository = new AttributeRepository();
-            _methodRepository = new MethodRepository();
         }
 
         public void StartMining()
@@ -52,7 +36,7 @@ namespace OOM.Core.Repositories
             var revisions = _repository.ListRevisions(lastRevisionRID);
             foreach (var revision in revisions)
             {
-                var revisionId = _revisionRepository.Create(new Revision
+                var r = _db.Revisions.Add(new Revision
                 {
                     RID = revision.RID,
                     Message = revision.Message,
@@ -60,20 +44,11 @@ namespace OOM.Core.Repositories
                     CreatedAt = revision.CreatedAt,
                     ProjectId = _project.Id
                 });
+                _db.SaveChanges();
 
                 var nodes = _repository.ListRevisionNodes(revision.RID);
                 foreach (var node in nodes)
-                {
-                    SaveNodeMetrics(revisionId, node);
-
-                    _nodeRepository.Create(new Node
-                    {
-                        Name = node.Name,
-                        NodeType = node.Type,
-                        Path = node.Path,
-                        RevisionId = revisionId
-                    });
-                }
+                    SaveNodeMetrics(r.Id, node);
             }
         }
 
@@ -88,19 +63,19 @@ namespace OOM.Core.Repositories
                     var analyzedCode = analyzer.Analyze(tr.ReadToEnd());
                     foreach (var analizedNamespace in analyzedCode.Namespaces)
                     {
-                        int namespaceId;
-                        var ns = _namespaceRepository.GetByIdentifier(revisionId, analizedNamespace.Identifier);
-                        if (ns != null)
-                            namespaceId = ns.Id;
-                        else
-                            namespaceId = _namespaceRepository.Create(new Namespace
+                        var ns = _db.Namespaces.FirstOrDefault(x => x.Revision.Id == revisionId && x.Identifier == analizedNamespace.Identifier);
+                        if (ns == null)
+                        { 
+                            ns = _db.Namespaces.Add(new Namespace
                             {
                                 Identifier = analizedNamespace.Identifier,
                                 RevisionId = revisionId
                             });
+                            _db.SaveChanges();
+                        }
 
                         foreach (var analyzedClass in analizedNamespace.Classes)
-                            SaveClassInformation(namespaceId, analyzedClass);
+                            SaveClassInformation(ns.Id, analyzedClass);
                     }
                 }
             }
@@ -108,12 +83,10 @@ namespace OOM.Core.Repositories
 
         private void SaveClassInformation(int namespaceId, AnalyzedClass analyzedClass)
         {
-            int classId;
-            var c = _classRepository.GetByIdentifier(namespaceId, analyzedClass.Identifier);
-            if (c != null)
-                classId = c.Id;
-            else
-                classId = _classRepository.Create(new Class
+            var c = _db.Classes.FirstOrDefault(x => x.Namespace.Id == namespaceId && x.Identifier == analyzedClass.Identifier);
+            if (c == null)
+            { 
+                c = _db.Classes.Add(new Class
                 {
                     Identifier = analyzedClass.Identifier,
                     Abstractness = analyzedClass.Abstractness,
@@ -121,38 +94,38 @@ namespace OOM.Core.Repositories
                     // TODO: Base class
                     NamespaceId = namespaceId
                 });
+                _db.SaveChanges();
+            }
 
             foreach (var analyzedAttribute in analyzedClass.Attributes)
-                SaveAttributeInformation(classId, analyzedAttribute);
+                SaveAttributeInformation(c.Id, analyzedAttribute);
 
             foreach (var analyzedMethod in analyzedClass.Methods)
-                SaveMethodInformation(classId, analyzedMethod);
+                SaveMethodInformation(c.Id, analyzedMethod);
         }
 
         private void SaveAttributeInformation(int classId, AnalyzedAttribute analyzedAttribute)
         {
-            int attributeId;
-            var a = _attributeRepository.GetByIdentifier(classId, analyzedAttribute.Identifier);
-            if (a != null)
-                attributeId = a.Id;
-            else
-                attributeId = _attributeRepository.Create(new OOM.Model.Attribute
+            var a = _db.Attributes.FirstOrDefault(x => x.Class.Id == classId && x.Identifier == analyzedAttribute.Identifier);
+            if (a == null)
+            {
+                _db.Attributes.Add(new OOM.Model.Attribute
                 {
                     Identifier = analyzedAttribute.Identifier,
                     Visibility = analyzedAttribute.Visibility,
                     Scope = analyzedAttribute.Scope,
                     ClassId = classId
                 });
+                _db.SaveChanges();
+            }
         }
 
         private void SaveMethodInformation(int classId, AnalyzedMethod analyzedMethod)
         {
-            int methodId;
-            var m = _methodRepository.GetByIdentifier(classId, analyzedMethod.Identifier);
-            if (m != null)
-                methodId = m.Id;
-            else
-                methodId = _methodRepository.Create(new Method
+            var m = _db.Methods.FirstOrDefault(x => x.Class.Id == classId && x.Identifier == analyzedMethod.Identifier);
+            if (m == null)
+            {
+                _db.Methods.Add(new Method
                 {
                     Identifier = analyzedMethod.Identifier,
                     Abstractness = analyzedMethod.Abstractness,
@@ -162,11 +135,14 @@ namespace OOM.Core.Repositories
                     LineCount = analyzedMethod.LineCount,
                     ClassId = classId
                 });
+                _db.SaveChanges();
+            }
         }
 
         public void Dispose()
         {
             _repository.Dispose();
+            _db.Dispose();
         }
     }
 }

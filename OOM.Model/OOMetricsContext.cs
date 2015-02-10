@@ -10,9 +10,10 @@ namespace OOM.Model
         public OOMetricsContext()
             : base("name=OOMetricsContext")
         {
+            Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseIfModelChanges<OOMetricsContext>());
+            //Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
         }
 
-        public virtual DbSet<Node> Nodes { get; set; }
         public virtual DbSet<Project> Projects { get; set; }
         public virtual DbSet<Revision> Revisions { get; set; }
         public virtual DbSet<Namespace> Namespaces { get; set; }
@@ -28,34 +29,24 @@ namespace OOM.Model
                 .WillCascadeOnDelete(true);
 
             modelBuilder.Entity<Revision>()
-                .HasMany(e => e.Nodes)
-                .WithRequired(e => e.Revision)
-                .WillCascadeOnDelete(true);
-
-            modelBuilder.Entity<Node>()
-                .HasMany(e => e.Classes)
-                .WithRequired(e => e.Node)
-                .WillCascadeOnDelete(true);
-
-            modelBuilder.Entity<Revision>()
                 .HasMany(e => e.Namespaces)
                 .WithRequired(e => e.Revision)
-                .WillCascadeOnDelete(true);
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Namespace>()
                 .HasMany(e => e.Classes)
                 .WithRequired(e => e.Namespace)
-                .WillCascadeOnDelete(true);
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Class>()
                 .HasMany(e => e.Attributes)
                 .WithRequired(e => e.Class)
-                .WillCascadeOnDelete(true);
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Class>()
                 .HasMany(e => e.Methods)
                 .WithRequired(e => e.Class)
-                .WillCascadeOnDelete(true);
+                .WillCascadeOnDelete(false);
         }
     }
 }

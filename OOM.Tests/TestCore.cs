@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OOM.Core.Repositories;
 using System.Collections.Generic;
 using OOM.Model;
-using OOM.Repositories;
 
 namespace OOM.Tests
 {
@@ -13,24 +13,26 @@ namespace OOM.Tests
         [TestMethod]
         public void TestGitRepository()
         {
-            var repositoryUri = "https://luanmm@bitbucket.org/luanmm/repominer.git";
-            var projectRepository = new ProjectRepository();
-            var project = projectRepository.GetByUri(repositoryUri);
-            if (project == null)
-            {
-                project = new Project
+            using (var db = new OOMetricsContext())
+            { 
+                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/repominer.git";
+                var project = db.Projects.FirstOrDefault(x => x.URI.Equals(repositoryUri, StringComparison.InvariantCultureIgnoreCase));
+                if (project == null)
                 {
-                    Name = "RepoMiner",
-                    URI = repositoryUri,
-                    RepositoryProtocol = RepositoryProtocol.Git,
-                    User = "luanmm",
-                    Password = "bLitbucket?!"
-                };
-                projectRepository.Create(project);
-            }
+                    project = db.Projects.Add(new Project
+                    {
+                        Name = "RepoMiner",
+                        URI = repositoryUri,
+                        RepositoryProtocol = RepositoryProtocol.Git,
+                        User = "luanmm",
+                        Password = "bLitbucket?!"
+                    });
+                    db.SaveChanges();
+                }
 
-            var miner = new RepositoryMiner(project);
-            miner.StartMining();
+                var miner = new RepositoryMiner(project);
+                miner.StartMining();
+            }
         }
 
         [TestMethod]

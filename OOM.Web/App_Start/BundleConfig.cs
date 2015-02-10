@@ -23,6 +23,10 @@ namespace OOM.Web
                       "~/Scripts/html5shiv-printshiv.js",
                       "~/Scripts/respond.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/sigma").Include(
+                      "~/Scripts/sigma.min.js",
+                      "~/Scripts/sigma.parsers.json.min.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/site.css"));
 

@@ -11,7 +11,6 @@ namespace OOM.Model
     {
         public Revision()
         {
-            Nodes = new HashSet<Node>();
             Namespaces = new HashSet<Namespace>();
         }
 
@@ -30,8 +29,6 @@ namespace OOM.Model
         public string Author { get; set; }
 
         public DateTime CreatedAt { get; set; }
-
-        public virtual ICollection<Node> Nodes { get; set; }
 
         public virtual ICollection<Namespace> Namespaces { get; set; }
 
