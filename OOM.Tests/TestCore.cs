@@ -52,5 +52,18 @@ namespace OOM.Tests
                 //Assert.IsTrue(svnRepository.Update());
             }
         }
+
+        [TestMethod]
+        public void TestDatabaseAccessTypes()
+        {
+            using (var db = new OOMetricsContext(OOMetricsDBAccessType.FullAccess))
+            {
+                Assert.AreEqual("OK", db.Database.SqlQuery<string>("SELECT 'OK'").FirstOrDefault());
+            }
+            using (var db = new OOMetricsContext(OOMetricsDBAccessType.ReadOnly))
+            {
+                Assert.AreEqual("OK", db.Database.SqlQuery<string>("SELECT 'OK'").FirstOrDefault());
+            }
+        }
     }
 }

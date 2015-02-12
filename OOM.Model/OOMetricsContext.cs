@@ -8,7 +8,20 @@ namespace OOM.Model
     public partial class OOMetricsContext : DbContext
     {
         public OOMetricsContext()
-            : base("name=OOMetricsContext")
+            : this(OOMetricsDBAccessType.FullAccess)
+        {
+
+        }
+
+        public OOMetricsContext(OOMetricsDBAccessType accessType)
+            : base(accessType == OOMetricsDBAccessType.FullAccess ? "name=OOMDBFullAccess" : "name=OOMDBReadOnly")
+        {
+            if (!Enum.IsDefined(typeof(OOMetricsDBAccessType), accessType))
+                throw new ArgumentOutOfRangeException("accessType", "The informed access type is invalid in this context.");
+        }
+
+        public OOMetricsContext(string connectionString)
+            : base(connectionString)
         {
             Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseIfModelChanges<OOMetricsContext>());
             //Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
@@ -48,5 +61,11 @@ namespace OOM.Model
                 .WithRequired(e => e.Class)
                 .WillCascadeOnDelete(false);
         }
+    }
+
+    public enum OOMetricsDBAccessType
+    {
+        FullAccess,
+        ReadOnly
     }
 }
