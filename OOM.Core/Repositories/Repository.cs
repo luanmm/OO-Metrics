@@ -37,7 +37,9 @@ namespace OOM.Core.Repositories
 
         public abstract IEnumerable<RepositoryRevision> ListRevisions(string fromRevision = null);
 
-        public abstract IEnumerable<RepositoryNode> ListRevisionNodes(string revision);
+        public abstract IEnumerable<RepositoryNode> ListRevisionTree(string revision);
+
+        public abstract IEnumerable<RepositoryNode> ListNodeTree(RepositoryNode rootNode);
 
         public abstract Stream GetNodeContent(RepositoryNode node);
 

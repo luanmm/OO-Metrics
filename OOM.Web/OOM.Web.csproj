@@ -129,6 +129,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
+    <Content Include="Content\images\icon-attribute.svg" />
+    <Content Include="Content\images\icon-class.svg" />
+    <Content Include="Content\images\icon-method.svg" />
+    <Content Include="Content\images\icon-namespace.svg" />
     <Content Include="Content\images\logo.png" />
     <Content Include="Content\site.css">
       <DependentUpon>site.less</DependentUpon>
@@ -243,6 +247,10 @@
     <Content Include="Scripts\bootstrap.min.js">
       <DependentUpon>bootstrap.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\d3.js" />
+    <Content Include="Scripts\d3.min.js">
+      <DependentUpon>d3.js</DependentUpon>
+    </Content>
     <Content Include="Scripts\html5shiv-printshiv.js" />
     <Content Include="Scripts\html5shiv-printshiv.min.js">
       <DependentUpon>html5shiv-printshiv.js</DependentUpon>
@@ -257,6 +265,10 @@
     <Content Include="Scripts\jquery-2.1.3.js" />
     <Content Include="Scripts\jquery-2.1.3.min.js.map">
       <DependentUpon>jquery-2.1.3.min.js</DependentUpon>
+    </Content>
+    <Content Include="Scripts\jquery.qtip.js" />
+    <Content Include="Scripts\jquery.qtip.min.js">
+      <DependentUpon>jquery.qtip.js</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js.map">
       <DependentUpon>jquery.unobtrusive-ajax.min.js</DependentUpon>
@@ -316,6 +328,12 @@
     </Content>
     <Content Include="Views\Projects\Revisions.cshtml" />
     <Content Include="Views\Projects\Revision.cshtml" />
+    <Content Include="Scripts\d3.min.js.map">
+      <DependentUpon>d3.min.js</DependentUpon>
+    </Content>
+    <Content Include="Scripts\jquery.qtip.min.js.map">
+      <DependentUpon>jquery.qtip.min.js</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

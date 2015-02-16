@@ -14,5 +14,6 @@ namespace OOM.Core.Repositories
         public string Path { get; set; }
         public NodeType Type { get; set; }
         public string Revision { get; set; }
+        public object RepositoryObject { get; set; }
     }
 }

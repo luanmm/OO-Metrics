@@ -22,7 +22,7 @@ namespace OOM.Core.Analyzers
                 return new CSharpCodeAnalyzer(configuration);
 
             if (Regex.IsMatch(filename, ".[jJ]{1}[aA]{1}[vV]{1}[aA]{1}$"))
-                return new JavaCodeAnalyzer(configuration);
+                return null; // new JavaCodeAnalyzer(configuration); // TODO: Implement Java analyzer
 
             return null;
         }

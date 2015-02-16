@@ -28,7 +28,7 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Project project = _db.Projects.Find(id);
+            var project = _db.Projects.Find(id);
             if (project == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
@@ -74,7 +74,7 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Project project = _db.Projects.Find(id);
+            var project = _db.Projects.Find(id);
             if (project == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
@@ -125,7 +125,7 @@ namespace OOM.Web.Controllers
                 ViewBag.ErrorMessage = "Delete failed. Try again, and if the problem persists see your system administrator.";
             }
 
-            Project project = _db.Projects.Find(id);
+            var project = _db.Projects.Find(id);
             if (project == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
@@ -141,7 +141,7 @@ namespace OOM.Web.Controllers
         {
             try
             {
-                Project project = _db.Projects.Find(id);
+                var project = _db.Projects.Find(id);
                 _db.Projects.Remove(project);
                 _db.SaveChanges();
             }
@@ -161,7 +161,7 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Project project = _db.Projects.Find(id);
+            var project = _db.Projects.Find(id);
             if (project == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
@@ -173,7 +173,7 @@ namespace OOM.Web.Controllers
         // GET: /Projects/Revision/5
         public ActionResult Revision(int id)
         {
-            Revision revision = _db.Revisions.Find(id);
+            var revision = _db.Revisions.Find(id);
             if (revision == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
@@ -185,48 +185,81 @@ namespace OOM.Web.Controllers
         // GET: /Projects/Structure/5
         public JsonResult Structure(int id)
         {
+            var nodes = new List<object>();
+            var links = new List<object>();
+
+            var revision = _db.Revisions.Find(id);
+            var revisionNodeIndex = nodes.Count;
+            nodes.Add(new
+            {
+                name = String.Format("{0}: {1}", revision.RID, revision.Message),
+                group = 1
+            });
+
+            foreach (var ns in revision.Namespaces)
+            {
+                var namespaceNodeIndex = nodes.Count;
+                nodes.Add(new
+                {
+                    name = ns.Identifier,
+                    group = 2
+                });
+                links.Add(new
+                {
+                    source = revisionNodeIndex,
+                    target = namespaceNodeIndex
+                });
+
+                foreach (var c in ns.Classes)
+                {
+                    var classNodeIndex = nodes.Count;
+                    nodes.Add(new
+                    {
+                        name = c.Identifier,
+                        group = 3
+                    });
+                    links.Add(new
+                    {
+                        source = namespaceNodeIndex,
+                        target = classNodeIndex
+                    });
+
+                    foreach (var a in c.Attributes)
+                    {
+                        var attributeNodeIndex = nodes.Count;
+                        nodes.Add(new
+                        {
+                            name = a.Identifier,
+                            group = 4
+                        });
+                        links.Add(new
+                        {
+                            source = classNodeIndex,
+                            target = attributeNodeIndex
+                        });
+                    }
+
+                    foreach (var m in c.Methods)
+                    {
+                        var methodNodeIndex = nodes.Count;
+                        nodes.Add(new
+                        {
+                            name = m.Identifier,
+                            group = 5
+                        });
+                        links.Add(new
+                        {
+                            source = classNodeIndex,
+                            target = methodNodeIndex
+                        });
+                    }
+                }
+            }
+
             return Json(new
             {
-                nodes = new[] {
-                new {
-                id = "n0",
-                label = "A node",
-                x = 0,
-                y = 0,
-                size = 3
-                },
-                new {
-                id = "n1",
-                label = "Another node",
-                x = 3,
-                y = 1,
-                size = 2
-                },
-                new {
-                id = "n2",
-                label = "And a last one",
-                x = 1,
-                y = 3,
-                size = 1
-                }
-                },
-                edges = new[] {
-                new {
-                  id = "e0",
-                  source = "n0",
-                  target = "n1"
-                },
-                new {
-                  id = "e1",
-                  source = "n1",
-                  target = "n2"
-                },
-                new {
-                  id = "e2",
-                  source = "n2",
-                  target = "n0"
-                }
-              }
+                nodes = nodes,
+                links = links
             }, JsonRequestBehavior.AllowGet);
         }
 

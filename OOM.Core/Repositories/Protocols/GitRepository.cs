@@ -43,39 +43,69 @@ namespace OOM.Core.Repositories.Protocols
             return revisionList.OrderBy(r => r.CreatedAt);
         }
 
-        public override IEnumerable<RepositoryNode> ListRevisionNodes(string revision)
+        public override IEnumerable<RepositoryNode> ListRevisionTree(string revision)
         {
-            var revisionTree = _repository.Commits.FirstOrDefault(c => c.Sha == revision).Tree;
-            var nodeList = new List<RepositoryNode>();
-            foreach (var node in revisionTree)
+            var nodes = new List<RepositoryNode>();
+            foreach (var node in _repository.Lookup<Commit>(revision).Tree)
             {
                 var nodeType = NodeType.Unknown;
-                switch (node.Mode)
+                switch (node.TargetType)
                 {
-                    case Mode.Directory:
-                    case Mode.SymbolicLink:
-                    case Mode.GitLink:
+                    case TreeEntryTargetType.Tree:
                         nodeType = NodeType.Directory;
                         break;
-                    case Mode.ExecutableFile:
-                    case Mode.NonExecutableFile:
-                    case Mode.NonExecutableGroupWritableFile:
+                    case TreeEntryTargetType.Blob:
                         nodeType = NodeType.File;
                         break;
                 }
 
-                // TODO: Check inside directories here
-
-                nodeList.Add(new RepositoryNode
-                { 
+                nodes.Add(new RepositoryNode
+                {
                     Name = node.Name,
                     Path = node.Path,
                     Type = nodeType,
-                    Revision = revision
+                    Revision = revision,
+                    RepositoryObject = node
                 });
             }
 
-            return nodeList;
+            return nodes;
+        }
+
+        public override IEnumerable<RepositoryNode> ListNodeTree(RepositoryNode rootNode)
+        {
+            try {
+                var nodes = new List<RepositoryNode>();
+                var tree = ((rootNode.RepositoryObject as TreeEntry).Target as Tree);
+                foreach (var node in tree)
+                {
+                    var nodeType = NodeType.Unknown;
+                    switch (node.TargetType)
+                    {
+                        case TreeEntryTargetType.Tree:
+                            nodeType = NodeType.Directory;
+                            break;
+                        case TreeEntryTargetType.Blob:
+                            nodeType = NodeType.File;
+                            break;
+                    }
+
+                    nodes.Add(new RepositoryNode
+                    {
+                        Name = node.Name,
+                        Path = node.Path,
+                        Type = nodeType,
+                        Revision = rootNode.Revision,
+                        RepositoryObject = node
+                    });
+                }
+
+                return nodes;
+            }
+            catch (InvalidCastException)
+            {
+                throw new ArgumentException("This node object is not from a Git repository.");
+            }
         }
 
         public override Stream GetNodeContent(RepositoryNode node)

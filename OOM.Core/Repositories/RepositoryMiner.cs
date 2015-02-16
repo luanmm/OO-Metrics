@@ -46,9 +46,22 @@ namespace OOM.Core.Repositories
                 });
                 _db.SaveChanges();
 
-                var nodes = _repository.ListRevisionNodes(revision.RID);
-                foreach (var node in nodes)
-                    SaveNodeMetrics(r.Id, node);
+                var nodes = new List<RepositoryNode>(_repository.ListRevisionTree(revision.RID));
+                RecursiveMineNodes(r.Id, nodes);
+            }
+        }
+
+        private void RecursiveMineNodes(int revisionId, List<RepositoryNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Type == NodeType.Directory)
+                {
+                    var nodeTree = new List<RepositoryNode>(_repository.ListNodeTree(node));
+                    RecursiveMineNodes(revisionId, nodeTree);
+                }
+                else if (node.Type == NodeType.File)
+                    SaveNodeMetrics(revisionId, node);
             }
         }
 
