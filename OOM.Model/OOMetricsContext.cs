@@ -8,22 +8,16 @@ namespace OOM.Model
     public partial class OOMetricsContext : DbContext
     {
         public OOMetricsContext()
-            : this(OOMetricsDBAccessType.FullAccess)
+            : this("name=OOMDB")
         {
 
-        }
-
-        public OOMetricsContext(OOMetricsDBAccessType accessType)
-            : base(accessType == OOMetricsDBAccessType.FullAccess ? "name=OOMDBFullAccess" : "name=OOMDBReadOnly")
-        {
-            if (!Enum.IsDefined(typeof(OOMetricsDBAccessType), accessType))
-                throw new ArgumentOutOfRangeException("accessType", "The informed access type is invalid in this context.");
         }
 
         public OOMetricsContext(string connectionString)
             : base(connectionString)
         {
-            Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
+            //Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
+            Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
         }
 
         public virtual DbSet<Project> Projects { get; set; }
@@ -35,6 +29,8 @@ namespace OOM.Model
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema("OOM");
+
             modelBuilder.Entity<Project>()
                 .HasMany(e => e.Revisions)
                 .WithRequired(e => e.Project)
@@ -59,12 +55,16 @@ namespace OOM.Model
                 .HasMany(e => e.Methods)
                 .WithRequired(e => e.Class)
                 .WillCascadeOnDelete(false);
-        }
-    }
 
-    public enum OOMetricsDBAccessType
-    {
-        FullAccess,
-        ReadOnly
+            modelBuilder.Entity<Method>()
+                .HasMany(e => e.ReferencedAttributes)
+                .WithMany(e => e.ReferencingMethods)
+                .Map(m =>
+                {
+                    m.MapLeftKey("MethodId");
+                    m.MapRightKey("AttributeId");
+                    m.ToTable("MethodAttribute");
+                });
+        }
     }
 }

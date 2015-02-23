@@ -48,7 +48,8 @@ namespace OOM.Core.Analyzers.CSharp
                         analyzedMethods.Add(new AnalyzedMethod
                         {
                             Identifier = m.Identifier.ToString(),
-                            LineCount = m.DescendantNodes().OfType<StatementSyntax>().ToList().Count
+                            LineCount = m.Body.Statements.Count,
+                            //Attributes = m.DescendantNodes().OfType<MemberAccessExpressionSyntax>().Select(x => new AnalyzedAttribute { Identifier = x.GetText().ToString() }).ToList()
                         });
                     }
 

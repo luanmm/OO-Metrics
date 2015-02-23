@@ -8,7 +8,7 @@ namespace OOM.Model.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.Attribute",
+                "OOM.Attribute",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -18,11 +18,11 @@ namespace OOM.Model.Migrations
                         Identifier = c.String(nullable: false, maxLength: 250),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Class", t => t.ClassId)
+                .ForeignKey("OOM.Class", t => t.ClassId)
                 .Index(t => t.ClassId);
             
             CreateTable(
-                "dbo.Class",
+                "OOM.Class",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -32,11 +32,11 @@ namespace OOM.Model.Migrations
                         Identifier = c.String(nullable: false, maxLength: 250),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Namespace", t => t.NamespaceId)
+                .ForeignKey("OOM.Namespace", t => t.NamespaceId)
                 .Index(t => t.NamespaceId);
             
             CreateTable(
-                "dbo.Method",
+                "OOM.Method",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -49,11 +49,11 @@ namespace OOM.Model.Migrations
                         LineCount = c.Int(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Class", t => t.ClassId)
+                .ForeignKey("OOM.Class", t => t.ClassId)
                 .Index(t => t.ClassId);
             
             CreateTable(
-                "dbo.Namespace",
+                "OOM.Namespace",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -61,11 +61,11 @@ namespace OOM.Model.Migrations
                         Identifier = c.String(nullable: false, maxLength: 250),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Revision", t => t.RevisionId)
+                .ForeignKey("OOM.Revision", t => t.RevisionId)
                 .Index(t => t.RevisionId);
             
             CreateTable(
-                "dbo.Revision",
+                "OOM.Revision",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -76,11 +76,11 @@ namespace OOM.Model.Migrations
                         CreatedAt = c.DateTime(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Project", t => t.ProjectId, cascadeDelete: true)
+                .ForeignKey("OOM.Project", t => t.ProjectId, cascadeDelete: true)
                 .Index(t => t.ProjectId);
             
             CreateTable(
-                "dbo.Project",
+                "OOM.Project",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -92,26 +92,44 @@ namespace OOM.Model.Migrations
                     })
                 .PrimaryKey(t => t.Id);
             
+            CreateTable(
+                "OOM.MethodAttribute",
+                c => new
+                    {
+                        MethodId = c.Int(nullable: false),
+                        AttributeId = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => new { t.MethodId, t.AttributeId })
+                .ForeignKey("OOM.Method", t => t.MethodId, cascadeDelete: true)
+                .ForeignKey("OOM.Attribute", t => t.AttributeId, cascadeDelete: true)
+                .Index(t => t.MethodId)
+                .Index(t => t.AttributeId);
+            
         }
         
         public override void Down()
         {
-            DropForeignKey("dbo.Revision", "ProjectId", "dbo.Project");
-            DropForeignKey("dbo.Namespace", "RevisionId", "dbo.Revision");
-            DropForeignKey("dbo.Class", "NamespaceId", "dbo.Namespace");
-            DropForeignKey("dbo.Method", "ClassId", "dbo.Class");
-            DropForeignKey("dbo.Attribute", "ClassId", "dbo.Class");
-            DropIndex("dbo.Revision", new[] { "ProjectId" });
-            DropIndex("dbo.Namespace", new[] { "RevisionId" });
-            DropIndex("dbo.Method", new[] { "ClassId" });
-            DropIndex("dbo.Class", new[] { "NamespaceId" });
-            DropIndex("dbo.Attribute", new[] { "ClassId" });
-            DropTable("dbo.Project");
-            DropTable("dbo.Revision");
-            DropTable("dbo.Namespace");
-            DropTable("dbo.Method");
-            DropTable("dbo.Class");
-            DropTable("dbo.Attribute");
+            DropForeignKey("OOM.Revision", "ProjectId", "OOM.Project");
+            DropForeignKey("OOM.Namespace", "RevisionId", "OOM.Revision");
+            DropForeignKey("OOM.Class", "NamespaceId", "OOM.Namespace");
+            DropForeignKey("OOM.Method", "ClassId", "OOM.Class");
+            DropForeignKey("OOM.MethodAttribute", "AttributeId", "OOM.Attribute");
+            DropForeignKey("OOM.MethodAttribute", "MethodId", "OOM.Method");
+            DropForeignKey("OOM.Attribute", "ClassId", "OOM.Class");
+            DropIndex("OOM.MethodAttribute", new[] { "AttributeId" });
+            DropIndex("OOM.MethodAttribute", new[] { "MethodId" });
+            DropIndex("OOM.Revision", new[] { "ProjectId" });
+            DropIndex("OOM.Namespace", new[] { "RevisionId" });
+            DropIndex("OOM.Method", new[] { "ClassId" });
+            DropIndex("OOM.Class", new[] { "NamespaceId" });
+            DropIndex("OOM.Attribute", new[] { "ClassId" });
+            DropTable("OOM.MethodAttribute");
+            DropTable("OOM.Project");
+            DropTable("OOM.Revision");
+            DropTable("OOM.Namespace");
+            DropTable("OOM.Method");
+            DropTable("OOM.Class");
+            DropTable("OOM.Attribute");
         }
     }
 }

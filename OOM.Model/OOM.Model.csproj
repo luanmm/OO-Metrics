@@ -59,9 +59,9 @@
     <Compile Include="Entities\Namespace.cs" />
     <Compile Include="Enums\RepositoryProtocol.cs" />
     <Compile Include="Interfaces\IEntity.cs" />
-    <Compile Include="Migrations\201502092231030_InitialCreate.cs" />
-    <Compile Include="Migrations\201502092231030_InitialCreate.Designer.cs">
-      <DependentUpon>201502092231030_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201502230335529_InitialCreate.cs" />
+    <Compile Include="Migrations\201502230335529_InitialCreate.Designer.cs">
+      <DependentUpon>201502230335529_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OOMetricsContext.cs" />
@@ -74,8 +74,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201502092231030_InitialCreate.resx">
-      <DependentUpon>201502092231030_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201502230335529_InitialCreate.resx">
+      <DependentUpon>201502230335529_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -56,5 +56,7 @@ namespace OOM.Core.Analyzers
         public ElementDefinitionType DefinitionType { get; set; }
 
         public int LineCount { get; set; }
+
+        public IEnumerable<AnalyzedAttribute> Attributes { get; set; }
     }
 }

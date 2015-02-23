@@ -192,7 +192,7 @@ namespace OOM.Web.Controllers
             var revisionNodeIndex = nodes.Count;
             nodes.Add(new
             {
-                name = String.Format("{0}: {1}", revision.RID, revision.Message),
+                name = String.Format("[{0} @ {1:dd/MM/yy HH:mm:ss}] {2}", revision.Author, revision.CreatedAt, revision.Message),
                 group = 1
             });
 

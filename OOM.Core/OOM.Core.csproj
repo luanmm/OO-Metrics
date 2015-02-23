@@ -78,6 +78,9 @@
     <Reference Include="Microsoft.CodeAnalysis.Workspaces.Desktop">
       <HintPath>..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.Workspaces.Desktop.dll</HintPath>
     </Reference>
+    <Reference Include="NCalc">
+      <HintPath>..\packages\ncalc.1.3.8\lib\NCalc.dll</HintPath>
+    </Reference>
     <Reference Include="SharpSvn">
       <HintPath>..\packages\SharpSvn.1.9-x86.1.8991.3459.132\lib\net40\SharpSvn.dll</HintPath>
       <Private>True</Private>
@@ -92,6 +95,7 @@
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Reflection.Metadata">
       <HintPath>..\packages\System.Reflection.Metadata.1.0.17-beta\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
     </Reference>
@@ -108,6 +112,7 @@
     <Compile Include="Analyzers\CodeAnalyzerFactory.cs" />
     <Compile Include="Analyzers\CSharp\CSharpCodeAnalyzer.cs" />
     <Compile Include="Analyzers\Java\JavaCodeAnalyzer.cs" />
+    <Compile Include="Math\ExpressionEvaluator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\Protocols\SubversionRepository.cs" />
     <Compile Include="Repositories\Protocols\MercurialRepository.cs" />
@@ -142,6 +147,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

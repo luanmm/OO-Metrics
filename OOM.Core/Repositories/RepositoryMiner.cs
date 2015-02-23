@@ -41,31 +41,32 @@ namespace OOM.Core.Repositories
                     RID = revision.RID,
                     Message = revision.Message,
                     Author = revision.Author,
-                    CreatedAt = revision.CreatedAt,
-                    ProjectId = _project.Id
+                    CreatedAt = revision.CreatedAt
                 });
-                _db.SaveChanges();
 
                 var nodes = new List<RepositoryNode>(_repository.ListRevisionTree(revision.RID));
-                RecursiveMineNodes(r.Id, nodes);
+                RecursiveMineNodes(r, nodes);
+
+                _project.Revisions.Add(r);
+                _db.SaveChanges();
             }
         }
 
-        private void RecursiveMineNodes(int revisionId, List<RepositoryNode> nodes)
+        private void RecursiveMineNodes(Revision r, List<RepositoryNode> nodes)
         {
             foreach (var node in nodes)
             {
                 if (node.Type == NodeType.Directory)
                 {
                     var nodeTree = new List<RepositoryNode>(_repository.ListNodeTree(node));
-                    RecursiveMineNodes(revisionId, nodeTree);
+                    RecursiveMineNodes(r, nodeTree);
                 }
                 else if (node.Type == NodeType.File)
-                    SaveNodeMetrics(revisionId, node);
+                    SaveNodeMetrics(r, node);
             }
         }
 
-        private void SaveNodeMetrics(int revisionId, RepositoryNode node)
+        private void SaveNodeMetrics(Revision r, RepositoryNode node)
         {
             var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Name);
             if (analyzer != null)
@@ -76,69 +77,66 @@ namespace OOM.Core.Repositories
                     var analyzedCode = analyzer.Analyze(tr.ReadToEnd());
                     foreach (var analizedNamespace in analyzedCode.Namespaces)
                     {
-                        var ns = _db.Namespaces.FirstOrDefault(x => x.Revision.Id == revisionId && x.Identifier == analizedNamespace.Identifier);
+                        var ns = r.Namespaces.FirstOrDefault(x => x.Identifier == analizedNamespace.Identifier);
                         if (ns == null)
-                        { 
+                        {
                             ns = _db.Namespaces.Add(new Namespace
                             {
-                                Identifier = analizedNamespace.Identifier,
-                                RevisionId = revisionId
+                                Identifier = analizedNamespace.Identifier
                             });
-                            _db.SaveChanges();
+                            r.Namespaces.Add(ns);
                         }
 
                         foreach (var analyzedClass in analizedNamespace.Classes)
-                            SaveClassInformation(ns.Id, analyzedClass);
+                            SaveClassInformation(ns, analyzedClass);
                     }
                 }
             }
         }
 
-        private void SaveClassInformation(int namespaceId, AnalyzedClass analyzedClass)
+        private void SaveClassInformation(Namespace ns, AnalyzedClass analyzedClass)
         {
-            var c = _db.Classes.FirstOrDefault(x => x.Namespace.Id == namespaceId && x.Identifier == analyzedClass.Identifier);
+            var c = ns.Classes.FirstOrDefault(x => x.Identifier == analyzedClass.Identifier);
             if (c == null)
-            { 
+            {
                 c = _db.Classes.Add(new Class
                 {
                     Identifier = analyzedClass.Identifier,
                     Abstractness = analyzedClass.Abstractness,
-                    Visibility = analyzedClass.Visibility,
+                    Visibility = analyzedClass.Visibility
                     // TODO: Base class
-                    NamespaceId = namespaceId
                 });
-                _db.SaveChanges();
+                ns.Classes.Add(c);
             }
 
             foreach (var analyzedAttribute in analyzedClass.Attributes)
-                SaveAttributeInformation(c.Id, analyzedAttribute);
+                SaveAttributeInformation(c, analyzedAttribute);
 
             foreach (var analyzedMethod in analyzedClass.Methods)
-                SaveMethodInformation(c.Id, analyzedMethod);
+                SaveMethodInformation(c, analyzedMethod);
         }
 
-        private void SaveAttributeInformation(int classId, AnalyzedAttribute analyzedAttribute)
+        private void SaveAttributeInformation(Class c, AnalyzedAttribute analyzedAttribute)
         {
-            var a = _db.Attributes.FirstOrDefault(x => x.Class.Id == classId && x.Identifier == analyzedAttribute.Identifier);
+            var a = c.Attributes.FirstOrDefault(x => x.Identifier == analyzedAttribute.Identifier);
             if (a == null)
             {
-                _db.Attributes.Add(new OOM.Model.Attribute
+                c.Attributes.Add(new OOM.Model.Attribute
                 {
                     Identifier = analyzedAttribute.Identifier,
                     Visibility = analyzedAttribute.Visibility,
                     Scope = analyzedAttribute.Scope,
-                    ClassId = classId
+                    ReferencingMethods = null
                 });
-                _db.SaveChanges();
             }
         }
 
-        private void SaveMethodInformation(int classId, AnalyzedMethod analyzedMethod)
+        private void SaveMethodInformation(Class c, AnalyzedMethod analyzedMethod)
         {
-            var m = _db.Methods.FirstOrDefault(x => x.Class.Id == classId && x.Identifier == analyzedMethod.Identifier);
+            var m = c.Methods.FirstOrDefault(x => x.Identifier == analyzedMethod.Identifier);
             if (m == null)
             {
-                _db.Methods.Add(new Method
+                c.Methods.Add(new Method
                 {
                     Identifier = analyzedMethod.Identifier,
                     Abstractness = analyzedMethod.Abstractness,
@@ -146,9 +144,8 @@ namespace OOM.Core.Repositories
                     Scope = analyzedMethod.Scope,
                     DefinitionType = analyzedMethod.DefinitionType,
                     LineCount = analyzedMethod.LineCount,
-                    ClassId = classId
+                    ReferencedAttributes = null
                 });
-                _db.SaveChanges();
             }
         }
 

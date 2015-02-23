@@ -19,6 +19,8 @@ namespace OOM.Model
 
         public int NamespaceId { get; set; }
 
+        //public int BaseClassId { get; set; }
+
         public ElementAbstractness Abstractness { get; set; }
 
         public ElementVisibility Visibility { get; set; }
@@ -32,5 +34,7 @@ namespace OOM.Model
         public virtual ICollection<Method> Methods { get; set; }
 
         public virtual Namespace Namespace { get; set; }
+
+        //public virtual Class BaseClass { get; set; }
     }
 }

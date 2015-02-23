@@ -9,6 +9,11 @@ namespace OOM.Model
     [Table("Method")]
     public partial class Method : IEntity<int>
     {
+        public Method()
+        {
+            ReferencedAttributes = new HashSet<Attribute>();
+        }
+
         public int Id { get; set; }
 
         public int ClassId { get; set; }
@@ -31,6 +36,8 @@ namespace OOM.Model
 
         [Required]
         public int LineCount { get; set; }
+
+        public virtual ICollection<Attribute> ReferencedAttributes { get; set; }
 
         public virtual Class Class { get; set; }
     }
