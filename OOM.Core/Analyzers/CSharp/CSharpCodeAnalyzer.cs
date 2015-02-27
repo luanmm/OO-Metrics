@@ -12,6 +12,20 @@ namespace OOM.Core.Analyzers.CSharp
 {
     public class CSharpCodeAnalyzer : CodeAnalyzer
     {
+        private MetadataReference mscorlib;
+        private MetadataReference Mscorlib
+        {
+            get
+            {
+                if (mscorlib == null)
+                {
+                    mscorlib = MetadataReference.CreateFromAssembly(typeof(object).Assembly);
+                }
+
+                return mscorlib;
+            }
+        }
+
         public CSharpCodeAnalyzer(CodeAnalyzerConfiguration configuration)
             : base(configuration)
         {
@@ -22,6 +36,10 @@ namespace OOM.Core.Analyzers.CSharp
         {
             var tree = CSharpSyntaxTree.ParseText(code);
             var root = (CompilationUnitSyntax)tree.GetRoot();
+
+            var compilation = CSharpCompilation.Create("AnalysisCompilation",
+                syntaxTrees: new[] { tree }, references: new[] { Mscorlib });
+            var model = compilation.GetSemanticModel(tree);
 
             var analyzedNamespaces = new List<AnalyzedNamespace>();
             var namespaces = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>();
@@ -37,7 +55,7 @@ namespace OOM.Core.Analyzers.CSharp
                     {
                         analyzedAttributes.Add(new AnalyzedAttribute
                         {
-                            Identifier = a.Identifier.ToString()
+                            Identifier = a.Identifier.ValueText
                         });
                     }
 
@@ -45,17 +63,53 @@ namespace OOM.Core.Analyzers.CSharp
                     var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
                     foreach (var m in methods)
                     {
-                        analyzedMethods.Add(new AnalyzedMethod
+                        var ms = (IMethodSymbol)model.GetDeclaredSymbol(m);
+
+                        var methodDefinitionType = ElementDefinitionType.Defines;
+                        if (ms.IsOverride)
+                            methodDefinitionType = ElementDefinitionType.Overrides;
+                        else if (ms.IsExtensionMethod)
+                            methodDefinitionType = ElementDefinitionType.Extends;
+
+                        var methodVisibility = ElementVisibility.Private;
+                        if (ms.DeclaredAccessibility == Accessibility.Public)
+                            methodVisibility = ElementVisibility.Public;
+                        else if (ms.DeclaredAccessibility == Accessibility.Protected)
+                            methodVisibility = ElementVisibility.Protected;
+
+                        var analyzedMethod = new AnalyzedMethod
                         {
-                            Identifier = m.Identifier.ToString(),
+                            Identifier = m.Identifier.ValueText,
+                            Scope = ms.IsStatic ? ElementScope.Class : ElementScope.Instance,
+                            Abstractness = ms.IsAbstract ? ElementAbstractness.Abstract : ElementAbstractness.Concrete,
+                            DefinitionType = methodDefinitionType, 
+                            Visibility = methodVisibility,
                             LineCount = m.Body.Statements.Count,
-                            //Attributes = m.DescendantNodes().OfType<MemberAccessExpressionSyntax>().Select(x => new AnalyzedAttribute { Identifier = x.GetText().ToString() }).ToList()
-                        });
+                            Attributes = new List<AnalyzedAttribute>()
+                        };
+
+                        /*
+                        var referencedMethods = m.Body.ChildNodes().OfType<ExpressionStatementSyntax>();
+                        foreach (var referencedMethod in referencedMethods)
+                        {
+                            var symbolInfo = SemanticModel.GetSymbolInfo(referencedMethod);
+                            string ns = symbolInfo.Symbol. //.ContainingNamespace.ToDisplayString();
+
+                            analyzedMethod.Attributes.Add(new AnalyzedAttribute
+                            {
+                                Identifier = referencedMethod.
+                            });
+                        }
+                        */
+                        analyzedMethods.Add(analyzedMethod);
+
+                        var x = m.SyntaxTree.Length;
+                        //m.Body.ChildNodes().OfType<ExpressionStatementSyntax>()
                     }
 
                     analyzedClasses.Add(new AnalyzedClass
                     { 
-                        Identifier = c.Identifier.ToString(),
+                        Identifier = c.Identifier.ValueText,
                         Attributes = analyzedAttributes,
                         Methods = analyzedMethods
                     });
