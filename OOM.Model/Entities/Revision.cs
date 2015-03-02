@@ -14,12 +14,12 @@ namespace OOM.Model
             Namespaces = new HashSet<Namespace>();
         }
 
+        [Key]
         public int Id { get; set; }
 
         public int ProjectId { get; set; }
 
-        [Required]
-        [StringLength(50)]
+        [Required, MaxLength(50)]
         public string RID { get; set; }
 
         [StringLength(500)]
@@ -28,6 +28,7 @@ namespace OOM.Model
         [StringLength(250)]
         public string Author { get; set; }
 
+        [Display(Name = "Created at"), DisplayFormat(DataFormatString = "dd/MM/yyyy HH:mm:ss")]
         public DateTime CreatedAt { get; set; }
 
         public virtual ICollection<Namespace> Namespaces { get; set; }

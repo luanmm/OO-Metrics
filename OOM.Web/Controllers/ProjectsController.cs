@@ -201,7 +201,7 @@ namespace OOM.Web.Controllers
                 var namespaceNodeIndex = nodes.Count;
                 nodes.Add(new
                 {
-                    name = ns.Identifier,
+                    name = ns.Name,
                     group = 2
                 });
                 links.Add(new
@@ -215,7 +215,7 @@ namespace OOM.Web.Controllers
                     var classNodeIndex = nodes.Count;
                     nodes.Add(new
                     {
-                        name = c.Identifier,
+                        name = c.Name,
                         group = 3
                     });
                     links.Add(new
@@ -224,18 +224,18 @@ namespace OOM.Web.Controllers
                         target = classNodeIndex
                     });
 
-                    foreach (var a in c.Attributes)
+                    foreach (var f in c.Fields)
                     {
-                        var attributeNodeIndex = nodes.Count;
+                        var fieldNodeIndex = nodes.Count;
                         nodes.Add(new
                         {
-                            name = a.Identifier,
+                            name = f.Name,
                             group = 4
                         });
                         links.Add(new
                         {
                             source = classNodeIndex,
-                            target = attributeNodeIndex
+                            target = fieldNodeIndex
                         });
                     }
 
@@ -244,7 +244,7 @@ namespace OOM.Web.Controllers
                         var methodNodeIndex = nodes.Count;
                         nodes.Add(new
                         {
-                            name = m.Identifier,
+                            name = m.Name,
                             group = 5
                         });
                         links.Add(new

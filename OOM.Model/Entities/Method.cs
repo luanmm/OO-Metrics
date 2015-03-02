@@ -11,33 +11,36 @@ namespace OOM.Model
     {
         public Method()
         {
-            ReferencedAttributes = new HashSet<Attribute>();
+            ReferencedFields = new HashSet<Field>();
+            InvokedMethods = new HashSet<Method>();
         }
 
+        [Key]
         public int Id { get; set; }
 
         public int ClassId { get; set; }
 
-        [Required]
-        public ElementAbstractness Abstractness { get; set; }
+        [Required, MaxLength(250)]
+        public string Name { get; set; }
+
+        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        public string FullyQualifiedIdentifier { get; set; }
 
         [Required]
-        public ElementVisibility Visibility { get; set; }
+        public EncapsulationTypes Encapsulation { get; set; }
 
         [Required]
-        public ElementScope Scope { get; set; }
+        public QualificationTypes Qualification { get; set; }
 
-        [Required]
-        public ElementDefinitionType DefinitionType { get; set; }
-
-        [Required]
-        [StringLength(250)]
-        public string Identifier { get; set; }
-
-        [Required]
+        [Display(Name = "Line count"), Required, Range(0, Int32.MaxValue)]
         public int LineCount { get; set; }
 
-        public virtual ICollection<Attribute> ReferencedAttributes { get; set; }
+        [Display(Name = "Exit points"), Required, Range(0, Int32.MaxValue)]
+        public int ExitPoints { get; set; }
+
+        public virtual ICollection<Field> ReferencedFields { get; set; }
+
+        public virtual ICollection<Method> InvokedMethods { get; set; }
 
         public virtual Class Class { get; set; }
     }

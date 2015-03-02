@@ -11,30 +11,38 @@ namespace OOM.Model
     {
         public Class()
         {
-            Attributes = new HashSet<Attribute>();
+            Fields = new HashSet<Field>();
             Methods = new HashSet<Method>();
+            ChildClasses = new HashSet<Class>();
         }
 
+        [Key]
         public int Id { get; set; }
 
         public int NamespaceId { get; set; }
 
-        //public int BaseClassId { get; set; }
+        public int? BaseClassId { get; set; }
 
-        public ElementAbstractness Abstractness { get; set; }
+        [Required, MaxLength(250)]
+        public string Name { get; set; }
 
-        public ElementVisibility Visibility { get; set; }
+        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        public string FullyQualifiedIdentifier { get; set; }
 
         [Required]
-        [StringLength(250)]
-        public string Identifier { get; set; }
+        public EncapsulationTypes Encapsulation { get; set; }
 
-        public virtual ICollection<Attribute> Attributes { get; set; }
+        [Required]
+        public QualificationTypes Qualification { get; set; }
+
+        public virtual ICollection<Field> Fields { get; set; }
 
         public virtual ICollection<Method> Methods { get; set; }
 
+        public virtual ICollection<Class> ChildClasses { get; set; }
+
         public virtual Namespace Namespace { get; set; }
 
-        //public virtual Class BaseClass { get; set; }
+        public virtual Class BaseClass { get; set; }
     }
 }

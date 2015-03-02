@@ -13,7 +13,7 @@ namespace OOM.Model.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201502230335529_InitialCreate"; }
+            get { return "201503020107128_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

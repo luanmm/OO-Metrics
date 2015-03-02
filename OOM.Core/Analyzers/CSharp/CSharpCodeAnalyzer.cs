@@ -1,9 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
+using Microsoft.CodeAnalysis.MSBuild;
 using OOM.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,120 +15,143 @@ namespace OOM.Core.Analyzers.CSharp
 {
     public class CSharpCodeAnalyzer : CodeAnalyzer
     {
-        private MetadataReference mscorlib;
-        private MetadataReference Mscorlib
-        {
-            get
-            {
-                if (mscorlib == null)
-                {
-                    mscorlib = MetadataReference.CreateFromAssembly(typeof(object).Assembly);
-                }
-
-                return mscorlib;
-            }
-        }
-
         public CSharpCodeAnalyzer(CodeAnalyzerConfiguration configuration)
             : base(configuration)
         {
 
         }
 
-        public override AnalyzedCode Analyze(string code)
+        public override IEnumerable<Namespace> Analyze(string mainFile)
         {
-            var tree = CSharpSyntaxTree.ParseText(code);
-            var root = (CompilationUnitSyntax)tree.GetRoot();
-
-            var compilation = CSharpCompilation.Create("AnalysisCompilation",
-                syntaxTrees: new[] { tree }, references: new[] { Mscorlib });
-            var model = compilation.GetSemanticModel(tree);
-
-            var analyzedNamespaces = new List<AnalyzedNamespace>();
-            var namespaces = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>();
-            foreach (var n in namespaces)
+            var analyzedNamespaces = new List<Namespace>();
+            var workspace = MSBuildWorkspace.Create();
+            var solution = workspace.OpenSolutionAsync(mainFile).Result;
+            foreach (var project in solution.Projects)
             {
-                var analyzedClasses = new List<AnalyzedClass>();
-                var classes = n.DescendantNodes().OfType<ClassDeclarationSyntax>();
-                foreach (var c in classes)
+                if (!project.SupportsCompilation)
+                    continue;
+
+                var compilation = project.GetCompilationAsync().Result;
+                if (!compilation.Language.Equals(LanguageNames.CSharp))
+                    continue;
+                
+                foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
-                    var analyzedAttributes = new List<AnalyzedAttribute>();
-                    var attributes = c.DescendantNodes().OfType<PropertyDeclarationSyntax>();
-                    foreach (var a in attributes)
+                    if (!syntaxTree.HasCompilationUnitRoot)
+                        continue;
+
+                    var model = compilation.GetSemanticModel(syntaxTree);
+
+                    var namespaces = syntaxTree.GetRoot().DescendantNodes().OfType<NamespaceDeclarationSyntax>();
+                    foreach (var n in namespaces)
                     {
-                        analyzedAttributes.Add(new AnalyzedAttribute
+                        var ns = (INamespaceSymbol)model.GetDeclaredSymbol(n);
+                        if (ns == null)
+                            continue;
+
+                        var analyzedClasses = new List<Class>();
+                        var classes = n.DescendantNodes().OfType<ClassDeclarationSyntax>();
+                        foreach (var c in classes)
                         {
-                            Identifier = a.Identifier.ValueText
-                        });
-                    }
+                            var cs = (ISymbol)model.GetDeclaredSymbol(c);
+                            if (cs == null)
+                                continue;
 
-                    var analyzedMethods = new List<AnalyzedMethod>();
-                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
-                    foreach (var m in methods)
-                    {
-                        var ms = (IMethodSymbol)model.GetDeclaredSymbol(m);
-
-                        var methodDefinitionType = ElementDefinitionType.Defines;
-                        if (ms.IsOverride)
-                            methodDefinitionType = ElementDefinitionType.Overrides;
-                        else if (ms.IsExtensionMethod)
-                            methodDefinitionType = ElementDefinitionType.Extends;
-
-                        var methodVisibility = ElementVisibility.Private;
-                        if (ms.DeclaredAccessibility == Accessibility.Public)
-                            methodVisibility = ElementVisibility.Public;
-                        else if (ms.DeclaredAccessibility == Accessibility.Protected)
-                            methodVisibility = ElementVisibility.Protected;
-
-                        var analyzedMethod = new AnalyzedMethod
-                        {
-                            Identifier = m.Identifier.ValueText,
-                            Scope = ms.IsStatic ? ElementScope.Class : ElementScope.Instance,
-                            Abstractness = ms.IsAbstract ? ElementAbstractness.Abstract : ElementAbstractness.Concrete,
-                            DefinitionType = methodDefinitionType, 
-                            Visibility = methodVisibility,
-                            LineCount = m.Body.Statements.Count,
-                            Attributes = new List<AnalyzedAttribute>()
-                        };
-
-                        /*
-                        var referencedMethods = m.Body.ChildNodes().OfType<ExpressionStatementSyntax>();
-                        foreach (var referencedMethod in referencedMethods)
-                        {
-                            var symbolInfo = SemanticModel.GetSymbolInfo(referencedMethod);
-                            string ns = symbolInfo.Symbol. //.ContainingNamespace.ToDisplayString();
-
-                            analyzedMethod.Attributes.Add(new AnalyzedAttribute
+                            var analyzedFields = new List<Field>();
+                            var fields = c.DescendantNodes().OfType<FieldDeclarationSyntax>();
+                            foreach (var f in fields)
                             {
-                                Identifier = referencedMethod.
+                                var fs = (IFieldSymbol)model.GetDeclaredSymbol(f);
+                                if (fs == null)
+                                    continue;
+
+                                analyzedFields.Add(new Field
+                                {
+                                    Name = fs.Name,
+                                    FullyQualifiedIdentifier = fs.ToDisplayString(),
+                                });
+                            }
+
+                            var analyzedMethods = new List<Method>();
+                            var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                            foreach (var m in methods)
+                            {
+                                var ms = (IMethodSymbol)model.GetDeclaredSymbol(m);
+                                if (ms == null)
+                                    continue;
+
+                                var mr = m.ChildNodes().OfType<ExpressionSyntax>();
+                                foreach (var mref in mr)
+                                {
+                                    Console.WriteLine(mref.ToString());
+                                }
+
+                                /*
+                                var referencedFields = new List<Field>();
+                                var methodBody = m.Body;
+                                if (methodBody != null)
+                                {
+                                    var accessVarsDecl = from aAccessVarsDecl in methodBody.ChildNodes().OfType<LocalDeclarationStatementSyntax>() select aAccessVarsDecl;
+                                    foreach (var ldss in accessVarsDecl)
+                                    {
+                                        referencedFields.Add(new Field
+                                        {
+                                            Name = ldss.
+                                        });
+
+                                        Method tempMethod = TransverseAccessVars(ldss);
+                                        retMethod.AccessedVariables.AddRange(tempMethod.AccessedVariables);
+                                        retMethod.InvokedMethods.AddRange(tempMethod.InvokedMethods);
+                                    }
+                                }
+                                */
+
+                                var analyzedMethod = new Method
+                                {
+                                    Name = ms.Name,
+                                    FullyQualifiedIdentifier = ms.ToDisplayString(),
+                                    LineCount = m.Body.Statements.Count,
+                                    ExitPoints = 0,
+                                    ReferencedFields = new List<Field>()
+                                };
+
+                                /*
+                                var referencedMethods = m.Body.ChildNodes().OfType<ExpressionStatementSyntax>();
+                                foreach (var referencedMethod in referencedMethods)
+                                {
+                                    var symbolInfo = SemanticModel.GetSymbolInfo(referencedMethod);
+                                    string ns = symbolInfo.Symbol. //.ContainingNamespace.ToDisplayString();
+
+                                    analyzedMethod.Attributes.Add(new Attribute
+                                    {
+                                        Identifier = referencedMethod.
+                                    });
+                                }
+                                */
+
+                                analyzedMethods.Add(analyzedMethod);
+                            }
+
+                            analyzedClasses.Add(new Class
+                            {
+                                Name = cs.Name,
+                                FullyQualifiedIdentifier = cs.ToDisplayString(),
+                                Methods = analyzedMethods,
+                                Fields = analyzedFields
                             });
                         }
-                        */
-                        analyzedMethods.Add(analyzedMethod);
 
-                        var x = m.SyntaxTree.Length;
-                        //m.Body.ChildNodes().OfType<ExpressionStatementSyntax>()
+                        analyzedNamespaces.Add(new Namespace
+                        {
+                            Name = ns.Name,
+                            FullyQualifiedIdentifier = ns.ToDisplayString(),
+                            Classes = analyzedClasses
+                        });
                     }
-
-                    analyzedClasses.Add(new AnalyzedClass
-                    { 
-                        Identifier = c.Identifier.ValueText,
-                        Attributes = analyzedAttributes,
-                        Methods = analyzedMethods
-                    });
                 }
-
-                analyzedNamespaces.Add(new AnalyzedNamespace
-                {
-                    Identifier = n.Name.ToString(), 
-                    Classes = analyzedClasses
-                });
             }
 
-            return new AnalyzedCode
-            { 
-                Namespaces = analyzedNamespaces
-            };
+            return analyzedNamespaces;
         }
     }
 }

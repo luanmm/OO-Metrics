@@ -302,7 +302,6 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\Projects\Index.cshtml" />
-    <Content Include="Views\Metrics\Index.cshtml" />
     <Content Include="Views\Projects\Create.cshtml" />
     <Content Include="Views\Projects\Delete.cshtml" />
     <Content Include="Views\Projects\Details.cshtml" />
@@ -334,6 +333,11 @@
     <Content Include="Scripts\jquery.qtip.min.js.map">
       <DependentUpon>jquery.qtip.min.js</DependentUpon>
     </Content>
+    <Content Include="Views\Metrics\Index.cshtml" />
+    <Content Include="Views\Metrics\Create.cshtml" />
+    <Content Include="Views\Metrics\Delete.cshtml" />
+    <Content Include="Views\Metrics\Details.cshtml" />
+    <Content Include="Views\Metrics\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

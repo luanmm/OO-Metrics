@@ -71,19 +71,19 @@ namespace OOM.Tests
             Assert.AreEqual(2M, e12.Evaluate("avg(1, 2, 3)"));
         }
 
-        /*
         [TestMethod]
         public void TestRealGitRepository()
         {
             using (var db = new OOMetricsContext())
             {
-                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oo-metrics.git";
+                //var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oo-metrics.git";
+                var repositoryUri = "https://luanmm@bitbucket.org/idealizers/raf.git";
                 var project = db.Projects.FirstOrDefault(x => x.URI.Equals(repositoryUri, StringComparison.InvariantCultureIgnoreCase));
                 if (project == null)
                 {
                     project = db.Projects.Add(new Project
                     {
-                        Name = "OO-Metrics",
+                        Name = "RaF", // OO-Metrics
                         URI = repositoryUri,
                         RepositoryProtocol = RepositoryProtocol.Git,
                         User = "luanmm",
@@ -96,8 +96,8 @@ namespace OOM.Tests
                 miner.StartMining();
             }
         }
-        */
 
+        /*
         [TestMethod]
         public void TestGitRepository()
         {
@@ -123,7 +123,6 @@ namespace OOM.Tests
             }
         }
 
-        /*
         [TestMethod]
         public void TestMercurialRepository()
         {

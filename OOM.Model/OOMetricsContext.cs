@@ -24,46 +24,58 @@ namespace OOM.Model
         public virtual DbSet<Revision> Revisions { get; set; }
         public virtual DbSet<Namespace> Namespaces { get; set; }
         public virtual DbSet<Class> Classes { get; set; }
-        public virtual DbSet<Attribute> Attributes { get; set; }
+        public virtual DbSet<Field> Attributes { get; set; }
         public virtual DbSet<Method> Methods { get; set; }
+        public virtual DbSet<Metric> Metrics { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("OOM");
 
-            modelBuilder.Entity<Project>()
-                .HasMany(e => e.Revisions)
-                .WithRequired(e => e.Project)
-                .WillCascadeOnDelete(true);
-
             modelBuilder.Entity<Revision>()
-                .HasMany(e => e.Namespaces)
-                .WithRequired(e => e.Revision)
+                .HasRequired(e => e.Project)
+                .WithMany(e => e.Revisions)
+                .HasForeignKey(e => e.ProjectId)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Namespace>()
-                .HasMany(e => e.Classes)
-                .WithRequired(e => e.Namespace)
+                .HasRequired(e => e.Revision)
+                .WithMany(e => e.Namespaces)
+                .HasForeignKey(e => e.RevisionId)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Class>()
-                .HasMany(e => e.Attributes)
-                .WithRequired(e => e.Class)
+                .HasRequired(e => e.Namespace)
+                .WithMany(e => e.Classes)
+                .HasForeignKey(e => e.NamespaceId)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Class>()
-                .HasMany(e => e.Methods)
-                .WithRequired(e => e.Class)
+                .HasOptional(e => e.BaseClass)
+                .WithMany(e => e.ChildClasses)
+                .HasForeignKey(e => e.BaseClassId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Field>()
+                .HasRequired(e => e.Class)
+                .WithMany(e => e.Fields)
+                .HasForeignKey(e => e.ClassId)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Method>()
-                .HasMany(e => e.ReferencedAttributes)
+                .HasRequired(e => e.Class)
+                .WithMany(e => e.Methods)
+                .HasForeignKey(e => e.ClassId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Method>()
+                .HasMany(e => e.ReferencedFields)
                 .WithMany(e => e.ReferencingMethods)
                 .Map(m =>
                 {
                     m.MapLeftKey("MethodId");
-                    m.MapRightKey("AttributeId");
-                    m.ToTable("MethodAttribute");
+                    m.MapRightKey("FieldId");
+                    m.ToTable("MethodField");
                 });
         }
     }

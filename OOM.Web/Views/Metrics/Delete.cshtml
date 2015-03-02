@@ -1,7 +1,7 @@
-﻿@model OOM.Model.Project
+﻿@model OOM.Model.Metric
 
 @{
-    ViewBag.Title = "Delete a project";
+    ViewBag.Title = "Delete a metric";
 }
 
 <h2>Delete</h2>
@@ -18,19 +18,19 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.RepositoryProtocol)
+            @Html.DisplayNameFor(model => model.Expression)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.RepositoryProtocol)
+            @Html.DisplayFor(model => model.Expression)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.URI)
+            @Html.DisplayNameFor(model => model.TargetType)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.URI)
+            @Html.DisplayFor(model => model.TargetType)
         </dd>
 
     </dl>

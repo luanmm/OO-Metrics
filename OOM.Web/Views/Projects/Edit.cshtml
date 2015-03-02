@@ -1,7 +1,7 @@
 ﻿@model OOM.Model.Project
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Edit project";
 }
 
 <h2>Edit</h2>
@@ -10,10 +10,8 @@
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
-        <h4>Movie</h4>
-        <hr />
         @Html.ValidationSummary(true)
         @Html.HiddenFor(model => model.Id)
 
@@ -25,31 +23,37 @@
             </div>
         </div>
 
-        @*
         <div class="form-group">
-            @Html.LabelFor(model => model.ReleaseDate, new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.RepositoryProtocol, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ReleaseDate)
-                @Html.ValidationMessageFor(model => model.ReleaseDate)
+                @Html.EditorFor(model => model.RepositoryProtocol)
+                @Html.ValidationMessageFor(model => model.RepositoryProtocol)
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Genre, new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.URI, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Genre)
-                @Html.ValidationMessageFor(model => model.Genre)
+                @Html.EditorFor(model => model.URI)
+                @Html.ValidationMessageFor(model => model.URI)
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.User, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Price)
-                @Html.ValidationMessageFor(model => model.Price)
+                @Html.EditorFor(model => model.User)
+                @Html.ValidationMessageFor(model => model.User)
             </div>
         </div>
-        *@
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Password, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Password)
+                @Html.ValidationMessageFor(model => model.Password)
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

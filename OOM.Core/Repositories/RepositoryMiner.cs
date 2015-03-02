@@ -2,6 +2,7 @@
 using OOM.Model;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,9 @@ namespace OOM.Core.Repositories
 
         public void StartMining()
         {
+            var workspace = Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace.Create();
+            return;
+
             string lastRevisionRID = null;
 
             var lastRevision = _project.Revisions.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
@@ -36,117 +40,83 @@ namespace OOM.Core.Repositories
             var revisions = _repository.ListRevisions(lastRevisionRID);
             foreach (var revision in revisions)
             {
-                var r = _db.Revisions.Add(new Revision
+                using (var dbContextTransaction = _db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
-                    RID = revision.RID,
-                    Message = revision.Message,
-                    Author = revision.Author,
-                    CreatedAt = revision.CreatedAt
-                });
-
-                var nodes = new List<RepositoryNode>(_repository.ListRevisionTree(revision.RID));
-                RecursiveMineNodes(r, nodes);
-
-                _project.Revisions.Add(r);
-                _db.SaveChanges();
-            }
-        }
-
-        private void RecursiveMineNodes(Revision r, List<RepositoryNode> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                if (node.Type == NodeType.Directory)
-                {
-                    var nodeTree = new List<RepositoryNode>(_repository.ListNodeTree(node));
-                    RecursiveMineNodes(r, nodeTree);
-                }
-                else if (node.Type == NodeType.File)
-                    SaveNodeMetrics(r, node);
-            }
-        }
-
-        private void SaveNodeMetrics(Revision r, RepositoryNode node)
-        {
-            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Name);
-            if (analyzer != null)
-            {
-                var contentStream = _repository.GetNodeContent(node);
-                using (var tr = new StreamReader(contentStream, Encoding.UTF8))
-                {
-                    var analyzedCode = analyzer.Analyze(tr.ReadToEnd());
-                    foreach (var analizedNamespace in analyzedCode.Namespaces)
+                    try
                     {
-                        var ns = r.Namespaces.FirstOrDefault(x => x.Identifier == analizedNamespace.Identifier);
-                        if (ns == null)
+                        var r = _db.Revisions.Add(new Revision
                         {
-                            ns = _db.Namespaces.Add(new Namespace
-                            {
-                                Identifier = analizedNamespace.Identifier
-                            });
-                            r.Namespaces.Add(ns);
-                        }
+                            RID = revision.RID,
+                            Message = revision.Message,
+                            Author = revision.Author,
+                            CreatedAt = revision.CreatedAt
+                        });
+                        _project.Revisions.Add(r);
+                        _db.SaveChanges(); // TODO: Put SaveChanges after Add methods of all entities
 
-                        foreach (var analyzedClass in analizedNamespace.Classes)
-                            SaveClassInformation(ns, analyzedClass);
+                        var files = new List<string>(_repository.ListRevisionFiles(revision.RID));
+                        foreach (var file in files)
+                            SaveNodeMetrics(r, file);
+
+                        dbContextTransaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        dbContextTransaction.Rollback();
                     }
                 }
             }
         }
 
-        private void SaveClassInformation(Namespace ns, AnalyzedClass analyzedClass)
+        private void SaveNodeMetrics(Revision r, string filePath)
         {
-            var c = ns.Classes.FirstOrDefault(x => x.Identifier == analyzedClass.Identifier);
+            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(filePath);
+            if (analyzer != null)
+            {
+                var analyzedNamespaces = analyzer.Analyze(filePath);
+                foreach (var analizedNamespace in analyzedNamespaces)
+                {
+                    var ns = r.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analizedNamespace.FullyQualifiedIdentifier);
+                    if (ns == null)
+                    {
+                        ns = _db.Namespaces.Add(analizedNamespace);
+                        r.Namespaces.Add(ns);
+                    }
+
+                    foreach (var analyzedClass in analizedNamespace.Classes)
+                        SaveClassInformation(ns, analyzedClass);
+                }
+            }
+        }
+
+        private void SaveClassInformation(Namespace ns, Class analyzedClass)
+        {
+            var c = ns.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedClass.FullyQualifiedIdentifier);
             if (c == null)
             {
-                c = _db.Classes.Add(new Class
-                {
-                    Identifier = analyzedClass.Identifier,
-                    Abstractness = analyzedClass.Abstractness,
-                    Visibility = analyzedClass.Visibility
-                    // TODO: Base class
-                });
+                c = _db.Classes.Add(analyzedClass);
                 ns.Classes.Add(c);
             }
 
-            foreach (var analyzedAttribute in analyzedClass.Attributes)
-                SaveAttributeInformation(c, analyzedAttribute);
+            foreach (var analyzedField in analyzedClass.Fields)
+                SaveFieldInformation(c, analyzedField);
 
             foreach (var analyzedMethod in analyzedClass.Methods)
                 SaveMethodInformation(c, analyzedMethod);
         }
 
-        private void SaveAttributeInformation(Class c, AnalyzedAttribute analyzedAttribute)
+        private void SaveFieldInformation(Class c, Field analyzedField)
         {
-            var a = c.Attributes.FirstOrDefault(x => x.Identifier == analyzedAttribute.Identifier);
+            var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
             if (a == null)
-            {
-                c.Attributes.Add(new OOM.Model.Attribute
-                {
-                    Identifier = analyzedAttribute.Identifier,
-                    Visibility = analyzedAttribute.Visibility,
-                    Scope = analyzedAttribute.Scope,
-                    ReferencingMethods = null
-                });
-            }
+                c.Fields.Add(analyzedField);
         }
 
-        private void SaveMethodInformation(Class c, AnalyzedMethod analyzedMethod)
+        private void SaveMethodInformation(Class c, Method analyzedMethod)
         {
-            var m = c.Methods.FirstOrDefault(x => x.Identifier == analyzedMethod.Identifier);
+            var m = c.Methods.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedMethod.FullyQualifiedIdentifier);
             if (m == null)
-            {
-                c.Methods.Add(new Method
-                {
-                    Identifier = analyzedMethod.Identifier,
-                    Abstractness = analyzedMethod.Abstractness,
-                    Visibility = analyzedMethod.Visibility,
-                    Scope = analyzedMethod.Scope,
-                    DefinitionType = analyzedMethod.DefinitionType,
-                    LineCount = analyzedMethod.LineCount,
-                    ReferencedAttributes = null
-                });
-            }
+                c.Methods.Add(analyzedMethod);
         }
 
         public void Dispose()

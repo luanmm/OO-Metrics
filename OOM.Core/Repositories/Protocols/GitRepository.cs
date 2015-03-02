@@ -43,80 +43,22 @@ namespace OOM.Core.Repositories.Protocols
             return revisionList.OrderBy(r => r.CreatedAt);
         }
 
-        public override IEnumerable<RepositoryNode> ListRevisionTree(string revision)
+        public override IEnumerable<string> ListRevisionFiles(string revision)
         {
-            var nodes = new List<RepositoryNode>();
-            foreach (var node in _repository.Lookup<Commit>(revision).Tree)
+            var commit = _repository.Commits.FirstOrDefault(c => c.Sha == revision);
+            if (commit == null)
+                throw new Exception("This revision wasn't found in the specified repository.");
+
+            _repository.Checkout(commit);
+
+            var files = _repository.Index.Select(x => String.Format("{0}{1}", LocalPath, x.Path));
+            foreach (var file in files) 
             {
-                var nodeType = NodeType.Unknown;
-                switch (node.TargetType)
-                {
-                    case TreeEntryTargetType.Tree:
-                        nodeType = NodeType.Directory;
-                        break;
-                    case TreeEntryTargetType.Blob:
-                        nodeType = NodeType.File;
-                        break;
-                }
-
-                nodes.Add(new RepositoryNode
-                {
-                    Name = node.Name,
-                    Path = node.Path,
-                    Type = nodeType,
-                    Revision = revision,
-                    RepositoryObject = node
-                });
+                if (!File.Exists(file))
+                    throw new Exception("Repository integrity error: the index doesn't corresponds the physical content.");
             }
 
-            return nodes;
-        }
-
-        public override IEnumerable<RepositoryNode> ListNodeTree(RepositoryNode rootNode)
-        {
-            try {
-                var nodes = new List<RepositoryNode>();
-                var tree = ((rootNode.RepositoryObject as TreeEntry).Target as Tree);
-                foreach (var node in tree)
-                {
-                    var nodeType = NodeType.Unknown;
-                    switch (node.TargetType)
-                    {
-                        case TreeEntryTargetType.Tree:
-                            nodeType = NodeType.Directory;
-                            break;
-                        case TreeEntryTargetType.Blob:
-                            nodeType = NodeType.File;
-                            break;
-                    }
-
-                    nodes.Add(new RepositoryNode
-                    {
-                        Name = node.Name,
-                        Path = node.Path,
-                        Type = nodeType,
-                        Revision = rootNode.Revision,
-                        RepositoryObject = node
-                    });
-                }
-
-                return nodes;
-            }
-            catch (InvalidCastException)
-            {
-                throw new ArgumentException("This node object is not from a Git repository.");
-            }
-        }
-
-        public override Stream GetNodeContent(RepositoryNode node)
-        {
-            var commit = _repository.Lookup<Commit>(node.Revision);
-            var treeEntry = commit[node.Path];
-
-            if (treeEntry.TargetType == TreeEntryTargetType.Blob)
-                return (treeEntry.Target as Blob).GetContentStream();
-
-            return null;
+            return files;
         }
 
         public override void Dispose()
@@ -131,8 +73,7 @@ namespace OOM.Core.Repositories.Protocols
             base.EmptyRepository();
             LibGit2Sharp.Repository.Clone(Configuration.RemotePath, LocalPath, new CloneOptions
             {
-                CredentialsProvider = PrivateRepositoryCredentials,
-                IsBare = true
+                CredentialsProvider = PrivateRepositoryCredentials
             });
 
             return new LibGit2Sharp.Repository(LocalPath);

@@ -26,7 +26,7 @@ namespace OOM.Core.Analyzers
 
         #region Methods
 
-        public abstract AnalyzedCode Analyze(string code);
+        public abstract IEnumerable<Namespace> Analyze(string mainFile);
 
         #endregion
 

@@ -37,17 +37,13 @@ namespace OOM.Core.Repositories
 
         public abstract IEnumerable<RepositoryRevision> ListRevisions(string fromRevision = null);
 
-        public abstract IEnumerable<RepositoryNode> ListRevisionTree(string revision);
-
-        public abstract IEnumerable<RepositoryNode> ListNodeTree(RepositoryNode rootNode);
-
-        public abstract Stream GetNodeContent(RepositoryNode node);
+        public abstract IEnumerable<string> ListRevisionFiles(string revision);
 
         public bool Delete()
         {
             try
             {
-                Directory.Delete(LocalPath, true);
+                EmptyRepository();
                 return true;
             }
             catch (Exception)
@@ -60,10 +56,6 @@ namespace OOM.Core.Repositories
         {
             Directory.Delete(LocalPath, true);
         }
-
-        #endregion
-
-        #region Privates
 
         public virtual void Dispose()
         {

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OOM.Model
 {
-    public enum ElementAbstractness : int
+    public enum ElementType : int
     {
-        Abstract = 1,
-        Concrete = 2
+        Namespace = 1,
+        Class = 2,
+        Field = 3,
+        Method = 4,
     }
 }

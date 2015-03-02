@@ -14,13 +14,16 @@ namespace OOM.Model
             Classes = new HashSet<Class>();
         }
 
+        [Key]
         public int Id { get; set; }
 
         public int RevisionId { get; set; }
 
-        [Required]
-        [StringLength(250)]
-        public string Identifier { get; set; }
+        [Required, MaxLength(250)]
+        public string Name { get; set; }
+
+        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        public string FullyQualifiedIdentifier { get; set; }
 
         public virtual ICollection<Class> Classes { get; set; }
 

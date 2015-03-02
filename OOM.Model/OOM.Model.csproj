@@ -48,20 +48,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Attribute.cs" />
+    <Compile Include="Enums\ElementType.cs" />
     <Compile Include="Entities\Method.cs" />
-    <Compile Include="Enums\ElementDefinitionType.cs" />
-    <Compile Include="Enums\ElementScope.cs" />
-    <Compile Include="Enums\NodeType.cs" />
-    <Compile Include="Enums\ElementAbstractness.cs" />
-    <Compile Include="Enums\ElementVisibility.cs" />
+    <Compile Include="Entities\Field.cs" />
+    <Compile Include="Entities\Metric.cs" />
+    <Compile Include="Enums\EncapsulationTypes.cs" />
+    <Compile Include="Enums\QualificationTypes.cs" />
     <Compile Include="Entities\Class.cs" />
     <Compile Include="Entities\Namespace.cs" />
     <Compile Include="Enums\RepositoryProtocol.cs" />
     <Compile Include="Interfaces\IEntity.cs" />
-    <Compile Include="Migrations\201502230335529_InitialCreate.cs" />
-    <Compile Include="Migrations\201502230335529_InitialCreate.Designer.cs">
-      <DependentUpon>201502230335529_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201503020107128_InitialCreate.cs" />
+    <Compile Include="Migrations\201503020107128_InitialCreate.Designer.cs">
+      <DependentUpon>201503020107128_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OOMetricsContext.cs" />
@@ -74,8 +73,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201502230335529_InitialCreate.resx">
-      <DependentUpon>201502230335529_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201503020107128_InitialCreate.resx">
+      <DependentUpon>201503020107128_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

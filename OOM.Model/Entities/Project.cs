@@ -14,22 +14,22 @@ namespace OOM.Model
             Revisions = new HashSet<Revision>();
         }
 
+        [Key]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(150)]
+        [Required, MaxLength(250)]
         public string Name { get; set; }
 
+        [Display(Name = "Repository protocol")]
         public RepositoryProtocol RepositoryProtocol { get; set; }
 
-        [Required]
-        [StringLength(500)]
+        [Required, MaxLength(500)]
         public string URI { get; set; }
 
-        [StringLength(250)]
+        [MaxLength(250)]
         public string User { get; set; }
 
-        [StringLength(250)]
+        [MaxLength(250)]
         public string Password { get; set; }
 
         public virtual ICollection<Revision> Revisions { get; set; }
