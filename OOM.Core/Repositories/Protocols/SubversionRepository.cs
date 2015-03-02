@@ -37,7 +37,12 @@ namespace OOM.Core.Repositories.Protocols
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<string> ListRevisionFiles(string revision)
+        public override IEnumerable<RepositoryNode> ListRevisionNodes(string revision)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Stream GetNodeContent(RepositoryNode node)
         {
             throw new NotImplementedException();
         }

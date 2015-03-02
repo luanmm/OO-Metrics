@@ -28,9 +28,6 @@ namespace OOM.Core.Repositories
 
         public void StartMining()
         {
-            var workspace = Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace.Create();
-            return;
-
             string lastRevisionRID = null;
 
             var lastRevision = _project.Revisions.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
@@ -40,10 +37,12 @@ namespace OOM.Core.Repositories
             var revisions = _repository.ListRevisions(lastRevisionRID);
             foreach (var revision in revisions)
             {
+                /*
                 using (var dbContextTransaction = _db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
                     try
                     {
+                */
                         var r = _db.Revisions.Add(new Revision
                         {
                             RID = revision.RID,
@@ -52,12 +51,12 @@ namespace OOM.Core.Repositories
                             CreatedAt = revision.CreatedAt
                         });
                         _project.Revisions.Add(r);
-                        _db.SaveChanges(); // TODO: Put SaveChanges after Add methods of all entities
 
-                        var files = new List<string>(_repository.ListRevisionFiles(revision.RID));
-                        foreach (var file in files)
-                            SaveNodeMetrics(r, file);
+                        var nodes = new List<RepositoryNode>(_repository.ListRevisionNodes(revision.RID));
+                        foreach (var node in nodes)
+                            SaveNodeMetrics(r, node);
 
+                /*
                         dbContextTransaction.Commit();
                     }
                     catch (Exception)
@@ -65,26 +64,32 @@ namespace OOM.Core.Repositories
                         dbContextTransaction.Rollback();
                     }
                 }
+                */
             }
+            _db.SaveChanges(); // TODO: Put SaveChanges after Add methods of all entities
         }
 
-        private void SaveNodeMetrics(Revision r, string filePath)
+        private void SaveNodeMetrics(Revision r, RepositoryNode node)
         {
-            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(filePath);
+            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Filename);
             if (analyzer != null)
             {
-                var analyzedNamespaces = analyzer.Analyze(filePath);
-                foreach (var analizedNamespace in analyzedNamespaces)
+                var contentStream = _repository.GetNodeContent(node);
+                using (var tr = new StreamReader(contentStream, Encoding.UTF8))
                 {
-                    var ns = r.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analizedNamespace.FullyQualifiedIdentifier);
-                    if (ns == null)
+                    var analyzedNamespaces = analyzer.Analyze(tr.ReadToEnd());
+                    foreach (var analizedNamespace in analyzedNamespaces)
                     {
-                        ns = _db.Namespaces.Add(analizedNamespace);
-                        r.Namespaces.Add(ns);
-                    }
+                        var ns = r.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analizedNamespace.FullyQualifiedIdentifier);
+                        if (ns == null)
+                        {
+                            ns = _db.Namespaces.Add(analizedNamespace);
+                            r.Namespaces.Add(ns);
+                        }
 
-                    foreach (var analyzedClass in analizedNamespace.Classes)
-                        SaveClassInformation(ns, analyzedClass);
+                        foreach (var analyzedClass in analizedNamespace.Classes)
+                            SaveClassInformation(ns, analyzedClass);
+                    }
                 }
             }
         }

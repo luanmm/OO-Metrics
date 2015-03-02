@@ -148,6 +148,7 @@
     <Compile Include="Repositories\RepositoryConfiguration.cs" />
     <Compile Include="Repositories\RepositoryFactory.cs" />
     <Compile Include="Repositories\RepositoryMiner.cs" />
+    <Compile Include="Repositories\RepositoryNode.cs" />
     <Compile Include="Repositories\RepositoryRevision.cs" />
     <Compile Include="Security\HashExtensions.cs" />
   </ItemGroup>

@@ -14,8 +14,14 @@ namespace OOM.Web.Controllers
     {
         private OOMetricsContext _db = new OOMetricsContext();
 
-        // GET: /Metrics/
+        // GET: /Metrics
         public ActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
+
+        // GET: /Metrics/List
+        public ActionResult List()
         {
             return View(_db.Metrics.ToList());
         }

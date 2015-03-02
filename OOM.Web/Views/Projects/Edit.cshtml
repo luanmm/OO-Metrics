@@ -7,61 +7,62 @@
 <h2>Edit</h2>
 
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<div class="well bs-component">
+    <form class="form-horizontal">
+        <fieldset>
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
+            @Html.HiddenFor(model => model.Id)
 
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true)
-        @Html.HiddenFor(model => model.Id)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Name)
-                @Html.ValidationMessageFor(model => model.Name)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Name, new { @class = "col-lg-2 control-label" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.Name, new { @class = "form-control", @autofocus = "" })
+                    @Html.ValidationMessageFor(model => model.Name)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.RepositoryProtocol, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.RepositoryProtocol)
-                @Html.ValidationMessageFor(model => model.RepositoryProtocol)
+            <div class="form-group">
+                @Html.LabelFor(model => model.RepositoryProtocol, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EnumDropDownListFor(model => model.RepositoryProtocol, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.RepositoryProtocol)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.URI, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.URI)
-                @Html.ValidationMessageFor(model => model.URI)
+            <div class="form-group">
+                @Html.LabelFor(model => model.URI, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.URI, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.URI)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.User, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.User)
-                @Html.ValidationMessageFor(model => model.User)
+            <div class="form-group">
+                @Html.LabelFor(model => model.User, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.User, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.User)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Password, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Password)
-                @Html.ValidationMessageFor(model => model.Password)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Password, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Password)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+            <div class="form-group">
+                <div class="col-lg-10 col-lg-offset-2">
+                    <button type="reset" class="btn btn-default" tabindex="-1">Reset</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </div>
-        </div>
-    </div>
-}
+        </fieldset>
+    </form>
+</div>
 
 <div>
     @Html.ActionLink("Back to List", "Index")

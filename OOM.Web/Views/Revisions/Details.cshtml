@@ -1,31 +1,66 @@
 ﻿@model OOM.Model.Revision
 
 @{
-    ViewBag.Title = "Structure";
+    ViewBag.Title = "Revision details";
 }
 
-<div class="page-header">
-    <div class="row">
-        <div class="col-lg-12">
-            <h1>
-                Revision - Project Structure Map
-            </h1>
-            <br />
-            <style>
-                .link {
-                    stroke: #dedede;
-                }
+<h2>Revision details</h2>
 
-                .node text {
-                    pointer-events: none;
-                    font: 10px sans-serif;
-                    color: #333;
-                }
-            </style>
-            <div id="structure-graph"></div>
-        </div>
-    </div>
+<div>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.RID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Message)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Message)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Author)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Author)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+
+    </dl>
+
+    <h3>Graph</h3>
+    <style>
+        .link {
+            stroke: #dedede;
+        }
+
+        .node text {
+            pointer-events: none;
+            font: 10px sans-serif;
+            color: #333;
+        }
+    </style>
+    <div id="revision-graph"></div>
+
 </div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
 
 @section Scripts
 {
@@ -66,11 +101,11 @@
             .linkDistance(30)
             .size([width, height]);
 
-        var svg = d3.select("#structure-graph").append("svg")
+        var svg = d3.select("#revision-graph").append("svg")
             .attr("width", width)
             .attr("height", height);
 
-        d3.json('@Url.Action("Structure", "Projects", new { id = Model.Id })', function (error, graph) {
+        d3.json('@Url.Action("Graph", "Revisions", new { id = Model.Id })', function (error, graph) {
             force
                 .nodes(graph.nodes)
                 .links(graph.links)

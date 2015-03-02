@@ -1,14 +1,14 @@
 ﻿@model IEnumerable<OOM.Model.Revision>
 
 @{
-    ViewBag.Title = "Revisions";
+    ViewBag.Title = "List of revisions";
 }
 
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                Revisions
+                List of revisions
             </h1>
             <br />
             <div class="table-responsive">
@@ -45,7 +45,7 @@
                                 @Html.DisplayFor(m => revision.CreatedAt)
                             </td>
                             <td>
-                                @Html.ActionLink("Details", "Revision", new { id = revision.Id }) |
+                                @Html.ActionLink("Details", "Details", new { id = revision.Id })
                             </td>
                         </tr>
                     }

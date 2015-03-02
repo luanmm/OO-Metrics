@@ -17,7 +17,7 @@ namespace OOM.Core.Analyzers
 
         public static CodeAnalyzer CreateCodeAnalyzer(string filename, CodeAnalyzerConfiguration configuration)
         {
-            if (Regex.IsMatch(filename, ".[sS]{1}[lL]{1}[nN]{1}$"))
+            if (Regex.IsMatch(filename, ".[cC]{1}[sS]{1}$"))
                 return new CSharpCodeAnalyzer(configuration);
 
             return null;

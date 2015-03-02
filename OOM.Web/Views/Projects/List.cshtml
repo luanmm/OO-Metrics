@@ -1,16 +1,16 @@
-﻿@model IEnumerable<OOM.Model.Metric>
+﻿@model IEnumerable<OOM.Model.Project>
 
 @{
-    ViewBag.Title = "List of metrics";
+    ViewBag.Title = "List of projects";
 }
 
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                Metrics
+                Projects
                 <div class="pull-right">
-                    <a href="@Url.Action("Create New", "Create")" class="btn btn-primary">
+                    <a href="@Url.Action("Create")" class="btn btn-primary">
                         <i class="icon-star icon-white"></i> Create
                     </a>
                 </div>
@@ -23,30 +23,31 @@
                             @Html.DisplayNameFor(m => m.Name)
                         </th>
                         <th>
-                            @Html.DisplayNameFor(m => m.Expression)
+                            @Html.DisplayNameFor(m => m.RepositoryProtocol)
                         </th>
                         <th>
-                            @Html.DisplayNameFor(m => m.TargetType)
+                            @Html.DisplayNameFor(m => m.URI)
                         </th>
                         <th></th>
                     </tr>
 
-                    @foreach (var metric in Model)
+                    @foreach (var project in Model)
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(m => metric.Name)
+                                @Html.DisplayFor(m => project.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(m => metric.Expression)
+                                @Html.DisplayFor(m => project.RepositoryProtocol)
                             </td>
                             <td>
-                                @Html.DisplayFor(m => metric.TargetType)
+                                @Html.DisplayFor(m => project.URI)
                             </td>
                             <td>
-                                @Html.ActionLink("Edit", "Edit", new { id = metric.Id }) |
-                                @Html.ActionLink("Details", "Details", new { id = metric.Id }) |
-                                @Html.ActionLink("Delete", "Delete", new { id = metric.Id })
+                                @Html.ActionLink("Edit", "Edit", new { id = project.Id }) |
+                                @Html.ActionLink("Details", "Details", new { id = project.Id }) |
+                                @Html.ActionLink("Revisions", "List", "Revisions", new { id = project.Id }, null) |
+                                @Html.ActionLink("Delete", "Delete", new { id = project.Id })
                             </td>
                         </tr>
                     }

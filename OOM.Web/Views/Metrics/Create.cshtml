@@ -4,46 +4,47 @@
     ViewBag.Title = "Create a new metric";
 }
 
-<h2>Create</h2>
+<h1>Create</h1>
 
-@using (Html.BeginForm()) 
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true)
+<div class="well bs-component">
+    <form class="form-horizontal">
+        <fieldset>
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Name)
-                @Html.ValidationMessageFor(model => model.Name)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Name, new { @class = "col-lg-2 control-label" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.Name, new { @class = "form-control", @autofocus = "" })
+                    @Html.ValidationMessageFor(model => model.Name)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Expression)
-                @Html.ValidationMessageFor(model => model.Expression)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.Expression, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Expression)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.TargetType, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.TargetType)
-                @Html.ValidationMessageFor(model => model.TargetType)
+            <div class="form-group">
+                @Html.LabelFor(model => model.TargetType, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EnumDropDownListFor(model => model.TargetType, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TargetType)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+            <div class="form-group">
+                <div class="col-lg-10 col-lg-offset-2">
+                    <button type="reset" class="btn btn-default" tabindex="-1">Reset</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </div>
-        </div>
-    </div>
-}
+        </fieldset>
+    </form>
+</div>
 
 <div>
     @Html.ActionLink("Back to List", "Index")

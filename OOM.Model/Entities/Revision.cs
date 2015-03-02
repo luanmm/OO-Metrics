@@ -28,7 +28,7 @@ namespace OOM.Model
         [StringLength(250)]
         public string Author { get; set; }
 
-        [Display(Name = "Created at"), DisplayFormat(DataFormatString = "dd/MM/yyyy HH:mm:ss")]
+        [Display(Name = "Created at"), DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}")]
         public DateTime CreatedAt { get; set; }
 
         public virtual ICollection<Namespace> Namespaces { get; set; }

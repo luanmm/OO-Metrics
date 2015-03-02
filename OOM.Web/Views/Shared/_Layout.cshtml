@@ -25,8 +25,8 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse" collapse="isCollapsed">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Projects", "Index", "Projects")</li>
-                    <li>@Html.ActionLink("Metrics", "Index", "Metrics")</li>
+                    @Html.MenuLink("Projects", "Index", "Projects")
+                    @Html.MenuLink("Metrics", "Index", "Metrics")
                 </ul>
             </div>
         </div>

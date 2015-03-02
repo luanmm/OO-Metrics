@@ -4,37 +4,28 @@
     ViewBag.Title = "Project details";
 }
 
-<h2>Details</h2>
-
-<div>
+<h1>
+    Project details
+    <div class="pull-right">
+        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">
+            <i class="icon-star icon-white"></i> Edit
+        </a>
+    </div>
+</h1>
+<br />
+<div class="well bs-component">
     <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
+        <dt>@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd>@Html.DisplayFor(model => model.Name)</dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.Name)
-        </dd>
+        <dt>@Html.DisplayNameFor(model => model.RepositoryProtocol)</dt>
+        <dd>@Html.DisplayFor(model => model.RepositoryProtocol)</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.RepositoryProtocol)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.RepositoryProtocol)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.URI)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.URI)
-        </dd>
-
+        <dt>@Html.DisplayNameFor(model => model.URI)</dt>
+        <dd>@Html.DisplayFor(model => model.URI)</dd>
     </dl>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+
+<div>
     @Html.ActionLink("Back to List", "Index")
-</p>
+</div>
