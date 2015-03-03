@@ -52,13 +52,10 @@ namespace OOM.Model.Migrations
                         Qualification = c.Int(nullable: false),
                         LineCount = c.Int(nullable: false),
                         ExitPoints = c.Int(nullable: false),
-                        Method_Id = c.Int(),
                     })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("OOM.Class", t => t.ClassId)
-                .ForeignKey("OOM.Method", t => t.Method_Id)
-                .Index(t => t.ClassId)
-                .Index(t => t.Method_Id);
+                .Index(t => t.ClassId);
             
             CreateTable(
                 "OOM.Namespace",
@@ -135,14 +132,12 @@ namespace OOM.Model.Migrations
             DropForeignKey("OOM.Revision", "ProjectId", "OOM.Project");
             DropForeignKey("OOM.MethodField", "FieldId", "OOM.Field");
             DropForeignKey("OOM.MethodField", "MethodId", "OOM.Method");
-            DropForeignKey("OOM.Method", "Method_Id", "OOM.Method");
             DropForeignKey("OOM.Method", "ClassId", "OOM.Class");
             DropForeignKey("OOM.Class", "BaseClassId", "OOM.Class");
             DropIndex("OOM.MethodField", new[] { "FieldId" });
             DropIndex("OOM.MethodField", new[] { "MethodId" });
             DropIndex("OOM.Revision", new[] { "ProjectId" });
             DropIndex("OOM.Namespace", new[] { "RevisionId" });
-            DropIndex("OOM.Method", new[] { "Method_Id" });
             DropIndex("OOM.Method", new[] { "ClassId" });
             DropIndex("OOM.Class", new[] { "BaseClassId" });
             DropIndex("OOM.Class", new[] { "NamespaceId" });

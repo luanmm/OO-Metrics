@@ -28,6 +28,36 @@ namespace OOM.Core.Repositories
 
         public void StartMining()
         {
+            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer("testing.cs");
+            if (analyzer != null)
+            {
+                analyzer.Analyze(@"
+using System;
+
+namespace Blablabla
+{
+    public class Test
+    {
+        private int _field1;
+        private int _field2;
+
+        public Test()
+        {
+            _field1 = 1;
+            _field2 = 2;
+        }
+
+        private int Sum()
+        {
+            return _field2;
+        }
+    }
+}
+");
+            }
+
+            return;
+
             string lastRevisionRID = null;
 
             var lastRevision = _project.Revisions.OrderByDescending(r => r.CreatedAt).FirstOrDefault();

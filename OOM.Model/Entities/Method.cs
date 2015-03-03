@@ -12,7 +12,6 @@ namespace OOM.Model
         public Method()
         {
             ReferencedFields = new HashSet<Field>();
-            InvokedMethods = new HashSet<Method>();
         }
 
         [Key]
@@ -39,8 +38,6 @@ namespace OOM.Model
         public int ExitPoints { get; set; }
 
         public virtual ICollection<Field> ReferencedFields { get; set; }
-
-        public virtual ICollection<Method> InvokedMethods { get; set; }
 
         public virtual Class Class { get; set; }
     }

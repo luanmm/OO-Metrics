@@ -39,63 +39,37 @@ namespace OOM.Core.Analyzers.CSharp
                 var classes = n.DescendantNodes().OfType<ClassDeclarationSyntax>();
                 foreach (var c in classes)
                 {
-                    var cs = semanticModel.GetDeclaredSymbol(c) as ISymbol; // TODO: Achar interface própria para classes
+                    var cs = semanticModel.GetDeclaredSymbol(c) as INamedTypeSymbol;
                     if (cs == null)
                         continue;
 
-                    var analyzedFields = new List<Field>();
-                    var fields = c.DescendantNodes().OfType<FieldDeclarationSyntax>();
-                    foreach (var f in fields)
-                    {
-                        var fs = semanticModel.GetDeclaredSymbol(f) as IFieldSymbol;
-                        if (fs == null)
-                            continue;
+                    var classMembers = cs.GetMembers();
 
+                    var analyzedFields = new List<Field>();
+                    var fields = classMembers.Where(x => x.Kind == SymbolKind.Field);
+                    foreach (IFieldSymbol f in fields)
+                    {
                         analyzedFields.Add(new Field
                         {
-                            Name = fs.Name,
-                            FullyQualifiedIdentifier = fs.ToDisplayString(),
+                            Name = f.Name,
+                            FullyQualifiedIdentifier = f.ToDisplayString(),
                         });
                     }
 
                     var analyzedMethods = new List<Method>();
-                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>(); //classMembers.Where(x => x.Kind == SymbolKind.Method);
                     foreach (var m in methods)
                     {
                         var ms = semanticModel.GetDeclaredSymbol(m) as IMethodSymbol;
                         if (ms == null)
                             continue;
 
-                        var mr = m.Body.DescendantNodes().OfType<ExpressionSyntax>(); // TODO: InvocationExpressionSyntax (?)
-                        foreach (var mref in mr)
-                        {
-                            var mrefms = semanticModel.GetSymbolInfo(mref).Symbol as IMethodSymbol;
-                            if (mrefms == null || mrefms.MethodKind != MethodKind.Ordinary)
-                                continue;
-
-                            var fullyQualifiedName = mrefms.ToDisplayString();
-                            Console.WriteLine(fullyQualifiedName);
-                        }
-
-                        /*
-                        var referencedFields = new List<Field>();
-                        var methodBody = m.Body;
-                        if (methodBody != null)
-                        {
-                            var accessVarsDecl = from aAccessVarsDecl in methodBody.ChildNodes().OfType<LocalDeclarationStatementSyntax>() select aAccessVarsDecl;
-                            foreach (var ldss in accessVarsDecl)
-                            {
-                                referencedFields.Add(new Field
-                                {
-                                    Name = ldss.
-                                });
-
-                                Method tempMethod = TransverseAccessVars(ldss);
-                                retMethod.AccessedVariables.AddRange(tempMethod.AccessedVariables);
-                                retMethod.InvokedMethods.AddRange(tempMethod.InvokedMethods);
-                            }
-                        }
-                        */
+                        var referencedFields = new List<Field>(
+                            analyzedFields
+                                .Where(f => m.Body.DescendantNodes()
+                                    .OfType<IdentifierNameSyntax>()
+                                    .Select(x => semanticModel.GetSymbolInfo(x).Symbol.ToDisplayString())
+                                    .Contains(f.FullyQualifiedIdentifier)));
 
                         var analyzedMethod = new Method
                         {
@@ -103,22 +77,8 @@ namespace OOM.Core.Analyzers.CSharp
                             FullyQualifiedIdentifier = ms.ToDisplayString(),
                             LineCount = m.Body.Statements.Count,
                             ExitPoints = 0,
-                            ReferencedFields = new List<Field>()
+                            ReferencedFields = referencedFields
                         };
-
-                        /*
-                        var referencedMethods = m.Body.ChildNodes().OfType<ExpressionStatementSyntax>();
-                        foreach (var referencedMethod in referencedMethods)
-                        {
-                            var symbolInfo = SemanticModel.GetSymbolInfo(referencedMethod);
-                            string ns = symbolInfo.Symbol. //.ContainingNamespace.ToDisplayString();
-
-                            analyzedMethod.Attributes.Add(new Attribute
-                            {
-                                Identifier = referencedMethod.
-                            });
-                        }
-                        */
 
                         analyzedMethods.Add(analyzedMethod);
                     }
