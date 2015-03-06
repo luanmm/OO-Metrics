@@ -14,8 +14,8 @@ namespace OOM.Core.Repositories
     public class RepositoryMiner : IDisposable
     {
         private OOMetricsContext _db = new OOMetricsContext();
-        private Project _project;
         private Repository _repository;
+        private Project _project;
 
         public RepositoryMiner(Project project)
         {
@@ -28,36 +28,6 @@ namespace OOM.Core.Repositories
 
         public void StartMining()
         {
-            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer("testing.cs");
-            if (analyzer != null)
-            {
-                analyzer.Analyze(@"
-using System;
-
-namespace Blablabla
-{
-    public class Test
-    {
-        private int _field1;
-        private int _field2;
-
-        public Test()
-        {
-            _field1 = 1;
-            _field2 = 2;
-        }
-
-        private int Sum()
-        {
-            return _field2;
-        }
-    }
-}
-");
-            }
-
-            return;
-
             string lastRevisionRID = null;
 
             var lastRevision = _project.Revisions.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
@@ -67,92 +37,146 @@ namespace Blablabla
             var revisions = _repository.ListRevisions(lastRevisionRID);
             foreach (var revision in revisions)
             {
-                /*
-                using (var dbContextTransaction = _db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
+                var analyzedNamespaces = new List<Namespace>();
+                var nodes = new List<RepositoryNode>(_repository.ListRevisionNodes(revision.RID));
+                foreach (var node in nodes)
                 {
-                    try
+                    var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Filename);
+                    if (analyzer != null)
                     {
-                */
-                        var r = _db.Revisions.Add(new Revision
+                        var contentStream = _repository.GetNodeContent(node);
+                        using (var tr = new StreamReader(contentStream, Encoding.UTF8))
                         {
-                            RID = revision.RID,
-                            Message = revision.Message,
-                            Author = revision.Author,
-                            CreatedAt = revision.CreatedAt
-                        });
-                        _project.Revisions.Add(r);
-
-                        var nodes = new List<RepositoryNode>(_repository.ListRevisionNodes(revision.RID));
-                        foreach (var node in nodes)
-                            SaveNodeMetrics(r, node);
-
-                /*
-                        dbContextTransaction.Commit();
-                    }
-                    catch (Exception)
-                    {
-                        dbContextTransaction.Rollback();
+                            analyzedNamespaces.AddRange(analyzer.Analyze(tr.ReadToEnd()));
+                        }
                     }
                 }
-                */
+
+                PersistAnalyzedData(new Revision
+                {
+                    RID = revision.RID,
+                    Message = revision.Message,
+                    Author = revision.Author,
+                    CreatedAt = revision.CreatedAt,
+                    ProjectId = _project.Id
+                }, analyzedNamespaces);
             }
-            _db.SaveChanges(); // TODO: Put SaveChanges after Add methods of all entities
         }
 
-        private void SaveNodeMetrics(Revision r, RepositoryNode node)
+        #region Privates
+
+        private void PersistAnalyzedData(Revision revision, IEnumerable<Namespace> namespaces)
         {
-            var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Filename);
-            if (analyzer != null)
+            using (var dbContextTransaction = _db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
             {
-                var contentStream = _repository.GetNodeContent(node);
-                using (var tr = new StreamReader(contentStream, Encoding.UTF8))
+                try
                 {
-                    var analyzedNamespaces = analyzer.Analyze(tr.ReadToEnd());
-                    foreach (var analizedNamespace in analyzedNamespaces)
+                    _db.Revisions.Add(revision);
+                    _db.SaveChanges();
+
+                    var unsavedClassRelations = new List<Class>();
+                    foreach (var analyzedNamespace in namespaces)
                     {
-                        var ns = r.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analizedNamespace.FullyQualifiedIdentifier);
+                        var ns = revision.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedNamespace.FullyQualifiedIdentifier);
                         if (ns == null)
                         {
-                            ns = _db.Namespaces.Add(analizedNamespace);
-                            r.Namespaces.Add(ns);
+                            ns = _db.Namespaces.Add(new Namespace
+                            {
+                                Name = analyzedNamespace.Name,
+                                FullyQualifiedIdentifier = analyzedNamespace.FullyQualifiedIdentifier,
+                                RevisionId = revision.Id
+                            });
+                            _db.SaveChanges();
                         }
 
-                        foreach (var analyzedClass in analizedNamespace.Classes)
-                            SaveClassInformation(ns, analyzedClass);
+                        foreach (var analyzedClass in analyzedNamespace.Classes)
+                        {
+                            var c = ns.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedClass.FullyQualifiedIdentifier);
+                            if (c == null)
+                            {
+                                if (analyzedClass.BaseClass != null)
+                                    unsavedClassRelations.Add(analyzedClass);
+
+                                c = _db.Classes.Add(new Class
+                                {
+                                    Name = analyzedClass.Name,
+                                    FullyQualifiedIdentifier = analyzedClass.FullyQualifiedIdentifier,
+                                    Encapsulation = analyzedClass.Encapsulation,
+                                    Qualification = analyzedClass.Qualification,
+                                    NamespaceId = ns.Id
+                                });
+                                _db.SaveChanges();
+                            }
+
+                            var savedFields = new List<Field>();
+                            foreach (var analyzedField in analyzedClass.Fields)
+                            {
+                                var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
+                                if (a == null)
+                                {
+                                    a = _db.Fields.Add(new Field
+                                    {
+                                        Name = analyzedField.Name,
+                                        FullyQualifiedIdentifier = analyzedField.FullyQualifiedIdentifier,
+                                        Encapsulation = analyzedField.Encapsulation,
+                                        Qualification = analyzedField.Qualification,
+                                        ClassId = c.Id
+                                    });
+                                    _db.SaveChanges();
+                                }
+                                savedFields.Add(a);
+                            }
+
+                            foreach (var analyzedMethod in analyzedClass.Methods)
+                            {
+                                var m = c.Methods.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedMethod.FullyQualifiedIdentifier);
+                                if (m == null)
+                                {
+                                    m = _db.Methods.Add(new Method
+                                    {
+                                        Name = analyzedMethod.Name,
+                                        FullyQualifiedIdentifier = analyzedMethod.FullyQualifiedIdentifier,
+                                        Encapsulation = analyzedMethod.Encapsulation,
+                                        Qualification = analyzedMethod.Qualification,
+                                        LineCount = analyzedMethod.LineCount,
+                                        ExitPoints = analyzedMethod.ExitPoints,
+                                        ReferencedFields = savedFields.Where(x => analyzedMethod.ReferencedFields.Any(y => y.FullyQualifiedIdentifier == x.FullyQualifiedIdentifier)).ToList(),
+                                        ClassId = c.Id
+                                    });
+                                    _db.SaveChanges();
+                                }
+                            }
+                        }
                     }
+
+                    foreach (var unsavedClassRelation in unsavedClassRelations) 
+                    {
+                        var c = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.FullyQualifiedIdentifier);
+                        if (c == null)
+                        {
+                            var bc = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.BaseClass.FullyQualifiedIdentifier);
+                            if (bc != null)
+                            {
+                                c.BaseClassId = bc.Id;
+                                _db.SaveChanges();
+                            }
+                            else
+                                throw new Exception("Testing it.");
+                        }
+                        else
+                            throw new Exception("Testing it.");
+                    }
+
+                    dbContextTransaction.Commit();
+                }
+                catch (Exception)
+                {
+                    dbContextTransaction.Rollback();
                 }
             }
         }
 
-        private void SaveClassInformation(Namespace ns, Class analyzedClass)
-        {
-            var c = ns.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedClass.FullyQualifiedIdentifier);
-            if (c == null)
-            {
-                c = _db.Classes.Add(analyzedClass);
-                ns.Classes.Add(c);
-            }
-
-            foreach (var analyzedField in analyzedClass.Fields)
-                SaveFieldInformation(c, analyzedField);
-
-            foreach (var analyzedMethod in analyzedClass.Methods)
-                SaveMethodInformation(c, analyzedMethod);
-        }
-
-        private void SaveFieldInformation(Class c, Field analyzedField)
-        {
-            var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
-            if (a == null)
-                c.Fields.Add(analyzedField);
-        }
-
-        private void SaveMethodInformation(Class c, Method analyzedMethod)
-        {
-            var m = c.Methods.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedMethod.FullyQualifiedIdentifier);
-            if (m == null)
-                c.Methods.Add(analyzedMethod);
-        }
+        #endregion
 
         public void Dispose()
         {

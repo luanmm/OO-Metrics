@@ -16,15 +16,15 @@ namespace OOM.Model
         public OOMetricsContext(string connectionString)
             : base(connectionString)
         {
-            Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
-            //Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
+            //Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
+            Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
         }
 
         public virtual DbSet<Project> Projects { get; set; }
         public virtual DbSet<Revision> Revisions { get; set; }
         public virtual DbSet<Namespace> Namespaces { get; set; }
         public virtual DbSet<Class> Classes { get; set; }
-        public virtual DbSet<Field> Attributes { get; set; }
+        public virtual DbSet<Field> Fields { get; set; }
         public virtual DbSet<Method> Methods { get; set; }
         public virtual DbSet<Metric> Metrics { get; set; }
 

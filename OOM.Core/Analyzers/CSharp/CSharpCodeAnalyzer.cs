@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace OOM.Core.Analyzers.CSharp
 {
@@ -18,7 +19,7 @@ namespace OOM.Core.Analyzers.CSharp
         public CSharpCodeAnalyzer(CodeAnalyzerConfiguration configuration)
             : base(configuration)
         {
-
+            
         }
 
         public override IEnumerable<Namespace> Analyze(string code)
@@ -68,27 +69,34 @@ namespace OOM.Core.Analyzers.CSharp
                             analyzedFields
                                 .Where(f => m.Body.DescendantNodes()
                                     .OfType<IdentifierNameSyntax>()
-                                    .Select(x => semanticModel.GetSymbolInfo(x).Symbol.ToDisplayString())
+                                    .Select(x => semanticModel.GetSymbolInfo(x))
+                                    .Where(x => x.Symbol != null)
+                                    .Select(x => x.Symbol.ToDisplayString())
                                     .Contains(f.FullyQualifiedIdentifier)));
 
                         var analyzedMethod = new Method
                         {
                             Name = ms.Name,
                             FullyQualifiedIdentifier = ms.ToDisplayString(),
-                            LineCount = m.Body.Statements.Count,
-                            ExitPoints = 0,
+                            LineCount = m.Body.ChildNodes().Count(),
+                            //CommentCount = m.Body.DescendantTrivia().Where(x => x.IsKind(SyntaxKind.SingleLineCommentTrivia | SyntaxKind.MultiLineCommentTrivia)).Count(),
+                            ExitPoints = m.Body.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
                             ReferencedFields = referencedFields
+                            // ReferencedMethods = referencedMethods
                         };
 
                         analyzedMethods.Add(analyzedMethod);
                     }
+
+                    // TODO: Second analysis in methods to get referencedMethods for every method already analyzed
 
                     analyzedClasses.Add(new Class
                     {
                         Name = cs.Name,
                         FullyQualifiedIdentifier = cs.ToDisplayString(),
                         Methods = analyzedMethods,
-                        Fields = analyzedFields
+                        Fields = analyzedFields,
+                        BaseClass = cs.BaseType != null ? new Class { FullyQualifiedIdentifier = cs.BaseType.ToDisplayString() } : null
                     });
                 }
 

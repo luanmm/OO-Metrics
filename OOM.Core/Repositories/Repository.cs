@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using OOM.Core.Security;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 
 namespace OOM.Core.Repositories
 {
@@ -56,12 +57,47 @@ namespace OOM.Core.Repositories
 
         public void EmptyRepository()
         {
-            Directory.Delete(LocalPath, true);
+            var tries = 0;
+            do
+            {
+                try
+                {
+                    DeleteDirectoryRecursively(LocalPath);
+                    break;
+                }
+                catch (Exception)
+                {
+                    if (tries++ == 10)
+                        break;
+                }
+
+                Thread.Sleep(800);
+            } while (Directory.Exists(LocalPath));
         }
 
         public virtual void Dispose()
         {
 
+        }
+
+        #endregion
+
+        #region Privates
+
+        private void DeleteDirectoryRecursively(string baseDirectory)
+        {
+            var files = Directory.GetFiles(baseDirectory);
+            foreach (var file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            var directories = Directory.GetDirectories(baseDirectory);
+            foreach (var directory in directories)
+                DeleteDirectoryRecursively(directory);
+
+            Directory.Delete(baseDirectory, false);
         }
 
         #endregion
