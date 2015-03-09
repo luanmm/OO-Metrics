@@ -152,7 +152,7 @@ namespace OOM.Core.Repositories
                     foreach (var unsavedClassRelation in unsavedClassRelations) 
                     {
                         var c = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.FullyQualifiedIdentifier);
-                        if (c == null)
+                        if (c != null)
                         {
                             var bc = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.BaseClass.FullyQualifiedIdentifier);
                             if (bc != null)
@@ -160,8 +160,6 @@ namespace OOM.Core.Repositories
                                 c.BaseClassId = bc.Id;
                                 _db.SaveChanges();
                             }
-                            else
-                                throw new Exception("Testing it.");
                         }
                         else
                             throw new Exception("Testing it.");

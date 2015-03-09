@@ -4,9 +4,12 @@
     ViewBag.Title = "Create a new project";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List")</li>
+    <li class="active">Create</li>
+</ul>
 <h2>Create</h2>
-
-
 <div class="well bs-component">
     <form class="form-horizontal">
         <fieldset>
@@ -61,8 +64,4 @@
             </div>
         </fieldset>
     </form>
-</div>
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>

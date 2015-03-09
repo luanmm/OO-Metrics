@@ -4,6 +4,10 @@
     ViewBag.Title = "List of metrics";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li class="active">Metrics</li>
+</ul>
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
@@ -43,10 +47,16 @@
                             <td>
                                 @Html.DisplayFor(m => metric.TargetType)
                             </td>
-                            <td>
-                                @Html.ActionLink("Edit", "Edit", new { id = metric.Id }) |
-                                @Html.ActionLink("Details", "Details", new { id = metric.Id }) |
-                                @Html.ActionLink("Delete", "Delete", new { id = metric.Id })
+                            <td style="text-align: center;">
+                                <a href="@Url.Action("Edit", new { id = metric.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Edit" role="button">
+                                    <span class="fa fa-pencil" aria-hidden="true"></span>
+                                </a>
+                                <a href="@Url.Action("Details", new { id = metric.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
+                                    <span class="fa fa-eye" aria-hidden="true"></span>
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = metric.Id })" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Delete" role="button">
+                                    <span class="fa fa-trash" aria-hidden="true"></span>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -55,3 +65,11 @@
         </div>
     </div>
 </div>
+
+@section scripts {
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

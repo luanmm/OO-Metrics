@@ -4,63 +4,95 @@
     ViewBag.Title = "Revision details";
 }
 
-<h2>Revision details</h2>
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Revisions", "List", new { id = Model.ProjectId })</li>
+    <li class="active">Details</li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>Revision details</h1>
+            <br />
+            <div>
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.RID)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.RID)
+                    </dd>
 
-<div>
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.RID)
-        </dt>
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Message)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Message)
+                    </dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.RID)
-        </dd>
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Author)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Author)
+                    </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Message)
-        </dt>
+                    <dt>
+                        @Html.DisplayNameFor(model => model.CreatedAt)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.CreatedAt)
+                    </dd>
+                </dl>
+                <br />
+                <h2>Graph</h2>
+                <style>
+                    .link {
+                        stroke: #dedede;
+                    }
 
-        <dd>
-            @Html.DisplayFor(model => model.Message)
-        </dd>
+                    .node text {
+                        pointer-events: none;
+                        font: 10px sans-serif;
+                        color: #333;
+                    }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Author)
-        </dt>
+                    #revision-graph {
+                        width: 1140px;
+                        height: 600px;
+                        position: relative;
+                    }
 
-        <dd>
-            @Html.DisplayFor(model => model.Author)
-        </dd>
+                        #revision-graph .graph-toolbar {
+                            position: absolute;
+                            right: 15px;
+                            top: 15px;
+                        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
+                            #revision-graph .graph-toolbar a {
+                                margin-left: 3px;
+                            }
+                </style>
 
-        <dd>
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-
-    </dl>
-
-    <h3>Graph</h3>
-    <style>
-        .link {
-            stroke: #dedede;
-        }
-
-        .node text {
-            pointer-events: none;
-            font: 10px sans-serif;
-            color: #333;
-        }
-    </style>
-    <div id="revision-graph"></div>
-
+                <div id="revision-graph">
+                    <div class="graph-toolbar">
+                        <!-- TODO: Fix the centering problem of the "container" shape in the rendered SVG
+                        <a href="#zoom-in" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom in" role="button">
+                            <span class="fa fa-search-plus" aria-hidden="true"></span>
+                        </a>
+                        <a href="#zoom-out" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom out" role="button">
+                            <span class="fa fa-search-minus" aria-hidden="true"></span>
+                        </a>
+                        -->
+                        <a href="#zoom-original" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
+                            <span class="fa fa-crosshairs" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
 
 @section Scripts
 {
@@ -68,7 +100,7 @@
     @Scripts.Render("~/bundles/qtip")
     <script>
         var width = 1140,
-            height = 800;
+            height = 600;
 
         var selectNodeTitle = function (group) {
             if (group === 2)
@@ -94,7 +126,9 @@
             return '@Url.Content("~/Content/images/icon-revision.svg")';
         };
 
-        var color = d3.scale.category20();
+        var zooming = function () {
+            container.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+        };
 
         var force = d3.layout.force()
             .charge(-120)
@@ -105,27 +139,39 @@
             .attr("width", width)
             .attr("height", height);
 
+        var zoom = d3.behavior.zoom()
+            .size([width, height])
+            .scaleExtent([1, 10])
+            .on("zoom", zooming);
+
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "#f3f3f3")
+            .attr("rx", "3")
+            .attr("ry", "3")
+            .call(zoom);
+
+        var container = svg.append("g");
+
         d3.json('@Url.Action("Graph", "Revisions", new { id = Model.Id })', function (error, graph) {
             force
                 .nodes(graph.nodes)
                 .links(graph.links)
                 .start();
 
-            var link = svg.selectAll(".link")
+            var link = container.selectAll(".link")
                 .data(graph.links)
                 .enter().append("line")
                 .attr("class", "link")
                 .style("stroke-width", function (d) { return Math.sqrt(d.value); });
 
-            var node = svg.selectAll(".node")
+            var node = container.selectAll(".node")
                 .data(graph.nodes)
-                //.enter().append("circle")
                 .enter().append("g")
                 .attr("class", "node")
                 .attr("data-tooltip-title", function (d) { return selectNodeTitle(d.group); })
                 .attr("data-tooltip-content", function (d) { return d.name; })
-                //.attr("r", 5)
-                //.style("fill", function (d) { return color(d.group); })
                 .call(force.drag);
 
             node.append("image")
@@ -166,6 +212,54 @@
                     }
                 });
             });
+
+            $('a[href="#zoom-in"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                var translate = zoom.translate() || [0, 0];
+                var scale = (zoom.scale() || 1) + 1;
+
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate(translate).event)
+                    .call(zoom.scale(scale > 10 ? 10 : scale).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+
+            $('a[href="#zoom-out"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                var translate = zoom.translate() || [0, 0];
+                var scale = (zoom.scale() || 1) - 1;
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate(translate).event)
+                    .call(zoom.scale(scale < 1 ? 1 : scale).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+
+            $('a[href="#zoom-original"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate([0, 0]).event)
+                    .call(zoom.scale(1).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+        });
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
 }

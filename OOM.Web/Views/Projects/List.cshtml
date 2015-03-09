@@ -4,6 +4,10 @@
     ViewBag.Title = "List of projects";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li class="active">Projects</li>
+</ul>
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
@@ -43,11 +47,16 @@
                             <td>
                                 @Html.DisplayFor(m => project.URI)
                             </td>
-                            <td>
-                                @Html.ActionLink("Edit", "Edit", new { id = project.Id }) |
-                                @Html.ActionLink("Details", "Details", new { id = project.Id }) |
-                                @Html.ActionLink("Revisions", "List", "Revisions", new { id = project.Id }, null) |
-                                @Html.ActionLink("Delete", "Delete", new { id = project.Id })
+                            <td style="text-align: center;">
+                                <a href="@Url.Action("Details", new { id = project.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
+                                    <span class="fa fa-eye" aria-hidden="true"></span>
+                                </a>
+                                <a href="@Url.Action("List", "Revisions", new { id = project.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Revisions" role="button">
+                                    <span class="fa fa-list-ol" aria-hidden="true"></span>
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = project.Id })" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Delete" role="button">
+                                    <span class="fa fa-trash" aria-hidden="true"></span>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -56,3 +65,11 @@
         </div>
     </div>
 </div>
+
+@section scripts {
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

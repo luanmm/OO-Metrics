@@ -4,8 +4,12 @@
     ViewBag.Title = "Delete a project";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List")</li>
+    <li class="active">Delete</li>
+</ul>
 <h2>Delete</h2>
-
 <h3>Are you sure you want to delete this?</h3>
 <div>
     <dl class="dl-horizontal">
@@ -40,8 +44,7 @@
         @Html.AntiForgeryToken()
 
         <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+            <input type="submit" value="Delete" class="btn btn-danger" /> |
         </div>
     }
 </div>

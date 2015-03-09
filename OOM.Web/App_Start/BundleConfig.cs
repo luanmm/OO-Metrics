@@ -29,6 +29,10 @@ namespace OOM.Web
             bundles.Add(new ScriptBundle("~/bundles/d3").Include(
                       "~/Scripts/d3.min.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/mathjax").Include(
+                "~/Scripts/MathJax/config/oom.js",
+                "~/Scripts/MathJax/MathJax.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/site.css"));
 

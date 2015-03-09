@@ -4,8 +4,12 @@
     ViewBag.Title = "Create a new metric";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Metrics", "List")</li>
+    <li class="active">Create</li>
+</ul>
 <h1>Create</h1>
-
 <div class="well bs-component">
     <form class="form-horizontal">
         <fieldset>
@@ -21,18 +25,25 @@
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.TextBoxFor(model => model.Expression, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(model => model.Expression)
-                </div>
-            </div>
-
-            <div class="form-group">
                 @Html.LabelFor(model => model.TargetType, new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.EnumDropDownListFor(model => model.TargetType, new { @class = "form-control" })
                     @Html.ValidationMessageFor(model => model.TargetType)
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-4" })
+                        <div class="col-md-8">
+                            @Html.TextAreaFor(model => model.Expression, new { @class = "form-control", @rows = 8 })
+                            @Html.ValidationMessageFor(model => model.Expression)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div id="math-preview"></div>
                 </div>
             </div>
 
@@ -46,6 +57,29 @@
     </form>
 </div>
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
+@section scripts {
+    @Scripts.Render("~/bundles/mathjax")
+    <script>
+        $(function () {
+            $('#Expression').on('input keyup', function () {
+                var $this = $(this);
+
+                clearTimeout($this.data('timer'));
+                $this.data('timer', setTimeout(function () {
+                    $this.removeData('timer');
+
+                    $preview = $('#math-preview');
+                    $preview.hide();
+                    $preview.html('`' + $this.val() + '`');
+
+                    MathJax.Hub.Queue(
+                        ["Typeset", MathJax.Hub, "math-preview"],
+                        function () {
+                            $preview.show();
+                        }
+                    );
+                }, 1200));
+            });
+        });
+    </script>
+}

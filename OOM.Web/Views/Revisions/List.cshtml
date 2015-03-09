@@ -4,6 +4,10 @@
     ViewBag.Title = "List of revisions";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li class="active">Revisions</li>
+</ul>
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
@@ -44,8 +48,10 @@
                             <td>
                                 @Html.DisplayFor(m => revision.CreatedAt)
                             </td>
-                            <td>
-                                @Html.ActionLink("Details", "Details", new { id = revision.Id })
+                            <td style="text-align: center;">
+                                <a href="@Url.Action("Details", new { id = revision.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
+                                    <span class="fa fa-eye" aria-hidden="true"></span>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -54,3 +60,11 @@
         </div>
     </div>
 </div>
+
+@section scripts {
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

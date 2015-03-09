@@ -4,8 +4,12 @@
     ViewBag.Title = "Metric details";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Metrics", "List")</li>
+    <li class="active">Details</li>
+</ul>
 <h2>Metric details</h2>
-
 <div>
     <dl class="dl-horizontal">
         <dt>
@@ -34,7 +38,3 @@
 
     </dl>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

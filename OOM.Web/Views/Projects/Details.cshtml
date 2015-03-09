@@ -4,6 +4,11 @@
     ViewBag.Title = "Project details";
 }
 
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List")</li>
+    <li class="active">Details</li>
+</ul>
 <h1>
     Project details
     <div class="pull-right">
@@ -24,8 +29,4 @@
         <dt>@Html.DisplayNameFor(model => model.URI)</dt>
         <dd>@Html.DisplayFor(model => model.URI)</dd>
     </dl>
-</div>
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
