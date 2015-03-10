@@ -7,8 +7,16 @@ using NCalc;
 
 namespace OOM.Core.Math
 {
-    public class ExpressionEvaluator
+    public sealed class ExpressionEvaluator
     {
+        #region Singleton
+
+        static readonly ExpressionEvaluator _instance = new ExpressionEvaluator();
+        public static ExpressionEvaluator Instance { get { return _instance; } }
+        static ExpressionEvaluator() { }
+
+        #endregion
+
         #region Properties
 
         private Dictionary<string, Func<object[], object>> _evaluateFunctions;
@@ -17,7 +25,7 @@ namespace OOM.Core.Math
 
         #region Ctor
 
-        public ExpressionEvaluator()
+        ExpressionEvaluator()
         {
             _evaluateFunctions = new Dictionary<string, Func<object[], object>>();
             _evaluateFunctions.Add("sum", EvaluateFunctionSum);

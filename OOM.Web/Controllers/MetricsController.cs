@@ -1,4 +1,5 @@
-﻿using OOM.Model;
+﻿using OOM.Core.Math;
+using OOM.Model;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -58,11 +59,17 @@ namespace OOM.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    ExpressionEvaluator.Instance.Evaluate(metric.Expression);
+
                     _db.Metrics.Add(metric);
                     _db.SaveChanges();
 
                     return RedirectToAction("Index");
                 }
+            }
+            catch (ExpressionEvaluationException ex)
+            {
+                ModelState.AddModelError("", String.Format("The expression is invalid: {0}.", ex.Message));
             }
             catch (RetryLimitExceededException)
             {

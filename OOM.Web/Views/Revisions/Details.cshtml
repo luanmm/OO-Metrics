@@ -6,8 +6,10 @@
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List", "Projects")</li>
+    <li>@Html.ActionLink(Model.Project.Name, "Details", "Projects", new { id = Model.ProjectId }, null)</li>
     <li>@Html.ActionLink("Revisions", "List", new { id = Model.ProjectId })</li>
-    <li class="active">Details</li>
+    <li class="active">@Model.RID</li>
 </ul>
 <div class="page-header">
     <div class="row">
@@ -51,10 +53,12 @@
                         stroke: #dedede;
                     }
 
-                    .node text {
-                        pointer-events: none;
-                        font: 10px sans-serif;
-                        color: #333;
+                    .node {
+                        cursor: zoom-in;
+                    }
+
+                    .node.selected {
+                        cursor: zoom-out;
                     }
 
                     #revision-graph {
@@ -62,6 +66,15 @@
                         height: 600px;
                         position: relative;
                     }
+
+                        #revision-graph .graph-details {
+                            position: absolute;
+                            top: 15px;
+                            left: 15px;
+                            font-style: oblique;
+                            font-size: 18pt;
+                            font-family: 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
+                        }
 
                         #revision-graph .graph-toolbar {
                             position: absolute;
@@ -75,6 +88,12 @@
                 </style>
 
                 <div id="revision-graph">
+                    <div class="graph-details" style="display:none;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading"></div>
+                            <div class="panel-body"></div>
+                        </div>
+                    </div>
                     <div class="graph-toolbar">
                         <!-- TODO: Fix the centering problem of the "container" shape in the rendered SVG
                         <a href="#zoom-in" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom in" role="button">
@@ -84,7 +103,7 @@
                             <span class="fa fa-search-minus" aria-hidden="true"></span>
                         </a>
                         -->
-                        <a href="#zoom-original" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
+                        <a href="#zoom-none" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
                             <span class="fa fa-crosshairs" aria-hidden="true"></span>
                         </a>
                     </div>
@@ -97,10 +116,147 @@
 @section Scripts
 {
     @Scripts.Render("~/bundles/d3")
-    @Scripts.Render("~/bundles/qtip")
     <script>
+
+        // t: current time, b: begInnIng value, c: change In value, d: duration
+        $.easing.jswing = $.easing.swing;
+
+        $.extend($.easing,
+        {
+            def: 'easeOutQuad',
+            swing: function (x, t, b, c, d) {
+                //alert($.easing.default);
+                return $.easing[$.easing.def](x, t, b, c, d);
+            },
+            easeInQuad: function (x, t, b, c, d) {
+                return c * (t /= d) * t + b;
+            },
+            easeOutQuad: function (x, t, b, c, d) {
+                return -c * (t /= d) * (t - 2) + b;
+            },
+            easeInOutQuad: function (x, t, b, c, d) {
+                if ((t /= d / 2) < 1) return c / 2 * t * t + b;
+                return -c / 2 * ((--t) * (t - 2) - 1) + b;
+            },
+            easeInCubic: function (x, t, b, c, d) {
+                return c * (t /= d) * t * t + b;
+            },
+            easeOutCubic: function (x, t, b, c, d) {
+                return c * ((t = t / d - 1) * t * t + 1) + b;
+            },
+            easeInOutCubic: function (x, t, b, c, d) {
+                if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
+                return c / 2 * ((t -= 2) * t * t + 2) + b;
+            },
+            easeInQuart: function (x, t, b, c, d) {
+                return c * (t /= d) * t * t * t + b;
+            },
+            easeOutQuart: function (x, t, b, c, d) {
+                return -c * ((t = t / d - 1) * t * t * t - 1) + b;
+            },
+            easeInOutQuart: function (x, t, b, c, d) {
+                if ((t /= d / 2) < 1) return c / 2 * t * t * t * t + b;
+                return -c / 2 * ((t -= 2) * t * t * t - 2) + b;
+            },
+            easeInQuint: function (x, t, b, c, d) {
+                return c * (t /= d) * t * t * t * t + b;
+            },
+            easeOutQuint: function (x, t, b, c, d) {
+                return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
+            },
+            easeInOutQuint: function (x, t, b, c, d) {
+                if ((t /= d / 2) < 1) return c / 2 * t * t * t * t * t + b;
+                return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
+            },
+            easeInSine: function (x, t, b, c, d) {
+                return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
+            },
+            easeOutSine: function (x, t, b, c, d) {
+                return c * Math.sin(t / d * (Math.PI / 2)) + b;
+            },
+            easeInOutSine: function (x, t, b, c, d) {
+                return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b;
+            },
+            easeInExpo: function (x, t, b, c, d) {
+                return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
+            },
+            easeOutExpo: function (x, t, b, c, d) {
+                return (t == d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
+            },
+            easeInOutExpo: function (x, t, b, c, d) {
+                if (t == 0) return b;
+                if (t == d) return b + c;
+                if ((t /= d / 2) < 1) return c / 2 * Math.pow(2, 10 * (t - 1)) + b;
+                return c / 2 * (-Math.pow(2, -10 * --t) + 2) + b;
+            },
+            easeInCirc: function (x, t, b, c, d) {
+                return -c * (Math.sqrt(1 - (t /= d) * t) - 1) + b;
+            },
+            easeOutCirc: function (x, t, b, c, d) {
+                return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
+            },
+            easeInOutCirc: function (x, t, b, c, d) {
+                if ((t /= d / 2) < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
+                return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1) + b;
+            },
+            easeInElastic: function (x, t, b, c, d) {
+                var s = 1.70158; var p = 0; var a = c;
+                if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3;
+                if (a < Math.abs(c)) { a = c; var s = p / 4; }
+                else var s = p / (2 * Math.PI) * Math.asin(c / a);
+                return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
+            },
+            easeOutElastic: function (x, t, b, c, d) {
+                var s = 1.70158; var p = 0; var a = c;
+                if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3;
+                if (a < Math.abs(c)) { a = c; var s = p / 4; }
+                else var s = p / (2 * Math.PI) * Math.asin(c / a);
+                return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
+            },
+            easeInOutElastic: function (x, t, b, c, d) {
+                var s = 1.70158; var p = 0; var a = c;
+                if (t == 0) return b; if ((t /= d / 2) == 2) return b + c; if (!p) p = d * (.3 * 1.5);
+                if (a < Math.abs(c)) { a = c; var s = p / 4; }
+                else var s = p / (2 * Math.PI) * Math.asin(c / a);
+                if (t < 1) return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
+                return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p) * .5 + c + b;
+            },
+            easeInBack: function (x, t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                return c * (t /= d) * t * ((s + 1) * t - s) + b;
+            },
+            easeOutBack: function (x, t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
+            },
+            easeInOutBack: function (x, t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                if ((t /= d / 2) < 1) return c / 2 * (t * t * (((s *= (1.525)) + 1) * t - s)) + b;
+                return c / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2) + b;
+            },
+            easeInBounce: function (x, t, b, c, d) {
+                return c - $.easing.easeOutBounce(x, d - t, 0, c, d) + b;
+            },
+            easeOutBounce: function (x, t, b, c, d) {
+                if ((t /= d) < (1 / 2.75)) {
+                    return c * (7.5625 * t * t) + b;
+                } else if (t < (2 / 2.75)) {
+                    return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
+                } else if (t < (2.5 / 2.75)) {
+                    return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
+                } else {
+                    return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
+                }
+            },
+            easeInOutBounce: function (x, t, b, c, d) {
+                if (t < d / 2) return $.easing.easeInBounce(x, t * 2, 0, c, d) * .5 + b;
+                return $.easing.easeOutBounce(x, t * 2 - d, 0, c, d) * .5 + c * .5 + b;
+            }
+        });
+
         var width = 1140,
-            height = 600;
+            height = 600,
+            centered;
 
         var selectNodeTitle = function (group) {
             if (group === 2)
@@ -112,6 +268,18 @@
             if (group === 5)
                 return 'Method';
             return 'Revision';
+        };
+
+        var selectNodeColor = function (group) {
+            if (group === 2)
+                return '#474B55';
+            if (group === 3)
+                return '#47C547';
+            if (group === 4)
+                return '#FFBD3A';
+            if (group === 5)
+                return '#EA7724';
+            return '#C0392B';
         };
 
         var selectNodeImage = function (group) {
@@ -129,6 +297,46 @@
         var zooming = function () {
             container.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
         };
+
+        var nodeClicked = function (d) {
+            var x, y, k, $panel = $("#revision-graph .graph-details");
+
+            $panel.hide();
+
+            if (d && centered !== d) {
+                x = d.x;
+                y = d.y;
+                k = 4;
+                centered = d;
+
+                $panel
+                    .html(d.name + (d.url ? '<a style="margin-left:10px;" href="' + d.url + '" class="btn btn-primary btn-xs" target="_blank" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>' : ''))
+                    .css({
+                        left: (width / 2) - 60,
+                        top: (height / 2) - ($panel.outerHeight() / 2) - 2,
+                        color: selectNodeColor(d.group)
+                    })
+                    .fadeIn(1200, "easeInBack")
+                    .children('a').tooltip();
+            } else {
+                x = width / 2;
+                y = height / 2;
+                k = 1;
+                centered = null;
+            }
+
+            d3.selectAll(".node")
+                .classed("selected", centered && function (d) { return d === centered; });
+
+            d3.selectAll(".node,.link")
+                .transition()
+                .duration(750)
+                .style("opacity", centered && function (d) { return (d === centered) ? 1.0 : 0.2; });
+
+            container.transition()
+                .duration(750)
+                .attr("transform", "translate(" + width / 2.5 + "," + height / 2 + ") scale(" + k + ") translate(" + -x + "," + -y + ")");
+        }
 
         var force = d3.layout.force()
             .charge(-120)
@@ -148,9 +356,10 @@
             .attr("width", "100%")
             .attr("height", "100%")
             .attr("fill", "#f3f3f3")
+            //.call(zoom)
+            //.on("dblclick.zoom", null)
             .attr("rx", "3")
-            .attr("ry", "3")
-            .call(zoom);
+            .attr("ry", "3");
 
         var container = svg.append("g");
 
@@ -170,9 +379,8 @@
                 .data(graph.nodes)
                 .enter().append("g")
                 .attr("class", "node")
-                .attr("data-tooltip-title", function (d) { return selectNodeTitle(d.group); })
-                .attr("data-tooltip-content", function (d) { return d.name; })
-                .call(force.drag);
+                //.call(force.drag)
+                .on("click", nodeClicked);
 
             node.append("image")
                 .attr("xlink:href", function (d) { return selectNodeImage(d.group); })
@@ -180,16 +388,6 @@
                 .attr("y", -12)
                 .attr("width", 24)
                 .attr("height", 24);
-
-            /*
-            node.append("text")
-                .attr("dx", 12)
-                .attr("dy", ".35em")
-                .text(function (d) { return d.name });
-
-            node.append("title")
-                .text(function (d) { return d.name; });
-            */
 
             force.on("tick", function () {
                 link.attr("x1", function (d) { return d.source.x; })
@@ -200,19 +398,7 @@
                 node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
             });
 
-            $(".node").each(function () {
-                var elem = $(this);
-                elem.qtip({
-                    content: {
-                        title: elem.attr('data-tooltip-title'),
-                        text: elem.attr('data-tooltip-content')
-                    },
-                    style: {
-                        classes: 'qtip-dark qtip-rounded qtip-shadow'
-                    }
-                });
-            });
-
+            /*
             $('a[href="#zoom-in"]').on("click", function (e) {
                 e.preventDefault();
 
@@ -243,18 +429,12 @@
                     .call(zoom.scale(scale < 1 ? 1 : scale).event)
                     .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
             });
+            */
 
-            $('a[href="#zoom-original"]').on("click", function (e) {
+            $('a[href="#zoom-none"]').on("click", function (e) {
                 e.preventDefault();
-
-                var $this = $(this);
-                $this.add($this.siblings('a')).addClass("disabled");
-
-                container.transition()
-                    .duration(600)
-                    .call(zoom.translate([0, 0]).event)
-                    .call(zoom.scale(1).event)
-                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+                var n = d3.select(".node.selected");
+                if (n) n.on("click")();
             });
         });
 

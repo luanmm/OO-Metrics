@@ -11,7 +11,7 @@
 </ul>
 <h2>Create</h2>
 <div class="well bs-component">
-    <form class="form-horizontal">
+    <form class="form-horizontal" action="@Url.Action("Create")" method="post">
         <fieldset>
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true)

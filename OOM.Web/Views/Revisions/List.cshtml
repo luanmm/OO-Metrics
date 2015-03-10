@@ -2,10 +2,14 @@
 
 @{
     ViewBag.Title = "List of revisions";
+    
+    var project = Model.FirstOrDefault().Project;
 }
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List", "Projects")</li>
+    <li>@Html.ActionLink(project.Name, "Details", "Projects", new { id = project.Id }, null)</li>
     <li class="active">Revisions</li>
 </ul>
 <div class="page-header">

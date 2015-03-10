@@ -53,7 +53,7 @@ namespace OOM.Web.Controllers
             var revisionNodeIndex = nodes.Count;
             nodes.Add(new
             {
-                name = String.Format("[{0} @ {1:dd/MM/yy HH:mm:ss}] {2}", revision.Author, revision.CreatedAt, revision.Message),
+                name = "This revision.",
                 group = 1
             });
 
@@ -62,8 +62,9 @@ namespace OOM.Web.Controllers
                 var namespaceNodeIndex = nodes.Count;
                 nodes.Add(new
                 {
-                    name = ns.Name,
-                    group = 2
+                    name = ns.FullyQualifiedIdentifier,
+                    group = 2,
+                    url = Url.Action("Namespace", "Elements", new { id = ns.Id })
                 });
                 links.Add(new
                 {
@@ -77,7 +78,8 @@ namespace OOM.Web.Controllers
                     nodes.Add(new
                     {
                         name = c.Name,
-                        group = 3
+                        group = 3,
+                        url = Url.Action("Class", "Elements", new { id = c.Id })
                     });
                     links.Add(new
                     {
@@ -91,7 +93,8 @@ namespace OOM.Web.Controllers
                         nodes.Add(new
                         {
                             name = f.Name,
-                            group = 4
+                            group = 4,
+                            url = Url.Action("Field", "Elements", new { id = f.Id })
                         });
                         links.Add(new
                         {
@@ -106,7 +109,8 @@ namespace OOM.Web.Controllers
                         nodes.Add(new
                         {
                             name = m.Name,
-                            group = 5
+                            group = 5,
+                            url = Url.Action("Method", "Elements", new { id = m.Id })
                         });
                         links.Add(new
                         {

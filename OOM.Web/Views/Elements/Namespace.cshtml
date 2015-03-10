@@ -1,0 +1,246 @@
+﻿@model OOM.Model.Namespace
+
+@{
+    ViewBag.Title = "Namespace details";
+}
+
+<ul class="breadcrumb">
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Projects", "List", "Projects")</li>
+    <li>@Html.ActionLink(Model.Revision.Project.Name, "Details", "Projects", new { id = Model.Revision.ProjectId }, null)</li>
+    <li>@Html.ActionLink("Revisions", "List", new { id = Model.Revision.ProjectId })</li>
+    <li>@Html.ActionLink(Model.Revision.RID, "Details", new { id = Model.Revision.Id })</li>
+    <li class="active">@Model.FullyQualifiedIdentifier</li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>Namespace details</h1>
+            <br />
+            <div>
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Name)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => model.FullyQualifiedIdentifier)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.FullyQualifiedIdentifier)
+                    </dd>
+                </dl>
+                <br />
+                <h2>History</h2>
+                <style>
+                    .link {
+                        stroke: #dedede;
+                    }
+
+                    .node text {
+                        pointer-events: none;
+                        font: 10px sans-serif;
+                        color: #333;
+                    }
+
+                    #revision-graph {
+                        width: 1140px;
+                        height: 600px;
+                        position: relative;
+                    }
+
+                        #revision-graph .graph-toolbar {
+                            position: absolute;
+                            right: 15px;
+                            top: 15px;
+                        }
+
+                            #revision-graph .graph-toolbar a {
+                                margin-left: 3px;
+                            }
+                </style>
+
+                <div id="revision-graph">
+                    <div class="graph-toolbar">
+                        <!-- TODO: Fix the centering problem of the "container" shape in the rendered SVG
+                        <a href="#zoom-in" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom in" role="button">
+                            <span class="fa fa-search-plus" aria-hidden="true"></span>
+                        </a>
+                        <a href="#zoom-out" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom out" role="button">
+                            <span class="fa fa-search-minus" aria-hidden="true"></span>
+                        </a>
+                        -->
+                        <a href="#zoom-original" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
+                            <span class="fa fa-crosshairs" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/d3")
+    @Scripts.Render("~/bundles/qtip")
+    <script>
+        @*
+        var width = 1140,
+            height = 600;
+
+        var selectNodeTitle = function (group) {
+            if (group === 2)
+                return 'Namespace';
+            if (group === 3)
+                return 'Class';
+            if (group === 4)
+                return 'Attribute';
+            if (group === 5)
+                return 'Method';
+            return 'Revision';
+        };
+
+        var selectNodeImage = function (group) {
+            if (group === 2)
+                return '@Url.Content("~/Content/images/icon-namespace.svg")';
+            if (group === 3)
+                return '@Url.Content("~/Content/images/icon-class.svg")';
+            if (group === 4)
+                return '@Url.Content("~/Content/images/icon-attribute.svg")';
+            if (group === 5)
+                return '@Url.Content("~/Content/images/icon-method.svg")';
+            return '@Url.Content("~/Content/images/icon-revision.svg")';
+        };
+
+        var zooming = function () {
+            container.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+        };
+
+        var force = d3.layout.force()
+            .charge(-120)
+            .linkDistance(30)
+            .size([width, height]);
+
+        var svg = d3.select("#revision-graph").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        var zoom = d3.behavior.zoom()
+            .size([width, height])
+            .scaleExtent([1, 10])
+            .on("zoom", zooming);
+
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "#f3f3f3")
+            .attr("rx", "3")
+            .attr("ry", "3")
+            .call(zoom);
+
+        var container = svg.append("g");
+
+        d3.json('@Url.Action("Graph", "Revisions", new { id = Model.Id })', function (error, graph) {
+            force
+                .nodes(graph.nodes)
+                .links(graph.links)
+                .start();
+
+            var link = container.selectAll(".link")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-width", function (d) { return Math.sqrt(d.value); });
+
+            var node = container.selectAll(".node")
+                .data(graph.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .attr("data-tooltip-title", function (d) { return selectNodeTitle(d.group); })
+                .attr("data-tooltip-content", function (d) { return d.name; })
+                .call(force.drag);
+
+            node.append("image")
+                .attr("xlink:href", function (d) { return selectNodeImage(d.group); })
+                .attr("x", -12)
+                .attr("y", -12)
+                .attr("width", 24)
+                .attr("height", 24);
+
+            force.on("tick", function () {
+                link.attr("x1", function (d) { return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; });
+
+                node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+            });
+
+            $(".node").each(function () {
+                var elem = $(this);
+                elem.qtip({
+                    content: {
+                        title: elem.attr('data-tooltip-title'),
+                        text: elem.attr('data-tooltip-content')
+                    },
+                    style: {
+                        classes: 'qtip-dark qtip-rounded qtip-shadow'
+                    }
+                });
+            });
+
+            $('a[href="#zoom-in"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                var translate = zoom.translate() || [0, 0];
+                var scale = (zoom.scale() || 1) + 1;
+
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate(translate).event)
+                    .call(zoom.scale(scale > 10 ? 10 : scale).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+
+            $('a[href="#zoom-out"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                var translate = zoom.translate() || [0, 0];
+                var scale = (zoom.scale() || 1) - 1;
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate(translate).event)
+                    .call(zoom.scale(scale < 1 ? 1 : scale).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+
+            $('a[href="#zoom-original"]').on("click", function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                $this.add($this.siblings('a')).addClass("disabled");
+
+                container.transition()
+                    .duration(600)
+                    .call(zoom.translate([0, 0]).event)
+                    .call(zoom.scale(1).event)
+                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
+            });
+        });
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+        *@
+    </script>
+}
