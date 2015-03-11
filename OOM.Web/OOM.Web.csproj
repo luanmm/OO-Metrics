@@ -974,6 +974,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </Content>
     <Content Include="Views\Elements\Namespace.cshtml" />
+    <Content Include="Views\Elements\Method.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

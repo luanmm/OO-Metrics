@@ -15,6 +15,8 @@ namespace OOM.Web.Controllers
     {
         private OOMetricsContext _db = new OOMetricsContext();
 
+        #region Actions
+
         // GET: /Metrics
         public ActionResult Index()
         {
@@ -59,7 +61,23 @@ namespace OOM.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    ExpressionEvaluator.Instance.Evaluate(metric.Expression);
+                    object element = null;
+                    switch (metric.TargetType) 
+                    {
+                        case ElementType.Namespace:
+                            element = new Namespace();
+                            break;
+                        case ElementType.Class:
+                            element = new Class();
+                            break;
+                        case ElementType.Field:
+                            element = new Field();
+                            break;
+                        case ElementType.Method:
+                            element = new Method();
+                            break;
+                    }
+                    EvaluateMetric(metric, element);
 
                     _db.Metrics.Add(metric);
                     _db.SaveChanges();
@@ -165,6 +183,131 @@ namespace OOM.Web.Controllers
 
             return RedirectToAction("Index");
         }
+
+        // POST: /Metrics/History/?revisionId=5&elementType=Class&elementId=8
+        public JsonResult History(int revisionId, string elementType, int elementId)
+        {
+            var revision = _db.Revisions.Find(revisionId);
+            if (revision == null)
+                throw new HttpException(400, "Bad request.");
+
+            var metricType = ElementType.Namespace;
+            object element = null;
+            if (elementType.Equals("Namespace", StringComparison.InvariantCultureIgnoreCase))
+            {
+                metricType = ElementType.Namespace;
+                element = _db.Namespaces.Find(elementId);
+            }
+            else if (elementType.Equals("Class", StringComparison.InvariantCultureIgnoreCase))
+            {
+                metricType = ElementType.Class;
+                element = _db.Classes.Find(elementId);
+            }
+            else if (elementType.Equals("Field", StringComparison.InvariantCultureIgnoreCase))
+            {
+                metricType = ElementType.Field;
+                element = _db.Fields.Find(elementId);
+            }
+            else if (elementType.Equals("Method", StringComparison.InvariantCultureIgnoreCase))
+            {
+                metricType = ElementType.Method;
+                element = _db.Methods.Find(elementId);
+            }
+
+            if (element == null)
+                throw new HttpException(400, "Bad request.");
+
+            var data = new List<object>();
+            var metrics = _db.Metrics.Where(x => x.TargetType == metricType);
+            var relatedRevisions = FindRelatedRevisions(revision, element);
+
+            foreach (var metric in metrics)
+            {
+                var dates = new List<object>();
+                foreach (var relatedRevision in relatedRevisions)
+                {
+                    var result = Convert.ToInt32(EvaluateMetric(metric, relatedRevision.Value)); // TODO: Remove this kind of code (just needed to example how this chart type works)
+                    while (result-- > 0)
+                        dates.Add(relatedRevision.Key.CreatedAt);
+                }
+
+                data.Add(new
+                { 
+                    name = metric.Name,
+                    dates = dates
+                }); 
+            }
+
+            return Json(data, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Privates
+
+        private IDictionary<Revision, object> FindRelatedRevisions(Revision baseRevision, object element)
+        {
+            if (element is Namespace)
+                return _db.Namespaces
+                    .Where(x => x.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Namespace).FullyQualifiedIdentifier))
+                    .ToDictionary(x => x.Revision, n => n as object);
+            
+            if (element is Class)
+                return _db.Classes
+                    .Where(x => x.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Class).FullyQualifiedIdentifier))
+                    .ToDictionary(x => x.Namespace.Revision, x => x as object);
+
+            if (element is Field)
+                return _db.Fields
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Field).FullyQualifiedIdentifier))
+                    .ToDictionary(x => x.Class.Namespace.Revision, x => x as object);
+
+            if (element is Method)
+                return _db.Methods
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Method).FullyQualifiedIdentifier))
+                    .ToDictionary(x => x.Class.Namespace.Revision, x => x as object);
+
+            throw new ArgumentException("This element is not from an expected type.");
+        }
+
+        private decimal EvaluateMetric(Metric metric, object element = null)
+        {
+            if (element == null)
+                return ExpressionEvaluator.Instance.Evaluate(metric.Expression);
+
+            return ExpressionEvaluator.Instance.Evaluate(metric.Expression, GetMetricParameters(element));
+        }
+
+        private IDictionary<string, object> GetMetricParameters(object element)
+        {
+            var parameters = new Dictionary<string, object>();
+
+            if (element is Namespace)
+            {
+                var n = element as Namespace;
+                // TODO
+            }
+            else if (element is Class)
+            {
+                var c = element as Class;
+                // TODO
+            }
+            else if (element is Field)
+            {
+                var f = element as Field;
+                // TODO
+            }
+            else if (element is Method) 
+            {
+                var m = element as Method;
+                parameters.Add("loc", m.LineCount);
+                parameters.Add("ep", m.ExitPoints);
+            }
+
+            return parameters;
+        }
+
+        #endregion
 
         protected override void Dispose(bool disposing)
         {
