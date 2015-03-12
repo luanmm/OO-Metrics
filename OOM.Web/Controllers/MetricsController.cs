@@ -223,18 +223,21 @@ namespace OOM.Web.Controllers
 
             foreach (var metric in metrics)
             {
-                var dates = new List<object>();
+                var values = new List<object>();
                 foreach (var relatedRevision in relatedRevisions)
                 {
-                    var result = Convert.ToInt32(EvaluateMetric(metric, relatedRevision.Value)); // TODO: Remove this kind of code (just needed to example how this chart type works)
-                    while (result-- > 0)
-                        dates.Add(relatedRevision.Key.CreatedAt);
+                    var result = EvaluateMetric(metric, relatedRevision.Item2);
+                    values.Add(new
+                    {
+                        result = result,
+                        datetime = relatedRevision.Item1.CreatedAt
+                    });
                 }
 
                 data.Add(new
                 { 
-                    name = metric.Name,
-                    dates = dates
+                    metric = metric.Name,
+                    values = values
                 }); 
             }
 
@@ -245,27 +248,27 @@ namespace OOM.Web.Controllers
 
         #region Privates
 
-        private IDictionary<Revision, object> FindRelatedRevisions(Revision baseRevision, object element)
+        private IEnumerable<Tuple<Revision, object>> FindRelatedRevisions(Revision baseRevision, object element)
         {
             if (element is Namespace)
                 return _db.Namespaces
-                    .Where(x => x.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Namespace).FullyQualifiedIdentifier))
-                    .ToDictionary(x => x.Revision, n => n as object);
-            
+                    .Where(x => x.Revision.ProjectId == baseRevision.ProjectId && ((Namespace)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, object>(x.Revision, x)).ToList();
+
             if (element is Class)
                 return _db.Classes
-                    .Where(x => x.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Class).FullyQualifiedIdentifier))
-                    .ToDictionary(x => x.Namespace.Revision, x => x as object);
+                    .Where(x => x.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Class)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, object>(x.Namespace.Revision, x)).ToList();
 
             if (element is Field)
                 return _db.Fields
-                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Field).FullyQualifiedIdentifier))
-                    .ToDictionary(x => x.Class.Namespace.Revision, x => x as object);
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Field)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, object>(x.Class.Namespace.Revision, x)).ToList();
 
             if (element is Method)
                 return _db.Methods
-                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && x.FullyQualifiedIdentifier.Equals((element as Method).FullyQualifiedIdentifier))
-                    .ToDictionary(x => x.Class.Namespace.Revision, x => x as object);
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Method)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, object>(x.Class.Namespace.Revision, x)).ToList();
 
             throw new ArgumentException("This element is not from an expected type.");
         }
