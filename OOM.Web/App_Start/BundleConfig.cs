@@ -24,9 +24,7 @@ namespace OOM.Web
                 "~/Scripts/respond.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/d3").Include(
-                "~/Scripts/d3.js",
-                "~/Scripts/eventDrops.js",
-                "~/Scripts/d3-tip.js"));
+                "~/Scripts/d3.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/mathjax").Include(
                 "~/Scripts/MathJax/config/oom.js",

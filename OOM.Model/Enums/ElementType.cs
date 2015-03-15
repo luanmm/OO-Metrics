@@ -12,4 +12,24 @@ namespace OOM.Model
         Field = 3,
         Method = 4,
     }
+
+    public static class ElementTypeExtension
+    {
+        public static Type ToElement(this ElementType elementType)
+        {
+            switch (elementType)
+            {
+                case ElementType.Namespace:
+                    return typeof(Namespace);
+                case ElementType.Class:
+                    return typeof(Class);
+                case ElementType.Field:
+                    return typeof(Field);
+                case ElementType.Method:
+                    return typeof(Method);
+                default:
+                    return null;
+            }
+        }
+    }
 }

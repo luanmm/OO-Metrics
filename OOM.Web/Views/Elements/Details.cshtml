@@ -1,0 +1,422 @@
+﻿@model OOM.Web.Models.ElementDetailsModel
+
+@{
+    ViewBag.Title = String.Format("{0} details", Model.Element.Type.ToString());
+}
+
+@*
+    <ul class="breadcrumb">
+        <li>@Html.ActionLink("Home", "Index", "Home")</li>
+        <li>@Html.ActionLink("Projects", "List", "Projects")</li>
+        <li>@Html.ActionLink(Model.Revision.Project.Name, "Details", "Projects", new { id = Model.Revision.ProjectId }, null)</li>
+        <li>@Html.ActionLink("Revisions", "List", new { id = Model.Revision.ProjectId })</li>
+        <li>@Html.ActionLink(Model.Revision.RID, "Details", new { id = Model.Revision.Id })</li>
+        <li class="active">@Model.Name</li>
+    </ul>
+*@
+<div class="page-header">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>@String.Format("{0} details", Model.Element.Type.ToString())</h1>
+            <br />
+            <div>
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Element.Name)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Element.Name)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Element.FullyQualifiedIdentifier)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Element.FullyQualifiedIdentifier)
+                    </dd>
+                </dl>
+                <br />
+                <h2>History</h2>
+                <style>
+                    .link {
+                        stroke: #dedede;
+                    }
+
+                    .node text {
+                        pointer-events: none;
+                        font: 10px sans-serif;
+                        color: #333;
+                    }
+
+                    #history-chart {
+                        width: 1140px;
+                        height: 600px;
+                        position: relative;
+                    }
+
+                        #history-chart .chart-toolbar {
+                            position: absolute;
+                            right: 15px;
+                            top: 15px;
+                        }
+
+                            #history-chart .chart-toolbar a {
+                                margin-left: 3px;
+                            }
+                </style>
+
+                <div id="history-chart">
+                    <div class="chart-toolbar">
+                        <!-- TODO: Fix the centering problem of the "container" shape in the rendered SVG
+                        <a href="#zoom-in" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom in" role="button">
+                            <span class="fa fa-search-plus" aria-hidden="true"></span>
+                        </a>
+                        <a href="#zoom-out" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom out" role="button">
+                            <span class="fa fa-search-minus" aria-hidden="true"></span>
+                        </a>
+                        <a href="#zoom-original" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
+                            <span class="fa fa-crosshairs" aria-hidden="true"></span>
+                        </a>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/d3")
+    <script>
+    var config = {
+        minScale: 0,
+        maxScale: Infinity,
+        width: 1000,
+        margin: {
+            top: 60,
+            left: 200,
+            bottom: 40,
+            right: 50
+        },
+        locale: null,
+        axisFormat: null,
+        tickFormat: [
+            [".%L", function (d) { return d.getMilliseconds(); }],
+            [":%S", function (d) { return d.getSeconds(); }],
+            ["%I:%M", function (d) { return d.getMinutes(); }],
+            ["%I %p", function (d) { return d.getHours(); }],
+            ["%a %d", function (d) { return d.getDay() && d.getDate() != 1; }],
+            ["%b %d", function (d) { return d.getDate() != 1; }],
+            ["%B", function (d) { return d.getMonth(); }],
+            ["%Y", function () { return true; }]
+        ],
+        eventHover: null,
+        eventZoom: null,
+        hasDelimiter: true,
+        hasTopAxis: true,
+        hasBottomAxis: function (data) {
+            return data.length >= 10;
+        },
+        eventLineColor: 'black',
+        eventColor: null
+    };
+
+    var xScale = d3.time.scale();
+    var yScale = d3.scale.ordinal();
+    var color = d3.scale.category10();
+
+    d3.json('@Url.Action("History", "Metrics")?revisionId=@(Model.Revision.Id)&elementType=@(Model.Element.Type.ToString())&elementId=@(Model.Element.Id)', function (error, data) {
+        var zoom = d3.behavior.zoom()
+            .center(null)
+            .scaleExtent([config.minScale, config.maxScale])
+            .on("zoom", updateZoom)
+            .on("zoomend", zoomEnd);
+
+        var graphWidth = config.width - config.margin.right - config.margin.left;
+        var graphHeight = data.length * 40;
+        var height = graphHeight + config.margin.top + config.margin.bottom;
+
+        var svg = d3.select('#history-chart')
+            .datum(data)
+            .append('svg')
+            .attr('width', config.width)
+            .attr('height', height);
+
+        var graph = svg.append('g')
+          .attr('transform', 'translate(0, 25)');
+
+        var yDomain = [];
+        var yRange = [];
+
+        var allDates = [];
+        data.forEach(function (x, idx) {
+            yDomain.push(x.name);
+            yRange.push(idx * 40);
+            x.values.forEach(function (y) {
+                allDates.push((new Date(y.datetime)).getTime());
+            });
+        });
+
+        var minDate = new Date(Math.min.apply(null, allDates));
+        var maxDate = new Date(Math.max.apply(null, allDates));
+
+        yScale.domain(yDomain).range(yRange);
+
+        var yAxisEl = graph.append('g')
+          .classed('y-axis', true)
+          .attr('transform', 'translate(0, 60)');
+
+        var yTick = yAxisEl.append('g').selectAll('g').data(yDomain);
+
+        yTick.enter()
+          .append('g')
+          .attr('transform', function (d) {
+              return 'translate(0, ' + yScale(d) + ')';
+          })
+          .append('line')
+          .classed('y-tick', true)
+          .attr('x1', config.margin.left)
+          .attr('x2', config.margin.left + graphWidth);
+
+        yTick.exit().remove();
+
+        var curx, cury;
+        var zoomRect = svg
+          .append('rect')
+          .call(zoom)
+          .classed('zoom', true)
+            .attr('fill-opacity', 0)
+          .attr('width', graphWidth)
+          .attr('height', height)
+          .attr('transform', 'translate(' + config.margin.left + ', 35)')
+        ;
+
+        if (typeof config.eventHover === 'function') {
+            zoomRect.on('mousemove', function (d, e) {
+                var event = d3.event;
+                if (curx == event.clientX && cury == event.clientY) return;
+                curx = event.clientX;
+                cury = event.clientY;
+                zoomRect.attr('display', 'none');
+                var el = document.elementFromPoint(d3.event.clientX, d3.event.clientY);
+                zoomRect.attr('display', 'block');
+                if (el.tagName !== 'circle') return;
+                config.eventHover(el);
+            });
+        }
+
+        xScale.range([0, graphWidth]).domain([minDate, maxDate]);
+
+        zoom.x(xScale);
+
+        function updateZoom() {
+            if (d3.event.sourceEvent.toString() === '[object MouseEvent]') {
+                zoom.translate([d3.event.translate[0], 0]);
+            }
+
+            if (d3.event.sourceEvent.toString() === '[object WheelEvent]') {
+                zoom.scale(d3.event.scale);
+            }
+
+            redraw();
+        }
+
+        function redrawDelimiter() {
+            svg.select('.delimiter').remove();
+            var delimiterEl = svg
+              .append('g')
+              .classed('delimiter', true)
+              .attr('width', graphWidth)
+              .attr('height', 10)
+              .attr('transform', 'translate(' + config.margin.left + ', ' + (config.margin.top - 45) + ')');
+
+            delimiterEl.each(function (data) {
+                d3.select(this).selectAll('text').remove();
+
+                var limits = xScale.domain();
+                var dateFormat = config.locale ? config.locale.timeFormat("%d %B %Y") : d3.time.format("%d %B %Y");
+
+                d3.select(this).append('text')
+                  .text(function () {
+
+                      return dateFormat(limits[0]);
+                  })
+                  .classed('start', true)
+                ;
+
+                d3.select(this).append('text')
+                  .text(function () {
+
+                      return dateFormat(limits[1]);
+                  })
+                  .attr('text-anchor', 'end')
+                  .attr('transform', 'translate(' + xScale.range()[1] + ')')
+                  .classed('end', true)
+                ;
+            });
+        }
+
+        function zoomEnd() {
+            if (config.eventZoom) {
+                config.eventZoom(xScale);
+            }
+            if (config.hasDelimiter) {
+                redrawDelimiter();
+            }
+        }
+
+        function filterData(data) {
+            data = data || [];
+            var filteredData = [];
+            var boundary = xScale.range();
+            var min = boundary[0];
+            var max = boundary[1];
+
+            var minValue = Number.MIN_VALUE, maxValue = Number.MAX_VALUE;
+            data.forEach(function (datum) {
+                maxValue = Math.max(maxValue, datum.value);
+                minValue = Math.min(minValue, datum.value);
+            });
+
+            var zScale = d3.scale.ordinal()
+                .range([5, 10])
+                .domain([minValue, maxValue]);
+
+            data.forEach(function (datum) {
+                var datetime = new Date(datum.datetime);
+                var ds = xScale(datetime);
+                if (ds < min || ds > max) {
+                    return;
+                }
+
+                filteredData.push({
+                    datetime: xScale(datetime),
+                    value: zScale(datum.value),
+                    group: datum.group
+                });
+            });
+
+            return filteredData;
+        }
+
+        function averageData(values) {
+            var total = 0;
+            values.forEach(function (v) {
+                total += v.value;
+            });
+            return Math.round((total / values.length) * 100) / 100;
+        }
+
+        function drawXAxis(where) {
+
+            // copy config.tickFormat because d3 format.multi edit its given tickFormat data
+            var tickFormatData = [];
+
+            config.tickFormat.forEach(function (item) {
+                var tick = item.slice(0);
+                tickFormatData.push(tick);
+            });
+
+            var tickFormat = config.locale ? config.locale.timeFormat.multi(tickFormatData) : d3.time.format.multi(tickFormatData);
+            var xAxis = d3.svg.axis()
+              .scale(xScale)
+              .orient(where)
+              .tickFormat(tickFormat)
+            ;
+
+            if (typeof config.axisFormat === 'function') {
+                config.axisFormat(xAxis);
+            }
+
+            var y = (where == 'bottom' ? parseInt(graphHeight) : 0) + config.margin.top - 40;
+
+            graph.select('.x-axis.' + where).remove();
+            var xAxisEl = graph
+              .append('g')
+              .classed('x-axis', true)
+              .classed(where, true)
+              .attr('transform', 'translate(' + config.margin.left + ', ' + y + ')')
+              .call(xAxis)
+            ;
+        }
+
+        function redraw() {
+
+            var hasTopAxis = typeof config.hasTopAxis === 'function' ? config.hasTopAxis(data) : config.hasTopAxis;
+            if (hasTopAxis) {
+                drawXAxis('top');
+            }
+
+            var hasBottomAxis = typeof config.hasBottomAxis === 'function' ? config.hasBottomAxis(data) : config.hasBottomAxis;
+            if (hasBottomAxis) {
+                drawXAxis('bottom');
+            }
+
+            zoom.size([config.width, height]);
+
+            graph.select('.graph-body').remove();
+            var graphBody = graph
+              .append('g')
+              .classed('graph-body', true)
+              .attr('transform', 'translate(' + config.margin.left + ', ' + (config.margin.top - 15) + ')');
+
+            var lines = graphBody.selectAll('g').data(data);
+
+            lines.enter()
+              .append('g')
+              .classed('line', true)
+              .attr('transform', function (d) {
+                  return 'translate(0,' + yScale(d.name) + ')';
+              })
+              .style('fill', config.eventLineColor);
+
+            lines.each(function (data) {
+                d3.select(this).selectAll('text').remove();
+
+                d3.select(this).append('text')
+                  .text(function (d) {
+                      var count = filterData(d.values).length;
+                      return d.name + (count > 0 ? ' (' + averageData(d.values) + ')' : '');
+                  })
+                  .attr('text-anchor', 'end')
+                  .attr('transform', 'translate(-20)')
+                  .style('fill', 'black')
+                ;
+
+                d3.select(this).selectAll('circle').remove();
+
+                var circle = d3.select(this).selectAll('circle')
+                  .data(function (d) {
+                      // filter value outside of range
+                      return filterData(d.values);
+                  });
+
+                circle.enter()
+                  .append('circle')
+                  .attr('cx', function (d) { return d.datetime; })
+                  .style('fill', function (d) { debugger; return color(d.group); })
+                  .style('fill-opacity', 0.7)
+                  .attr('cy', -5)
+                  .attr('r', function (d) { return d.value; });
+
+                circle.exit().remove();
+            });
+
+            lines.exit().remove();
+        }
+
+        redraw();
+        if (config.hasDelimiter) {
+            redrawDelimiter();
+        }
+        if (config.eventZoom) {
+            config.eventZoom(xScale);
+        }
+    });
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    </script>
+}

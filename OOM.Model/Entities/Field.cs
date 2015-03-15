@@ -7,7 +7,7 @@ using System.Data.Entity.Spatial;
 namespace OOM.Model
 {
     [Table("Field")]
-    public partial class Field : IEntity<int>
+    public partial class Field : IEntity<int>, IElement
     {
         public Field()
         {
@@ -22,7 +22,7 @@ namespace OOM.Model
         [Required, MaxLength(250)]
         public string Name { get; set; }
 
-        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        [Display(Name = "Identifier"), Required, MaxLength(250)]
         public string FullyQualifiedIdentifier { get; set; }
 
         [Required]
@@ -45,6 +45,20 @@ namespace OOM.Model
 
         [NotMapped]
         public bool IsPublic { get { return Encapsulation.HasFlag(EncapsulationTypes.Public); } }
+
+        [NotMapped]
+        public ElementType Type { get { return ElementType.Field; } }
+
+        [NotMapped]
+        public IDictionary<string, object> Parameters
+        {
+            get
+            {
+                var parameters = new Dictionary<string, object>();
+                // TODO: Implement parameters for this element type
+                return parameters;
+            }
+        }
 
         #endregion
     }

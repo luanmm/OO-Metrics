@@ -7,7 +7,7 @@ using System.Data.Entity.Spatial;
 namespace OOM.Model
 {
     [Table("Namespace")]
-    public partial class Namespace : IEntity<int>
+    public partial class Namespace : IEntity<int>, IElement
     {
         public Namespace()
         {
@@ -22,11 +22,29 @@ namespace OOM.Model
         [Required, MaxLength(250)]
         public string Name { get; set; }
 
-        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        [Display(Name = "Identifier"), Required, MaxLength(250)]
         public string FullyQualifiedIdentifier { get; set; }
 
         public virtual ICollection<Class> Classes { get; set; }
 
         public virtual Revision Revision { get; set; }
+
+        #region Not mapped properties
+
+        [NotMapped]
+        public ElementType Type { get { return ElementType.Namespace; } }
+
+        [NotMapped]
+        public IDictionary<string, object> Parameters
+        {
+            get
+            {
+                var parameters = new Dictionary<string, object>();
+                // TODO: Implement parameters for this element type
+                return parameters;
+            }
+        }
+
+        #endregion
     }
 }

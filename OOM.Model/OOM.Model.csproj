@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\IElement.cs" />
     <Compile Include="Enums\ElementType.cs" />
     <Compile Include="Entities\Method.cs" />
     <Compile Include="Entities\Field.cs" />

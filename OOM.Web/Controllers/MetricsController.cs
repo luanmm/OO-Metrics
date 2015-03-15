@@ -61,23 +61,7 @@ namespace OOM.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    object element = null;
-                    switch (metric.TargetType) 
-                    {
-                        case ElementType.Namespace:
-                            element = new Namespace();
-                            break;
-                        case ElementType.Class:
-                            element = new Class();
-                            break;
-                        case ElementType.Field:
-                            element = new Field();
-                            break;
-                        case ElementType.Method:
-                            element = new Method();
-                            break;
-                    }
-                    EvaluateMetric(metric, element);
+                    EvaluateMetric(metric, (IElement)Activator.CreateInstance(metric.TargetType.ToElement()));
 
                     _db.Metrics.Add(metric);
                     _db.SaveChanges();
@@ -184,43 +168,21 @@ namespace OOM.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: /Metrics/History/?revisionId=5&elementType=Class&elementId=8
-        public JsonResult History(int revisionId, string elementType, int elementId)
+        // POST: /Metrics/History/?elementType=class&elementId=8&revisionId=5
+        public JsonResult History(ElementType elementType, int elementId, int revisionId)
         {
             var revision = _db.Revisions.Find(revisionId);
             if (revision == null)
                 throw new HttpException(400, "Bad request.");
 
-            var metricType = ElementType.Namespace;
-            object element = null;
-            if (elementType.Equals("Namespace", StringComparison.InvariantCultureIgnoreCase))
-            {
-                metricType = ElementType.Namespace;
-                element = _db.Namespaces.Find(elementId);
-            }
-            else if (elementType.Equals("Class", StringComparison.InvariantCultureIgnoreCase))
-            {
-                metricType = ElementType.Class;
-                element = _db.Classes.Find(elementId);
-            }
-            else if (elementType.Equals("Field", StringComparison.InvariantCultureIgnoreCase))
-            {
-                metricType = ElementType.Field;
-                element = _db.Fields.Find(elementId);
-            }
-            else if (elementType.Equals("Method", StringComparison.InvariantCultureIgnoreCase))
-            {
-                metricType = ElementType.Method;
-                element = _db.Methods.Find(elementId);
-            }
-
+            var element = _db.Set(elementType.ToElement()).Find(elementId) as IElement;
             if (element == null)
                 throw new HttpException(400, "Bad request.");
 
-            var data = new List<object>();
-            var metrics = _db.Metrics.Where(x => x.TargetType == metricType);
+            var metrics = _db.Metrics.Where(x => x.TargetType == elementType).ToList();
             var relatedRevisions = FindRelatedRevisions(revision, element);
 
+            var data = new List<object>();
             foreach (var metric in metrics)
             {
                 var values = new List<object>();
@@ -229,14 +191,15 @@ namespace OOM.Web.Controllers
                     var result = EvaluateMetric(metric, relatedRevision.Item2);
                     values.Add(new
                     {
-                        result = result,
-                        datetime = relatedRevision.Item1.CreatedAt
+                        value = result,
+                        datetime = relatedRevision.Item1.CreatedAt,
+                        group = metric.Id
                     });
                 }
 
                 data.Add(new
                 { 
-                    metric = metric.Name,
+                    name = metric.Name,
                     values = values
                 }); 
             }
@@ -248,66 +211,37 @@ namespace OOM.Web.Controllers
 
         #region Privates
 
-        private IEnumerable<Tuple<Revision, object>> FindRelatedRevisions(Revision baseRevision, object element)
+        private IEnumerable<Tuple<Revision, IElement>> FindRelatedRevisions(Revision baseRevision, IElement element)
         {
-            if (element is Namespace)
+            if (element.Type == ElementType.Namespace)
                 return _db.Namespaces
-                    .Where(x => x.Revision.ProjectId == baseRevision.ProjectId && ((Namespace)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
-                    .Select(x => Tuple.Create<Revision, object>(x.Revision, x)).ToList();
+                    .Where(x => x.Revision.ProjectId == baseRevision.ProjectId && element.FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, IElement>(x.Revision, x)).ToList();
 
-            if (element is Class)
+            if (element.Type == ElementType.Class)
                 return _db.Classes
-                    .Where(x => x.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Class)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
-                    .Select(x => Tuple.Create<Revision, object>(x.Namespace.Revision, x)).ToList();
+                    .Where(x => x.Namespace.Revision.ProjectId == baseRevision.ProjectId && element.FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, IElement>(x.Namespace.Revision, x)).ToList();
 
-            if (element is Field)
+            if (element.Type == ElementType.Field)
                 return _db.Fields
-                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Field)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
-                    .Select(x => Tuple.Create<Revision, object>(x.Class.Namespace.Revision, x)).ToList();
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && element.FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, IElement>(x.Class.Namespace.Revision, x)).ToList();
 
-            if (element is Method)
+            if (element.Type == ElementType.Method)
                 return _db.Methods
-                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && ((Method)element).FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
-                    .Select(x => Tuple.Create<Revision, object>(x.Class.Namespace.Revision, x)).ToList();
+                    .Where(x => x.Class.Namespace.Revision.ProjectId == baseRevision.ProjectId && element.FullyQualifiedIdentifier.Equals(x.FullyQualifiedIdentifier)).ToList()
+                    .Select(x => Tuple.Create<Revision, IElement>(x.Class.Namespace.Revision, x)).ToList();
 
             throw new ArgumentException("This element is not from an expected type.");
         }
 
-        private decimal EvaluateMetric(Metric metric, object element = null)
+        private decimal EvaluateMetric(Metric metric, IElement element = null)
         {
             if (element == null)
                 return ExpressionEvaluator.Instance.Evaluate(metric.Expression);
 
-            return ExpressionEvaluator.Instance.Evaluate(metric.Expression, GetMetricParameters(element));
-        }
-
-        private IDictionary<string, object> GetMetricParameters(object element)
-        {
-            var parameters = new Dictionary<string, object>();
-
-            if (element is Namespace)
-            {
-                var n = element as Namespace;
-                // TODO
-            }
-            else if (element is Class)
-            {
-                var c = element as Class;
-                // TODO
-            }
-            else if (element is Field)
-            {
-                var f = element as Field;
-                // TODO
-            }
-            else if (element is Method) 
-            {
-                var m = element as Method;
-                parameters.Add("loc", m.LineCount);
-                parameters.Add("ep", m.ExitPoints);
-            }
-
-            return parameters;
+            return ExpressionEvaluator.Instance.Evaluate(metric.Expression, element.Parameters);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using OOM.Model;
+using OOM.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -14,44 +15,22 @@ namespace OOM.Web.Controllers
     {
         private OOMetricsContext _db = new OOMetricsContext();
 
-        // GET: /Elements/Namespace/5
-        public ActionResult Namespace(int id)
+        // GET: /Elements/Details/?revisionId=2&elementType=class&id=5
+        public ActionResult Details(ElementType elementType, int elementId, int revisionId)
         {
-            var n = _db.Namespaces.Find(id);
-            if (n == null)
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
+            var revision = _db.Revisions.Find(revisionId);
+            if (revision == null)
+                throw new HttpException(400, "Bad request.");
 
-            return View(n);
-        }
+            var element = _db.Set(elementType.ToElement()).Find(elementId) as IElement;
+            if (element == null)
+                throw new HttpException(400, "Bad request.");
 
-        // GET: /Elements/Class/5
-        public ActionResult Class(int id)
-        {
-            var c = _db.Classes.Find(id);
-            if (c == null)
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-
-            return View(c);
-        }
-
-        // GET: /Elements/Method/5
-        public ActionResult Method(int id)
-        {
-            var m = _db.Methods.Find(id);
-            if (m == null)
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-
-            return View(m);
-        }
-
-        // GET: /Elements/Field/5
-        public ActionResult Field(int id)
-        {
-            var f = _db.Fields.Find(id);
-            if (f == null)
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-
-            return View(f);
+            return View(new ElementDetailsModel
+            {
+                Element = element,
+                Revision = revision
+            });
         }
 
         protected override void Dispose(bool disposing)

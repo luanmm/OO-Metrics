@@ -124,15 +124,17 @@
     <Compile Include="Controllers\ElementsController.cs" />
     <Compile Include="Controllers\RevisionsController.cs" />
     <Compile Include="Controllers\ProjectsController.cs" />
+    <Compile Include="Extensions\JsonHandlerAttribute.cs" />
     <Compile Include="Extensions\MenuLinkExtension.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ElementsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
-    <Content Include="Content\images\icon-attribute.svg" />
+    <Content Include="Content\images\icon-field.svg" />
     <Content Include="Content\images\icon-class.svg" />
     <Content Include="Content\images\icon-method.svg" />
     <Content Include="Content\images\icon-namespace.svg" />
@@ -973,8 +975,7 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
-    <Content Include="Views\Elements\Namespace.cshtml" />
-    <Content Include="Views\Elements\Method.cshtml" />
+    <Content Include="Views\Elements\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

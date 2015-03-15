@@ -15,60 +15,48 @@ namespace OOM.Tests
         public void TestMathParser()
         {
             // Max
-            var e1 = new ExpressionEvaluator();
             var p1 = new Dictionary<string, object>();
             p1.Add("a", new decimal[] { 1M, 2M, 3M });
-            Assert.AreEqual(3M, e1.Evaluate("max(a)", p1));
+            Assert.AreEqual(3M, ExpressionEvaluator.Instance.Evaluate("max(a)", p1));
 
-            var e2 = new ExpressionEvaluator();
             var p2 = new Dictionary<string, object>();
             p2.Add("a", new int[] { 1, 2, 3 });
-            Assert.AreEqual(3M, e2.Evaluate("max(a)", p2));
+            Assert.AreEqual(3M, ExpressionEvaluator.Instance.Evaluate("max(a)", p2));
 
-            var e3 = new ExpressionEvaluator();
-            Assert.AreEqual(3M, e2.Evaluate("max(1, 2, 3)"));
+            Assert.AreEqual(3M, ExpressionEvaluator.Instance.Evaluate("max(1, 2, 3)"));
 
             // Min
-            var e4 = new ExpressionEvaluator();
             var p4 = new Dictionary<string, object>();
             p4.Add("a", new decimal[] { 1M, 2M, 3M });
-            Assert.AreEqual(1M, e4.Evaluate("min(a)", p4));
+            Assert.AreEqual(1M, ExpressionEvaluator.Instance.Evaluate("min(a)", p4));
 
-            var e5 = new ExpressionEvaluator();
             var p5 = new Dictionary<string, object>();
             p5.Add("a", new int[] { 1, 2, 3 });
-            Assert.AreEqual(1M, e5.Evaluate("min(a)", p5));
+            Assert.AreEqual(1M, ExpressionEvaluator.Instance.Evaluate("min(a)", p5));
 
-            var e6 = new ExpressionEvaluator();
-            Assert.AreEqual(1M, e6.Evaluate("min(1, 2, 3)"));
+            Assert.AreEqual(1M, ExpressionEvaluator.Instance.Evaluate("min(1, 2, 3)"));
 
             // Sum
-            var e7 = new ExpressionEvaluator();
             var p7 = new Dictionary<string, object>();
             p7.Add("a", new decimal[] { 1M, 2M, 3M });
-            Assert.AreEqual(6M, e7.Evaluate("sum(a)", p7));
+            Assert.AreEqual(6M, ExpressionEvaluator.Instance.Evaluate("sum(a)", p7));
 
-            var e8 = new ExpressionEvaluator();
             var p8 = new Dictionary<string, object>();
             p8.Add("a", new int[] { 1, 2, 3 });
-            Assert.AreEqual(6M, e8.Evaluate("sum(a)", p8));
+            Assert.AreEqual(6M, ExpressionEvaluator.Instance.Evaluate("sum(a)", p8));
 
-            var e9 = new ExpressionEvaluator();
-            Assert.AreEqual(6M, e9.Evaluate("sum(1, 2, 3)"));
+            Assert.AreEqual(6M, ExpressionEvaluator.Instance.Evaluate("sum(1, 2, 3)"));
 
             // Avg
-            var e10 = new ExpressionEvaluator();
             var p10 = new Dictionary<string, object>();
             p10.Add("a", new decimal[] { 1M, 2M, 3M });
-            Assert.AreEqual(2M, e10.Evaluate("avg(a)", p10));
+            Assert.AreEqual(2M, ExpressionEvaluator.Instance.Evaluate("avg(a)", p10));
 
-            var e11 = new ExpressionEvaluator();
             var p11 = new Dictionary<string, object>();
             p11.Add("a", new int[] { 1, 2, 3 });
-            Assert.AreEqual(2M, e11.Evaluate("avg(a)", p11));
+            Assert.AreEqual(2M, ExpressionEvaluator.Instance.Evaluate("avg(a)", p11));
 
-            var e12 = new ExpressionEvaluator();
-            Assert.AreEqual(2M, e12.Evaluate("avg(1, 2, 3)"));
+            Assert.AreEqual(2M, ExpressionEvaluator.Instance.Evaluate("avg(1, 2, 3)"));
         }
 
         [TestMethod]

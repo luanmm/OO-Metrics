@@ -7,7 +7,7 @@ using System.Data.Entity.Spatial;
 namespace OOM.Model
 {
     [Table("Method")]
-    public partial class Method : IEntity<int>
+    public partial class Method : IEntity<int>, IElement
     {
         public Method()
         {
@@ -22,7 +22,7 @@ namespace OOM.Model
         [Required, MaxLength(250)]
         public string Name { get; set; }
 
-        [Display(Name = "Fully qualified identifier"), Required, MaxLength(250)]
+        [Display(Name = "Identifier"), Required, MaxLength(250)]
         public string FullyQualifiedIdentifier { get; set; }
 
         [Required]
@@ -40,5 +40,33 @@ namespace OOM.Model
         public virtual ICollection<Field> ReferencedFields { get; set; }
 
         public virtual Class Class { get; set; }
+
+        #region Not mapped properties
+
+        [NotMapped]
+        public bool IsPrivate { get { return Encapsulation.HasFlag(EncapsulationTypes.Private); } }
+
+        [NotMapped]
+        public bool IsProtected { get { return Encapsulation.HasFlag(EncapsulationTypes.Protected); } }
+
+        [NotMapped]
+        public bool IsPublic { get { return Encapsulation.HasFlag(EncapsulationTypes.Public); } }
+
+        [NotMapped]
+        public ElementType Type { get { return ElementType.Method; } }
+
+        [NotMapped]
+        public IDictionary<string, object> Parameters
+        {
+            get
+            {
+                var parameters = new Dictionary<string, object>();
+                parameters.Add("loc", LineCount);
+                parameters.Add("ep", ExitPoints);
+                return parameters;
+            }
+        }
+
+        #endregion
     }
 }
