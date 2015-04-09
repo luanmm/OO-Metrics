@@ -10,42 +10,76 @@
     <li class="active">Edit</li>
 </ul>
 <h2>Edit</h2>
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<div class="well bs-component">
+    <form class="form-horizontal" action="@Url.Action("Create")" method="post">
+        <fieldset>
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
 
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true)
-        @Html.HiddenFor(model => model.Id)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Name)
-                @Html.ValidationMessageFor(model => model.Name)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Name, new { @class = "col-lg-2 control-label" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.Name, new { @class = "form-control", @autofocus = "" })
+                    @Html.ValidationMessageFor(model => model.Name)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Expression)
-                @Html.ValidationMessageFor(model => model.Expression)
+            <div class="form-group">
+                @Html.LabelFor(model => model.TargetType, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EnumDropDownListFor(model => model.TargetType, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TargetType)
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.TargetType, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.TargetType)
-                @Html.ValidationMessageFor(model => model.TargetType)
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-4" })
+                        <div class="col-md-8">
+                            @Html.TextAreaFor(model => model.Expression, new { @class = "form-control", @rows = 8 })
+                            @Html.ValidationMessageFor(model => model.Expression)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div id="math-preview"></div>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+            <div class="form-group">
+                <div class="col-lg-10 col-lg-offset-2">
+                    <button type="reset" class="btn btn-default" tabindex="-1">Reset</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </div>
-        </div>
-    </div>
+        </fieldset>
+    </form>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/mathjax")
+    <script>
+        $(function () {
+            $('#Expression').on('input keyup', function () {
+                var $this = $(this);
+
+                clearTimeout($this.data('timer'));
+                $this.data('timer', setTimeout(function () {
+                    $this.removeData('timer');
+
+                    $preview = $('#math-preview');
+                    $preview.hide();
+                    $preview.html('`' + $this.val() + '`');
+
+                    MathJax.Hub.Queue(
+                        ["Typeset", MathJax.Hub, "math-preview"],
+                        function () {
+                            $preview.show();
+                        }
+                    );
+                }, 1200));
+            });
+        });
+    </script>
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -65,7 +66,8 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
-                // TODO: Implement parameters for this element type
+                parameters.Add("m.loc", Methods.Select(x => x.LineCount));
+                parameters.Add("m.ep", Methods.Select(x => x.ExitPoints));
                 return parameters;
             }
         }

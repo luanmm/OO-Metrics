@@ -42,7 +42,9 @@
                                 @Html.DisplayFor(m => metric.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(m => metric.Expression)
+                                <span class="math-expression">
+                                    @Html.DisplayFor(m => metric.Expression)
+                                </span>
                             </td>
                             <td>
                                 @Html.DisplayFor(m => metric.TargetType)
@@ -67,9 +69,22 @@
 </div>
 
 @section scripts {
+    @Scripts.Render("~/bundles/mathjax")
     <script>
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
+        $('.math-expression').each(function () {
+            var id = 'expression' + Math.floor(Math.random() * 26) + Date.now();
+            var $this = $(this);
+
+            $this.attr('id', id).hide().html('`' + $this.html() + '`');
+
+            MathJax.Hub.Queue(
+                ["Typeset", MathJax.Hub, id],
+                function () {
+                    $this.show();
+                }
+            );
         });
+
+        $('[data-toggle="tooltip"]').tooltip();
     </script>
 }

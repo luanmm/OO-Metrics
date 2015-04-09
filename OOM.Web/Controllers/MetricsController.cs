@@ -113,10 +113,16 @@ namespace OOM.Web.Controllers
             {
                 try
                 {
+                    EvaluateMetric(metricToUpdate, (IElement)Activator.CreateInstance(metricToUpdate.TargetType.ToElement()));
+
                     _db.Entry(metricToUpdate).State = EntityState.Modified;
                     _db.SaveChanges();
 
                     return RedirectToAction("Index");
+                }
+                catch (ExpressionEvaluationException ex)
+                {
+                    ModelState.AddModelError("", String.Format("The expression is invalid: {0}.", ex.Message));
                 }
                 catch (RetryLimitExceededException)
                 {

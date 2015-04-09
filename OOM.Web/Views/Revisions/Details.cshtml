@@ -113,11 +113,24 @@
     </div>
 </div>
 
+<div class="modal" id="modal-element-details">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <p>One fine body…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts
 {
     @Scripts.Render("~/bundles/d3")
     <script>
-
         // t: current time, b: begInnIng value, c: change In value, d: duration
         $.easing.jswing = $.easing.swing;
 
@@ -310,7 +323,7 @@
                 centered = d;
 
                 $panel
-                    .html(d.name + (d.url ? '<a style="margin-left:10px;" href="' + d.url + '" class="btn btn-primary btn-xs" target="_blank" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>' : ''))
+                    .html(d.name + (d.url ? '<a style="margin-left:10px;" class="btn btn-primary btn-xs btn-modal-element-details" data-title="Details of &quot;' + d.name + '&quot; ' + selectNodeTitle(d.group).toLowerCase() + '" data-url="' + d.url + '" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>' : ''))
                     .css({
                         left: (width / 2) - 60,
                         top: (height / 2) - ($panel.outerHeight() / 2) - 2,
@@ -355,11 +368,17 @@
         svg.append("rect")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("fill", "#f3f3f3")
             //.call(zoom)
+            //.on("mousedown.zoom", null)
+            //.on("mousemove.zoom", null)
             //.on("dblclick.zoom", null)
-            .attr("rx", "3")
-            .attr("ry", "3");
+            //.on("touchstart.zoom", null)
+            //.on("wheel.zoom", null)
+            //.on("mousewheel.zoom", null)
+            //.on("MozMousePixelScroll.zoom", null)
+            //.attr("rx", "3")
+            //.attr("ry", "3")
+            .attr("fill", "#f3f3f3");
 
         var container = svg.append("g");
 
@@ -389,6 +408,9 @@
                 .attr("width", 24)
                 .attr("height", 24);
 
+            var $container = $("#revision-graph");
+            $container.mask();
+
             force.on("tick", function () {
                 link.attr("x1", function (d) { return d.source.x; })
                     .attr("y1", function (d) { return d.source.y; })
@@ -396,6 +418,8 @@
                     .attr("y2", function (d) { return d.target.y; });
 
                 node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+            }).on("end", function () {
+                $container.unmask();
             });
 
             /*
@@ -440,6 +464,16 @@
 
         $(function () {
             $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $(document).on('click', 'a.btn-modal-element-details', function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+            var $modal = $('#modal-element-details');
+
+            $modal.find('.modal-title').html($this.attr('data-title'));
+            $modal.modal('show');
         });
     </script>
 }

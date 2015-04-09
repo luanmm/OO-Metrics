@@ -89,334 +89,71 @@
 {
     @Scripts.Render("~/bundles/d3")
     <script>
-    var config = {
-        minScale: 0,
-        maxScale: Infinity,
-        width: 1000,
-        margin: {
-            top: 60,
-            left: 200,
-            bottom: 40,
-            right: 50
-        },
-        locale: null,
-        axisFormat: null,
-        tickFormat: [
-            [".%L", function (d) { return d.getMilliseconds(); }],
-            [":%S", function (d) { return d.getSeconds(); }],
-            ["%I:%M", function (d) { return d.getMinutes(); }],
-            ["%I %p", function (d) { return d.getHours(); }],
-            ["%a %d", function (d) { return d.getDay() && d.getDate() != 1; }],
-            ["%b %d", function (d) { return d.getDate() != 1; }],
-            ["%B", function (d) { return d.getMonth(); }],
-            ["%Y", function () { return true; }]
-        ],
-        eventHover: null,
-        eventZoom: null,
-        hasDelimiter: true,
-        hasTopAxis: true,
-        hasBottomAxis: function (data) {
-            return data.length >= 10;
-        },
-        eventLineColor: 'black',
-        eventColor: null
-    };
+        d3.json('@Url.Action("History", "Metrics")?revisionId=@(Model.Revision.Id)&elementType=@(Model.Element.Type.ToString())&elementId=@(Model.Element.Id)', function (error, data) {
+            var width = 1140,
+                height = 300,
+                margins = {
+                    top: 30,
+                    right: 40,
+                    bottom: 70,
+                    left: 50
+                };
 
-    var xScale = d3.time.scale();
-    var yScale = d3.scale.ordinal();
-    var color = d3.scale.category10();
+            var xRange = d3.time.scale()
+                .range([margins.left, width - margins.right])
+                .domain([new Date(data[0].values[0].datetime), d3.time.day.offset(new Date(data[0].values[data[0].values.length - 1].datetime), 1)]);
 
-    d3.json('@Url.Action("History", "Metrics")?revisionId=@(Model.Revision.Id)&elementType=@(Model.Element.Type.ToString())&elementId=@(Model.Element.Id)', function (error, data) {
-        var zoom = d3.behavior.zoom()
-            .center(null)
-            .scaleExtent([config.minScale, config.maxScale])
-            .on("zoom", updateZoom)
-            .on("zoomend", zoomEnd);
+            var yRange = d3.scale.linear()
+                .range([height - margins.top, margins.bottom])
+                .domain([d3.min(data[0].values, function (d) { return d.value; }), d3.max(data[0].values, function (d) { return d.value; })]);
 
-        var graphWidth = config.width - config.margin.right - config.margin.left;
-        var graphHeight = data.length * 40;
-        var height = graphHeight + config.margin.top + config.margin.bottom;
+            var xAxis = d3.svg.axis()
+                .scale(xRange)
+                .orient('bottom')
+                .ticks(10)
+                .tickFormat(d3.time.format("%Y-%m-%d"));
+            /*
+                    .scale(xRange)
+                    .ticks(d3.time.days, 2)
+                    .tickFormat(d3.time.format('%a %d'))
+                    .tickSize(0)
+                    .tickPadding(20);
+                    */
+            var yAxis = d3.svg.axis()
+                    .scale(yRange)
+                    .tickSize(5)
+                    .orient('left')
+                    .tickSubdivide(true);
 
-        var svg = d3.select('#history-chart')
-            .datum(data)
-            .append('svg')
-            .attr('width', config.width)
-            .attr('height', height);
+            var vis = d3.select('#history-chart')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
 
-        var graph = svg.append('g')
-          .attr('transform', 'translate(0, 25)');
+            vis.append('g')
+                .attr('class', 'x axis')
+                .attr('transform', 'translate(0, ' + (height - margins.bottom) + ')')
+                .call(xAxis);
 
-        var yDomain = [];
-        var yRange = [];
+            vis.append('g')
+                .attr('class', 'y axis')
+                .attr('transform', 'translate(' + margins.left + ', 0)')
+                .call(yAxis);
 
-        var allDates = [];
-        data.forEach(function (x, idx) {
-            yDomain.push(x.name);
-            yRange.push(idx * 40);
-            x.values.forEach(function (y) {
-                allDates.push((new Date(y.datetime)).getTime());
-            });
+            var lineFunc = d3.svg.line()
+                .x(function (d) { return xRange(new Date(d.datetime)); })
+                .y(function (d) { return yRange(d.value); })
+                .interpolate('linear');
+
+            vis.append('svg:path')
+                .attr('d', lineFunc(data[0].values))
+                .attr('stroke', 'blue')
+                .attr('stroke-width', 2)
+                .attr('fill', 'none');
         });
 
-        var minDate = new Date(Math.min.apply(null, allDates));
-        var maxDate = new Date(Math.max.apply(null, allDates));
-
-        yScale.domain(yDomain).range(yRange);
-
-        var yAxisEl = graph.append('g')
-          .classed('y-axis', true)
-          .attr('transform', 'translate(0, 60)');
-
-        var yTick = yAxisEl.append('g').selectAll('g').data(yDomain);
-
-        yTick.enter()
-          .append('g')
-          .attr('transform', function (d) {
-              return 'translate(0, ' + yScale(d) + ')';
-          })
-          .append('line')
-          .classed('y-tick', true)
-          .attr('x1', config.margin.left)
-          .attr('x2', config.margin.left + graphWidth);
-
-        yTick.exit().remove();
-
-        var curx, cury;
-        var zoomRect = svg
-          .append('rect')
-          .call(zoom)
-          .classed('zoom', true)
-            .attr('fill-opacity', 0)
-          .attr('width', graphWidth)
-          .attr('height', height)
-          .attr('transform', 'translate(' + config.margin.left + ', 35)')
-        ;
-
-        if (typeof config.eventHover === 'function') {
-            zoomRect.on('mousemove', function (d, e) {
-                var event = d3.event;
-                if (curx == event.clientX && cury == event.clientY) return;
-                curx = event.clientX;
-                cury = event.clientY;
-                zoomRect.attr('display', 'none');
-                var el = document.elementFromPoint(d3.event.clientX, d3.event.clientY);
-                zoomRect.attr('display', 'block');
-                if (el.tagName !== 'circle') return;
-                config.eventHover(el);
-            });
-        }
-
-        xScale.range([0, graphWidth]).domain([minDate, maxDate]);
-
-        zoom.x(xScale);
-
-        function updateZoom() {
-            if (d3.event.sourceEvent.toString() === '[object MouseEvent]') {
-                zoom.translate([d3.event.translate[0], 0]);
-            }
-
-            if (d3.event.sourceEvent.toString() === '[object WheelEvent]') {
-                zoom.scale(d3.event.scale);
-            }
-
-            redraw();
-        }
-
-        function redrawDelimiter() {
-            svg.select('.delimiter').remove();
-            var delimiterEl = svg
-              .append('g')
-              .classed('delimiter', true)
-              .attr('width', graphWidth)
-              .attr('height', 10)
-              .attr('transform', 'translate(' + config.margin.left + ', ' + (config.margin.top - 45) + ')');
-
-            delimiterEl.each(function (data) {
-                d3.select(this).selectAll('text').remove();
-
-                var limits = xScale.domain();
-                var dateFormat = config.locale ? config.locale.timeFormat("%d %B %Y") : d3.time.format("%d %B %Y");
-
-                d3.select(this).append('text')
-                  .text(function () {
-
-                      return dateFormat(limits[0]);
-                  })
-                  .classed('start', true)
-                ;
-
-                d3.select(this).append('text')
-                  .text(function () {
-
-                      return dateFormat(limits[1]);
-                  })
-                  .attr('text-anchor', 'end')
-                  .attr('transform', 'translate(' + xScale.range()[1] + ')')
-                  .classed('end', true)
-                ;
-            });
-        }
-
-        function zoomEnd() {
-            if (config.eventZoom) {
-                config.eventZoom(xScale);
-            }
-            if (config.hasDelimiter) {
-                redrawDelimiter();
-            }
-        }
-
-        function filterData(data) {
-            data = data || [];
-            var filteredData = [];
-            var boundary = xScale.range();
-            var min = boundary[0];
-            var max = boundary[1];
-
-            var minValue = Number.MIN_VALUE, maxValue = Number.MAX_VALUE;
-            data.forEach(function (datum) {
-                maxValue = Math.max(maxValue, datum.value);
-                minValue = Math.min(minValue, datum.value);
-            });
-
-            var zScale = d3.scale.ordinal()
-                .range([5, 10])
-                .domain([minValue, maxValue]);
-
-            data.forEach(function (datum) {
-                var datetime = new Date(datum.datetime);
-                var ds = xScale(datetime);
-                if (ds < min || ds > max) {
-                    return;
-                }
-
-                filteredData.push({
-                    datetime: xScale(datetime),
-                    value: zScale(datum.value),
-                    group: datum.group
-                });
-            });
-
-            return filteredData;
-        }
-
-        function averageData(values) {
-            var total = 0;
-            values.forEach(function (v) {
-                total += v.value;
-            });
-            return Math.round((total / values.length) * 100) / 100;
-        }
-
-        function drawXAxis(where) {
-
-            // copy config.tickFormat because d3 format.multi edit its given tickFormat data
-            var tickFormatData = [];
-
-            config.tickFormat.forEach(function (item) {
-                var tick = item.slice(0);
-                tickFormatData.push(tick);
-            });
-
-            var tickFormat = config.locale ? config.locale.timeFormat.multi(tickFormatData) : d3.time.format.multi(tickFormatData);
-            var xAxis = d3.svg.axis()
-              .scale(xScale)
-              .orient(where)
-              .tickFormat(tickFormat)
-            ;
-
-            if (typeof config.axisFormat === 'function') {
-                config.axisFormat(xAxis);
-            }
-
-            var y = (where == 'bottom' ? parseInt(graphHeight) : 0) + config.margin.top - 40;
-
-            graph.select('.x-axis.' + where).remove();
-            var xAxisEl = graph
-              .append('g')
-              .classed('x-axis', true)
-              .classed(where, true)
-              .attr('transform', 'translate(' + config.margin.left + ', ' + y + ')')
-              .call(xAxis)
-            ;
-        }
-
-        function redraw() {
-
-            var hasTopAxis = typeof config.hasTopAxis === 'function' ? config.hasTopAxis(data) : config.hasTopAxis;
-            if (hasTopAxis) {
-                drawXAxis('top');
-            }
-
-            var hasBottomAxis = typeof config.hasBottomAxis === 'function' ? config.hasBottomAxis(data) : config.hasBottomAxis;
-            if (hasBottomAxis) {
-                drawXAxis('bottom');
-            }
-
-            zoom.size([config.width, height]);
-
-            graph.select('.graph-body').remove();
-            var graphBody = graph
-              .append('g')
-              .classed('graph-body', true)
-              .attr('transform', 'translate(' + config.margin.left + ', ' + (config.margin.top - 15) + ')');
-
-            var lines = graphBody.selectAll('g').data(data);
-
-            lines.enter()
-              .append('g')
-              .classed('line', true)
-              .attr('transform', function (d) {
-                  return 'translate(0,' + yScale(d.name) + ')';
-              })
-              .style('fill', config.eventLineColor);
-
-            lines.each(function (data) {
-                d3.select(this).selectAll('text').remove();
-
-                d3.select(this).append('text')
-                  .text(function (d) {
-                      var count = filterData(d.values).length;
-                      return d.name + (count > 0 ? ' (' + averageData(d.values) + ')' : '');
-                  })
-                  .attr('text-anchor', 'end')
-                  .attr('transform', 'translate(-20)')
-                  .style('fill', 'black')
-                ;
-
-                d3.select(this).selectAll('circle').remove();
-
-                var circle = d3.select(this).selectAll('circle')
-                  .data(function (d) {
-                      // filter value outside of range
-                      return filterData(d.values);
-                  });
-
-                circle.enter()
-                  .append('circle')
-                  .attr('cx', function (d) { return d.datetime; })
-                  .style('fill', function (d) { debugger; return color(d.group); })
-                  .style('fill-opacity', 0.7)
-                  .attr('cy', -5)
-                  .attr('r', function (d) { return d.value; });
-
-                circle.exit().remove();
-            });
-
-            lines.exit().remove();
-        }
-
-        redraw();
-        if (config.hasDelimiter) {
-            redrawDelimiter();
-        }
-        if (config.eventZoom) {
-            config.eventZoom(xScale);
-        }
-    });
-
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
     </script>
 }

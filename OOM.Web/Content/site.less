@@ -752,3 +752,43 @@ body {
 .qtipmodal-ie6fix{
 	position: absolute !important;
 }
+
+.loadmask {
+    z-index: 100;
+    position: absolute;
+    top:0;
+    left:0;
+    background-color: rgba(149, 165, 166, .2);
+    width: 100%;
+    height: 100%;
+    zoom: 1;
+}
+
+.loadmask:after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -24px;
+    background: url(images/loading.svg);
+    background-size: 48px 48px;
+    background-repeat: no-repeat;
+}
+
+.masked {
+    overflow: hidden !important;
+}
+
+.masked-relative {
+    position: relative !important;
+}
+
+.masked-hidden {
+    visibility: hidden !important;
+}
+
+#revision-graph, #revision-graph svg {
+    border-radius: 4px;
+}
