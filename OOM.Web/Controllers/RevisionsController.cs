@@ -64,7 +64,7 @@ namespace OOM.Web.Controllers
                 {
                     name = ns.FullyQualifiedIdentifier,
                     group = 2,
-                    url = String.Format("{0}?elementType=namespace&elementId={1}&revisionId={2}", Url.Action("Details", "Elements"), ns.Id, revision.Id)
+                    url = String.Format("{0}?elementType=namespace&elementId={1}&revisionId={2}", Url.Action("History", "Metrics"), ns.Id, revision.Id)
                 });
                 links.Add(new
                 {
@@ -79,7 +79,7 @@ namespace OOM.Web.Controllers
                     {
                         name = c.Name,
                         group = 3,
-                        url = String.Format("{0}?elementType=class&elementId={1}&revisionId={2}", Url.Action("Details", "Elements"), c.Id, revision.Id)
+                        url = String.Format("{0}?elementType=class&elementId={1}&revisionId={2}", Url.Action("History", "Metrics"), c.Id, revision.Id)
                     });
                     links.Add(new
                     {
@@ -94,7 +94,7 @@ namespace OOM.Web.Controllers
                         {
                             name = f.Name,
                             group = 4,
-                            url = String.Format("{0}?elementType=field&elementId={1}&revisionId={2}", Url.Action("Details", "Elements"), f.Id, revision.Id)
+                            url = String.Format("{0}?elementType=field&elementId={1}&revisionId={2}", Url.Action("History", "Metrics"), f.Id, revision.Id)
                         });
                         links.Add(new
                         {
@@ -110,7 +110,7 @@ namespace OOM.Web.Controllers
                         {
                             name = m.Name,
                             group = 5,
-                            url = String.Format("{0}?elementType=method&elementId={1}&revisionId={2}", Url.Action("Details", "Elements"), m.Id, revision.Id)
+                            url = String.Format("{0}?elementType=method&elementId={1}&revisionId={2}", Url.Action("History", "Metrics"), m.Id, revision.Id)
                         });
                         links.Add(new
                         {

@@ -66,10 +66,24 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
+                parameters.Add("noc", ChildClasses.Count);
+                parameters.Add("dit", GetDepthOfInheritanceTree(this));
                 parameters.Add("m.loc", Methods.Select(x => x.LineCount));
                 parameters.Add("m.ep", Methods.Select(x => x.ExitPoints));
                 return parameters;
             }
+        }
+
+        private int GetDepthOfInheritanceTree(Class baseClass, int currentDepth = 0)
+        {
+            if (baseClass.ChildClasses.Count == 0)
+                return currentDepth;
+
+            var maxDepth = 0;
+            foreach (var childClass in baseClass.ChildClasses)
+                maxDepth = Math.Max(GetDepthOfInheritanceTree(baseClass, currentDepth + 1), maxDepth);
+
+            return maxDepth;
         }
 
         #endregion

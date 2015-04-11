@@ -28,6 +28,17 @@ namespace OOM.Core.Math
         ExpressionEvaluator()
         {
             _evaluateFunctions = new Dictionary<string, Func<object[], object>>();
+            _evaluateFunctions.Add("tanh", EvaluateFunctionTanh);
+            _evaluateFunctions.Add("cosh", EvaluateFunctionCosh);
+            _evaluateFunctions.Add("sinh", EvaluateFunctionSinh);
+            _evaluateFunctions.Add("csc", EvaluateFunctionCsc);
+            _evaluateFunctions.Add("sec", EvaluateFunctionSec);
+            _evaluateFunctions.Add("cot", EvaluateFunctionCot);
+            _evaluateFunctions.Add("mod", EvaluateFunctionMod);
+            _evaluateFunctions.Add("lcm", EvaluateFunctionLcm);
+            _evaluateFunctions.Add("gcd", EvaluateFunctionGcd);
+            _evaluateFunctions.Add("log", EvaluateFunctionLog);
+            _evaluateFunctions.Add("ln", EvaluateFunctionLn);
             _evaluateFunctions.Add("sum", EvaluateFunctionSum);
             _evaluateFunctions.Add("avg", EvaluateFunctionAvg);
             _evaluateFunctions.Add("max", EvaluateFunctionMax);
@@ -71,6 +82,105 @@ namespace OOM.Core.Math
                 args.Result = _evaluateFunctions[key].Invoke(args.EvaluateParameters());
             }
             catch (Exception) { }
+        }
+
+        private object EvaluateFunctionLn(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(System.Math.Log(value));
+        }
+
+        private object EvaluateFunctionLog(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(System.Math.Log10(value));
+        }
+
+        private object EvaluateFunctionGcd(object[] parameters)
+        {
+            long a, b;
+            if (!Int64.TryParse(parameters[0].ToString(), out a) || !Int64.TryParse(parameters[1].ToString(), out b))
+                throw new Exception();
+
+            return GCD(a, b);
+        }
+
+        private object EvaluateFunctionLcm(object[] parameters)
+        {
+            long a, b;
+            if (!Int64.TryParse(parameters[0].ToString(), out a) || !Int64.TryParse(parameters[1].ToString(), out b))
+                throw new Exception();
+
+            return LCM(a, b);
+        }
+
+        private object EvaluateFunctionMod(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return value > 0 ? value : -value;
+        }
+
+        private object EvaluateFunctionCot(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(1 / System.Math.Tan(value));
+        }
+
+        private object EvaluateFunctionSec(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(1 / System.Math.Cos(value));
+        }
+
+        private object EvaluateFunctionCsc(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(1 / System.Math.Sin(value));
+        }
+
+        private object EvaluateFunctionSinh(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(System.Math.Sinh(value));
+        }
+
+        private object EvaluateFunctionCosh(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(System.Math.Cosh(value));
+        }
+
+        private object EvaluateFunctionTanh(object[] parameters)
+        {
+            double value;
+            if (!Double.TryParse(parameters[0].ToString(), out value))
+                throw new Exception();
+
+            return Convert.ToDecimal(System.Math.Tanh(value));
         }
 
         private object EvaluateFunctionSum(object[] parameters)
@@ -167,6 +277,35 @@ namespace OOM.Core.Math
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Find the Greatest Common Divisor
+        /// </summary>
+        /// <param name="a">Number a</param>
+        /// <param name="b">Number b</param>
+        /// <returns>The greatest common Divisor</returns>
+        private long GCD(long a, long b)
+        {
+            while (b != 0)
+            {
+                long tmp = b;
+                b = a % b;
+                a = tmp;
+            }
+
+            return a;
+        }
+
+        /// <summary>
+        /// Find the Least Common Multiple
+        /// </summary>
+        /// <param name="a">Number a</param>
+        /// <param name="b">Number b</param>
+        /// <returns>The least common multiple</returns>
+        private long LCM(long a, long b)
+        {
+            return (a * b) / GCD(a, b);
         }
 
         #endregion
