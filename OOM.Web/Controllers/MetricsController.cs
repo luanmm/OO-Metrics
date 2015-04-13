@@ -174,8 +174,18 @@ namespace OOM.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: /Metrics/History/?elementType=class&elementId=8&revisionId=5
-        public JsonResult History(ElementType elementType, int elementId, int revisionId)
+        // GET: /Metrics/ByElementType/?elementType=class
+        public JsonResult ByElementType(ElementType elementType)
+        {
+            var metrics = _db.Metrics.Where(x => x.TargetType == elementType)
+                .OrderBy(x => x.Name)
+                .Select(x => new { value = x.Id, name = x.Name });
+
+            return Json(metrics, JsonRequestBehavior.AllowGet);
+        }
+
+        // GET: /Metrics/History/?elementType=class&elementId=8&revisionId=5
+        public JsonResult History(ElementType elementType, int elementId, int revisionId, int metricId)
         {
             var revision = _db.Revisions.Find(revisionId);
             if (revision == null)
@@ -185,29 +195,17 @@ namespace OOM.Web.Controllers
             if (element == null)
                 throw new HttpException(400, "Bad request.");
 
-            var metrics = _db.Metrics.Where(x => x.TargetType == elementType).ToList();
-            var relatedRevisions = FindRelatedRevisions(revision, element);
-
             var data = new List<object>();
-            foreach (var metric in metrics)
+            var metric = _db.Metrics.Find(metricId);
+            var relatedRevisions = FindRelatedRevisions(revision, element);
+            foreach (var relatedRevision in relatedRevisions)
             {
-                var values = new List<object>();
-                foreach (var relatedRevision in relatedRevisions)
-                {
-                    var result = EvaluateMetric(metric, relatedRevision.Item2);
-                    values.Add(new
-                    {
-                        value = result,
-                        datetime = relatedRevision.Item1.CreatedAt,
-                        group = metric.Id
-                    });
-                }
-
+                var result = EvaluateMetric(metric, relatedRevision.Item2);
                 data.Add(new
-                { 
-                    name = metric.Name,
-                    values = values
-                }); 
+                {
+                    value = result,
+                    datetime = relatedRevision.Item1.CreatedAt
+                });
             }
 
             return Json(data, JsonRequestBehavior.AllowGet);

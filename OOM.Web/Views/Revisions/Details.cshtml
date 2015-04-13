@@ -49,6 +49,28 @@
                 <br />
                 <h2>Graph</h2>
                 <style>
+                    svg {
+                        font: 10px sans-serif;
+                    }
+
+                    .area {
+                        fill: steelblue;
+                        clip-path: url(#clip);
+                    }
+
+                    .axis path,
+                    .axis line {
+                        fill: none;
+                        stroke: #000;
+                        shape-rendering: crispEdges;
+                    }
+
+                    .brush .extent {
+                        stroke: #fff;
+                        fill-opacity: .125;
+                        shape-rendering: crispEdges;
+                    }
+
                     .link {
                         stroke: #dedede;
                     }
@@ -57,9 +79,9 @@
                         cursor: zoom-in;
                     }
 
-                    .node.selected {
-                        cursor: zoom-out;
-                    }
+                        .node.selected {
+                            cursor: zoom-out;
+                        }
 
                     #revision-graph {
                         width: 1140px;
@@ -85,6 +107,11 @@
                             #revision-graph .graph-toolbar a {
                                 margin-left: 3px;
                             }
+
+                    #history-chart {
+                        width: 558px;
+                        height: 500px;
+                    }
                 </style>
 
                 <div id="revision-graph">
@@ -121,7 +148,16 @@
                 <h4 class="modal-title">Modal title</h4>
             </div>
             <div class="modal-body">
-                <p>Metrics for the element:</p>
+                <form>
+                    <fieldset>
+                        <div class="form-group">
+                            <label for="metric-name" class="control-label">Metric</label>
+                            <select class="form-control" id="metric-name" name="metric-name">
+                                <option>Select...</option>
+                            </select>
+                        </div>
+                    </fieldset>
+                </form>
                 <div id="history-chart"></div>
             </div>
         </div>
@@ -132,69 +168,175 @@
 {
     @Scripts.Render("~/bundles/d3")
     <script>
-        function getModalData(url) {
-            d3.json(url, function (error, data) {
-                var width = 558,
-                    height = 300,
-                    margins = {
-                        top: 30,
-                        right: 40,
-                        bottom: 70,
-                        left: 50
-                    };
+        function renderHistoryChart(data) {
 
-                var xRange = d3.time.scale()
-                    .range([margins.left, width - margins.right])
-                    .domain([new Date(data[0].values[0].datetime), d3.time.day.offset(new Date(data[0].values[data[0].values.length - 1].datetime), 1)]);
+            // http://bl.ocks.org/mbostock/1667367
 
-                var yRange = d3.scale.linear()
-                    .range([height - margins.top, margins.bottom])
-                    .domain([d3.min(data[0].values, function (d) { return d.value; }), d3.max(data[0].values, function (d) { return d.value; })]);
+            var margin = { top: 10, right: 10, bottom: 100, left: 40 },
+                margin2 = { top: 430, right: 10, bottom: 20, left: 40 },
+                width = 558 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom,
+                height2 = 500 - margin2.top - margin2.bottom;
 
-                var xAxis = d3.svg.axis()
-                    .scale(xRange)
-                    .orient('bottom')
-                    .ticks(10)
-                    .tickFormat(d3.time.format("%Y-%m-%d"));
-                /*
-                        .scale(xRange)
-                        .ticks(d3.time.days, 2)
-                        .tickFormat(d3.time.format('%a %d'))
-                        .tickSize(0)
-                        .tickPadding(20);
-                        */
-                var yAxis = d3.svg.axis()
-                        .scale(yRange)
-                        .tickSize(5)
-                        .orient('left')
-                        .tickSubdivide(true);
+            var x = d3.time.scale().range([0, width]),
+                x2 = d3.time.scale().range([0, width]),
+                y = d3.scale.linear().range([height, 0]),
+                y2 = d3.scale.linear().range([height2, 0]);
 
-                var vis = d3.select('#history-chart')
-                    .append('svg')
-                    .attr('width', width)
-                    .attr('height', height);
+            var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+                xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+                yAxis = d3.svg.axis().scale(y).orient("left");
 
-                vis.append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', 'translate(0, ' + (height - margins.bottom) + ')')
-                    .call(xAxis);
+            var brush = d3.svg.brush()
+                .x(x2)
+                .on("brush", brushed);
 
-                vis.append('g')
-                    .attr('class', 'y axis')
-                    .attr('transform', 'translate(' + margins.left + ', 0)')
-                    .call(yAxis);
+            var area = d3.svg.area()
+                .interpolate("monotone")
+                .x(function (d) { return x(new Date(d.datetime)); })
+                .y0(height)
+                .y1(function (d) { return y(d.value); });
 
-                var lineFunc = d3.svg.line()
-                    .x(function (d) { return xRange(new Date(d.datetime)); })
-                    .y(function (d) { return yRange(d.value); })
-                    .interpolate('linear');
+            var area2 = d3.svg.area()
+                .interpolate("monotone")
+                .x(function (d) { return x2(new Date(d.datetime)); })
+                .y0(height2)
+                .y1(function (d) { return y2(d.value); });
 
-                vis.append('svg:path')
-                    .attr('d', lineFunc(data[0].values))
-                    .attr('stroke', 'blue')
-                    .attr('stroke-width', 2)
-                    .attr('fill', 'none');
-            });
+            var vis = d3.select('#history-chart');
+
+            vis.selectAll('*')
+                .remove();
+
+            var svg = vis.append('svg')
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            svg.append("defs").append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", width)
+                .attr("height", height);
+
+            var focus = svg.append("g")
+                .attr("class", "focus")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var context = svg.append("g")
+                .attr("class", "context")
+                .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+            x.domain(d3.extent(data.map(function (d) { return new Date(d.datetime); })));
+            y.domain([0, d3.max(data.map(function (d) { return d.value; }))]);
+            x2.domain(x.domain());
+            y2.domain(y.domain());
+
+            focus.append("path")
+                .datum(data)
+                .attr("class", "area")
+                .attr("d", area);
+
+            /*
+            focus.append("rect")
+                .data(data)
+                .style("fill", "steelblue")
+                .attr("x", function (d) { return x(new Date(d.datetime)); })
+                .attr("y", function (d) { return y(d.value); })
+                .attr("width", 20)
+                .attr("height", function(d) { return height - margin.top - margin.bottom - y(d.value); });
+                */
+
+            focus.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            focus.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+            context.append("path")
+                .datum(data)
+                .attr("class", "area")
+                .attr("d", area2);
+
+            context.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height2 + ")")
+                .call(xAxis2);
+
+            context.append("g")
+                .attr("class", "x brush")
+                .call(brush)
+                .selectAll("rect")
+                .attr("y", -6)
+                .attr("height", height2 + 7);
+
+            function brushed() {
+                x.domain(brush.empty() ? x2.domain() : brush.extent());
+                focus.select(".area").attr("d", area);
+                focus.select(".x.axis").call(xAxis);
+            }
+
+            /*
+            var width = 558,
+                height = 300,
+                margins = {
+                    top: 30,
+                    right: 40,
+                    bottom: 70,
+                    left: 50
+                };
+
+            var xRange = d3.time.scale()
+                .range([margins.left, width - margins.right])
+                .domain([new Date(data[0].values[0].datetime), d3.time.day.offset(new Date(data[0].values[data[0].values.length - 1].datetime), 1)]);
+
+            var yRange = d3.scale.linear()
+                .range([height - margins.top, margins.bottom])
+                .domain([d3.min(data[0].values, function (d) { return d.value; }), d3.max(data[0].values, function (d) { return d.value; })]);
+
+            var xAxis = d3.svg.axis()
+                .scale(xRange)
+                .orient('bottom')
+                .ticks(10)
+                .tickFormat(d3.time.format("%Y-%m-%d"));
+
+            var yAxis = d3.svg.axis()
+                    .scale(yRange)
+                    .tickSize(5)
+                    .orient('left')
+                    .tickSubdivide(true);
+
+            var vis = d3.select('#history-chart');
+
+            vis.selectAll('*')
+                .remove();
+
+            vis.append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            vis.append('g')
+                .attr('class', 'x axis')
+                .attr('transform', 'translate(0, ' + (height - margins.bottom) + ')')
+                .call(xAxis);
+
+            vis.append('g')
+                .attr('class', 'y axis')
+                .attr('transform', 'translate(' + margins.left + ', 0)')
+                .call(yAxis);
+
+            var lineFunc = d3.svg.line()
+                .x(function (d) { return xRange(new Date(d.datetime)); })
+                .y(function (d) { return yRange(d.value); })
+                .interpolate('linear');
+
+            vis.append('svg:path')
+                .attr('d', lineFunc(data[0].values))
+                .attr('stroke', 'blue')
+                .attr('stroke-width', 2)
+                .attr('fill', 'none');*/
         }
 
         // t: current time, b: begInnIng value, c: change In value, d: duration
@@ -389,7 +531,7 @@
                 centered = d;
 
                 $panel
-                    .html(d.name + (d.url ? '<a style="margin-left:10px;" class="btn btn-primary btn-xs btn-modal-element-details" data-title="Details of &quot;' + d.name + '&quot; ' + selectNodeTitle(d.group).toLowerCase() + '" data-url="' + d.url + '" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>' : ''))
+                    .html(d.name + '<a style="margin-left:10px;" class="btn btn-primary btn-xs btn-modal-element-details" data-name="' + d.name + '" data-element-type="' + selectNodeTitle(d.group).toLowerCase() + '" data-element-id="' + d.id + '" data-revision-id="@Model.Id" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>')
                     .css({
                         left: (width / 2) - 60,
                         top: (height / 2) - ($panel.outerHeight() / 2) - 2,
@@ -538,10 +680,63 @@
             var $this = $(this);
             var $modal = $('#modal-element-details');
 
-            $modal.find('.modal-title').html($this.attr('data-title'));
-            $modal.modal('show');
+            var $metricsField = $('#metric-name');
+            $metricsField.children().slice(1).remove();
+            $metricsField.attr('data-element-type', $this.attr('data-element-type'));
+            $metricsField.attr('data-element-id', $this.attr('data-element-id'));
+            $metricsField.attr('data-revision-id', $this.attr('data-revision-id'));
 
-            getModalData($this.attr('data-url'));
+            var $chartContainer = $('#history-chart');
+            $chartContainer.html('');
+
+            $modal.find('.modal-title').html('Details of &quot;' + $this.attr('data-name') + '&quot; ' + $this.attr('data-element-type'));
+            $modal.modal('show');
+            $modal.mask();
+
+            $.get('@Url.Action("ByElementType", "Metrics")', {
+                elementType: $this.attr('data-element-type')
+            })
+            .done(function (metrics) {
+                for (var m in metrics) {
+                    $metricsField.append('<option value="' + metrics[m].value + '">' + metrics[m].name + '</option>');
+                }
+            })
+            .fail(function () {
+                $modal.modal('hide');
+                alert('An error has occurred getting metrics information.');
+            })
+            .always(function () {
+                $modal.unmask();
+            });
+        });
+
+        $(document).on('change', 'select#metric-name', function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+            var metric = $this.val();
+            if (!metric)
+                return;
+
+            var $modal = $('#modal-element-details');
+            $modal.mask();
+
+            $.get('@Url.Action("History", "Metrics")', {
+                elementType: $this.attr('data-element-type'),
+                elementId: $this.attr('data-element-id'),
+                revisionId: $this.attr('data-revision-id'),
+                metricId: metric
+            })
+            .done(function (data) {
+                renderHistoryChart(data);
+            })
+            .fail(function () {
+                $modal.modal('hide');
+                alert('An error has occurred getting metrics information.');
+            })
+            .always(function () {
+                $modal.unmask();
+            });
         });
     </script>
 }
