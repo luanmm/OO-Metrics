@@ -203,8 +203,14 @@ namespace OOM.Web.Controllers
                 var result = EvaluateMetric(metric, relatedRevision.Item2);
                 data.Add(new
                 {
-                    value = result,
-                    datetime = relatedRevision.Item1.CreatedAt
+                    revision = new {
+                        number = relatedRevision.Item1.Id, // TODO: Number of revision (incremental)
+                        rid = relatedRevision.Item1.RID,
+                        author = relatedRevision.Item1.Author,
+                        message = relatedRevision.Item1.Message,
+                        createdAt = relatedRevision.Item1.CreatedAt
+                    },
+                    value = result
                 });
             }
 
