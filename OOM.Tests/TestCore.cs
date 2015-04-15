@@ -80,8 +80,7 @@ namespace OOM.Tests
                     db.SaveChanges();
                 }
 
-                var miner = new RepositoryMiner(project);
-                miner.StartMining();
+                RepositoryMiner.ProcessRepository(project.Id);
             }
         }
 

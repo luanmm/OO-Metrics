@@ -1,4 +1,6 @@
-﻿using OOM.Model;
+﻿using Hangfire;
+using OOM.Core.Repositories;
+using OOM.Model;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -61,6 +63,8 @@ namespace OOM.Web.Controllers
                     _db.Projects.Add(project);
                     _db.SaveChanges();
 
+                    BackgroundJob.Enqueue(() => RepositoryMiner.ProcessRepository(project.Id));
+
                     return RedirectToAction("Index");
                 }
             }
@@ -70,52 +74,6 @@ namespace OOM.Web.Controllers
             }
 
             return View(project);
-        }
-
-        // GET: /Projects/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-
-            var project = _db.Projects.Find(id);
-            if (project == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-            }
-
-            return View(project);
-        }
-
-        // POST: /Projects/Edit/5
-        [HttpPost, ActionName("Edit")]
-        [ValidateAntiForgeryToken]
-        public ActionResult PostEdit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-
-            var projectToUpdate = _db.Projects.Find(id);
-            if (TryUpdateModel(projectToUpdate, "", new string[] { "Name", "RepositoryProtocol", "URI", "User", "Password" }))
-            {
-                try
-                {
-                    _db.Entry(projectToUpdate).State = EntityState.Modified;
-                    _db.SaveChanges();
-
-                    return RedirectToAction("Index");
-                }
-                catch (RetryLimitExceededException)
-                {
-                    ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
-                }
-            }
-
-            return View(projectToUpdate);
         }
 
         // GET: /Projects/Delete/5

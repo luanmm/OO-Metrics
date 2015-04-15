@@ -48,11 +48,14 @@
                                 @Html.DisplayFor(m => project.URI)
                             </td>
                             <td style="text-align: center;">
+                                @if (project.Revisions.Count > 0)
+                                {
+                                    <a href="@Url.Action("List", "Revisions", new { id = project.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Revisions" role="button">
+                                        <span class="fa fa-list-ol" aria-hidden="true"></span>
+                                    </a>
+                                }
                                 <a href="@Url.Action("Details", new { id = project.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
                                     <span class="fa fa-eye" aria-hidden="true"></span>
-                                </a>
-                                <a href="@Url.Action("List", "Revisions", new { id = project.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Revisions" role="button">
-                                    <span class="fa fa-list-ol" aria-hidden="true"></span>
                                 </a>
                                 <a href="@Url.Action("Delete", new { id = project.Id })" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Delete" role="button">
                                     <span class="fa fa-trash" aria-hidden="true"></span>

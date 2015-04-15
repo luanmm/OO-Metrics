@@ -11,175 +11,166 @@ using System.Threading.Tasks;
 
 namespace OOM.Core.Repositories
 {
-    public class RepositoryMiner : IDisposable
+    public static class RepositoryMiner
     {
-        private OOMetricsContext _db = new OOMetricsContext();
-        private Repository _repository;
-        private Project _project;
-
-        public RepositoryMiner(Project project)
+        public static void ProcessRepository(int projectId)
         {
-            _project = _db.Projects.FirstOrDefault(x => x.URI == project.URI);
-            if (_project == null)
-                throw new Exception("The specified project could not be found in the database or is invalid.");
-
-            _repository = RepositoryFactory.CreateRepository(_project.RepositoryProtocol, new RepositoryConfiguration(_project.URI, _project.User, _project.Password));
-        }
-
-        public void StartMining()
-        {
+            Project project = null;
             string lastRevisionRID = null;
 
-            var lastRevision = _project.Revisions.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
-            if (lastRevision != null)
-                lastRevisionRID = lastRevision.RID;
-
-            var revisions = _repository.ListRevisions(lastRevisionRID);
-            foreach (var revision in revisions)
+            using (var db = new OOMetricsContext())
             {
-                var analyzedNamespaces = new List<Namespace>();
-                var nodes = new List<RepositoryNode>(_repository.ListRevisionNodes(revision.RID));
-                foreach (var node in nodes)
+                project = db.Projects.Find(projectId);
+                if (project == null)
+                    return;
+
+                var lastRevision = db.Revisions.Where(x => x.ProjectId == projectId).OrderByDescending(r => r.CreatedAt).FirstOrDefault();
+                if (lastRevision != null)
+                    lastRevisionRID = lastRevision.RID;
+            }
+
+            using (var repository = RepositoryFactory.CreateRepository(project.RepositoryProtocol, new RepositoryConfiguration(project.URI, project.User, project.Password)))
+            {
+                var revisions = repository.ListRevisions(lastRevisionRID);
+                foreach (var revision in revisions)
                 {
-                    var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Filename);
-                    if (analyzer != null)
+                    var analyzedNamespaces = new List<Namespace>();
+                    var nodes = new List<RepositoryNode>(repository.ListRevisionNodes(revision.RID));
+                    foreach (var node in nodes)
                     {
-                        var contentStream = _repository.GetNodeContent(node);
-                        using (var tr = new StreamReader(contentStream, Encoding.UTF8))
+                        var analyzer = CodeAnalyzerFactory.CreateCodeAnalyzer(node.Filename);
+                        if (analyzer != null)
                         {
-                            analyzedNamespaces.AddRange(analyzer.Analyze(tr.ReadToEnd()));
+                            var contentStream = repository.GetNodeContent(node);
+                            using (var tr = new StreamReader(contentStream, Encoding.UTF8))
+                            {
+                                analyzedNamespaces.AddRange(analyzer.Analyze(tr.ReadToEnd()));
+                            }
                         }
                     }
-                }
 
-                PersistAnalyzedData(new Revision
-                {
-                    RID = revision.RID,
-                    Message = revision.Message,
-                    Author = revision.Author,
-                    CreatedAt = revision.CreatedAt,
-                    ProjectId = _project.Id
-                }, analyzedNamespaces);
+                    PersistAnalyzedData(new Revision
+                    {
+                        RID = revision.RID,
+                        Message = revision.Message,
+                        Author = revision.Author,
+                        CreatedAt = revision.CreatedAt,
+                        ProjectId = project.Id
+                    }, analyzedNamespaces);
+                }
             }
         }
 
-        #region Privates
-
-        private void PersistAnalyzedData(Revision revision, IEnumerable<Namespace> namespaces)
+        private static void PersistAnalyzedData(Revision revision, IEnumerable<Namespace> namespaces)
         {
-            using (var dbContextTransaction = _db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
+            using (var db = new OOMetricsContext())
             {
-                try
+                using (var dbContextTransaction = db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
-                    _db.Revisions.Add(revision);
-                    _db.SaveChanges();
-
-                    var unsavedClassRelations = new List<Class>();
-                    foreach (var analyzedNamespace in namespaces)
+                    try
                     {
-                        var ns = revision.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedNamespace.FullyQualifiedIdentifier);
-                        if (ns == null)
-                        {
-                            ns = _db.Namespaces.Add(new Namespace
-                            {
-                                Name = analyzedNamespace.Name,
-                                FullyQualifiedIdentifier = analyzedNamespace.FullyQualifiedIdentifier,
-                                RevisionId = revision.Id
-                            });
-                            _db.SaveChanges();
-                        }
+                        db.Revisions.Add(revision);
+                        db.SaveChanges();
 
-                        foreach (var analyzedClass in analyzedNamespace.Classes)
+                        var unsavedClassRelations = new List<Class>();
+                        foreach (var analyzedNamespace in namespaces)
                         {
-                            var c = ns.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedClass.FullyQualifiedIdentifier);
-                            if (c == null)
+                            var ns = revision.Namespaces.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedNamespace.FullyQualifiedIdentifier);
+                            if (ns == null)
                             {
-                                if (analyzedClass.BaseClass != null)
-                                    unsavedClassRelations.Add(analyzedClass);
-
-                                c = _db.Classes.Add(new Class
+                                ns = db.Namespaces.Add(new Namespace
                                 {
-                                    Name = analyzedClass.Name,
-                                    FullyQualifiedIdentifier = analyzedClass.FullyQualifiedIdentifier,
-                                    Encapsulation = analyzedClass.Encapsulation,
-                                    Qualification = analyzedClass.Qualification,
-                                    NamespaceId = ns.Id
+                                    Name = analyzedNamespace.Name,
+                                    FullyQualifiedIdentifier = analyzedNamespace.FullyQualifiedIdentifier,
+                                    RevisionId = revision.Id
                                 });
-                                _db.SaveChanges();
+                                db.SaveChanges();
                             }
 
-                            var savedFields = new List<Field>();
-                            foreach (var analyzedField in analyzedClass.Fields)
+                            foreach (var analyzedClass in analyzedNamespace.Classes)
                             {
-                                var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
-                                if (a == null)
+                                var c = ns.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedClass.FullyQualifiedIdentifier);
+                                if (c == null)
                                 {
-                                    a = _db.Fields.Add(new Field
+                                    if (analyzedClass.BaseClass != null)
+                                        unsavedClassRelations.Add(analyzedClass);
+
+                                    c = db.Classes.Add(new Class
                                     {
-                                        Name = analyzedField.Name,
-                                        FullyQualifiedIdentifier = analyzedField.FullyQualifiedIdentifier,
-                                        Encapsulation = analyzedField.Encapsulation,
-                                        Qualification = analyzedField.Qualification,
-                                        ClassId = c.Id
+                                        Name = analyzedClass.Name,
+                                        FullyQualifiedIdentifier = analyzedClass.FullyQualifiedIdentifier,
+                                        Encapsulation = analyzedClass.Encapsulation,
+                                        Qualification = analyzedClass.Qualification,
+                                        NamespaceId = ns.Id
                                     });
-                                    _db.SaveChanges();
+                                    db.SaveChanges();
                                 }
-                                savedFields.Add(a);
-                            }
 
-                            foreach (var analyzedMethod in analyzedClass.Methods)
-                            {
-                                var m = c.Methods.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedMethod.FullyQualifiedIdentifier);
-                                if (m == null)
+                                var savedFields = new List<Field>();
+                                foreach (var analyzedField in analyzedClass.Fields)
                                 {
-                                    m = _db.Methods.Add(new Method
+                                    var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
+                                    if (a == null)
                                     {
-                                        Name = analyzedMethod.Name,
-                                        FullyQualifiedIdentifier = analyzedMethod.FullyQualifiedIdentifier,
-                                        Encapsulation = analyzedMethod.Encapsulation,
-                                        Qualification = analyzedMethod.Qualification,
-                                        LineCount = analyzedMethod.LineCount,
-                                        ExitPoints = analyzedMethod.ExitPoints,
-                                        ReferencedFields = savedFields.Where(x => analyzedMethod.ReferencedFields.Any(y => y.FullyQualifiedIdentifier == x.FullyQualifiedIdentifier)).ToList(),
-                                        ClassId = c.Id
-                                    });
-                                    _db.SaveChanges();
+                                        a = db.Fields.Add(new Field
+                                        {
+                                            Name = analyzedField.Name,
+                                            FullyQualifiedIdentifier = analyzedField.FullyQualifiedIdentifier,
+                                            Encapsulation = analyzedField.Encapsulation,
+                                            Qualification = analyzedField.Qualification,
+                                            ClassId = c.Id
+                                        });
+                                        db.SaveChanges();
+                                    }
+                                    savedFields.Add(a);
+                                }
+
+                                foreach (var analyzedMethod in analyzedClass.Methods)
+                                {
+                                    var m = c.Methods.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedMethod.FullyQualifiedIdentifier);
+                                    if (m == null)
+                                    {
+                                        m = db.Methods.Add(new Method
+                                        {
+                                            Name = analyzedMethod.Name,
+                                            FullyQualifiedIdentifier = analyzedMethod.FullyQualifiedIdentifier,
+                                            Encapsulation = analyzedMethod.Encapsulation,
+                                            Qualification = analyzedMethod.Qualification,
+                                            LineCount = analyzedMethod.LineCount,
+                                            ExitPoints = analyzedMethod.ExitPoints,
+                                            ReferencedFields = savedFields.Where(x => analyzedMethod.ReferencedFields.Any(y => y.FullyQualifiedIdentifier == x.FullyQualifiedIdentifier)).ToList(),
+                                            ClassId = c.Id
+                                        });
+                                        db.SaveChanges();
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    foreach (var unsavedClassRelation in unsavedClassRelations) 
-                    {
-                        var c = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.FullyQualifiedIdentifier);
-                        if (c != null)
+                        foreach (var unsavedClassRelation in unsavedClassRelations)
                         {
-                            var bc = _db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.BaseClass.FullyQualifiedIdentifier);
-                            if (bc != null)
+                            var c = db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.FullyQualifiedIdentifier);
+                            if (c != null)
                             {
-                                c.BaseClassId = bc.Id;
-                                _db.SaveChanges();
+                                var bc = db.Classes.FirstOrDefault(x => x.FullyQualifiedIdentifier == unsavedClassRelation.BaseClass.FullyQualifiedIdentifier);
+                                if (bc != null)
+                                {
+                                    c.BaseClassId = bc.Id;
+                                    db.SaveChanges();
+                                }
                             }
+                            else
+                                throw new Exception("Testing it.");
                         }
-                        else
-                            throw new Exception("Testing it.");
-                    }
 
-                    dbContextTransaction.Commit();
-                }
-                catch (Exception)
-                {
-                    dbContextTransaction.Rollback();
+                        dbContextTransaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        dbContextTransaction.Rollback();
+                    }
                 }
             }
-        }
-
-        #endregion
-
-        public void Dispose()
-        {
-            _repository.Dispose();
-            _db.Dispose();
         }
     }
 }
