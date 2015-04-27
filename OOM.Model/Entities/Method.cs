@@ -37,6 +37,9 @@ namespace OOM.Model
         [Display(Name = "Exit points"), Required, Range(0, Int32.MaxValue)]
         public int ExitPoints { get; set; }
 
+        [Required, Range(0, Int32.MaxValue)]
+        public int Complexity { get; set; }
+
         public virtual ICollection<Field> ReferencedFields { get; set; }
 
         public virtual Class Class { get; set; }
@@ -63,6 +66,7 @@ namespace OOM.Model
                 var parameters = new Dictionary<string, object>();
                 parameters.Add("loc", LineCount);
                 parameters.Add("ep", ExitPoints);
+                parameters.Add("c", Complexity);
                 return parameters;
             }
         }

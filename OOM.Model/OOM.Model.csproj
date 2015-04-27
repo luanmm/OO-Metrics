@@ -59,11 +59,6 @@
     <Compile Include="Entities\Namespace.cs" />
     <Compile Include="Enums\RepositoryProtocol.cs" />
     <Compile Include="Interfaces\IEntity.cs" />
-    <Compile Include="Migrations\201503030150145_InitialCreate.cs" />
-    <Compile Include="Migrations\201503030150145_InitialCreate.Designer.cs">
-      <DependentUpon>201503030150145_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OOMetricsContext.cs" />
     <Compile Include="Entities\Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -72,11 +67,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201503030150145_InitialCreate.resx">
-      <DependentUpon>201503030150145_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

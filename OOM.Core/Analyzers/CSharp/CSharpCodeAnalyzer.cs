@@ -58,7 +58,7 @@ namespace OOM.Core.Analyzers.CSharp
                     }
 
                     var analyzedMethods = new List<Method>();
-                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>(); //classMembers.Where(x => x.Kind == SymbolKind.Method);
+                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
                     foreach (var m in methods)
                     {
                         var ms = semanticModel.GetDeclaredSymbol(m) as IMethodSymbol;
@@ -67,7 +67,7 @@ namespace OOM.Core.Analyzers.CSharp
 
                         var referencedFields = new List<Field>(
                             analyzedFields
-                                .Where(f => m.Body.DescendantNodes()
+                                .Where(f => m.DescendantNodes()
                                     .OfType<IdentifierNameSyntax>()
                                     .Select(x => semanticModel.GetSymbolInfo(x))
                                     .Where(x => x.Symbol != null)
@@ -78,17 +78,14 @@ namespace OOM.Core.Analyzers.CSharp
                         {
                             Name = ms.Name,
                             FullyQualifiedIdentifier = ms.ToDisplayString(),
-                            LineCount = m.Body.ChildNodes().Count(),
-                            //CommentCount = m.Body.DescendantTrivia().Where(x => x.IsKind(SyntaxKind.SingleLineCommentTrivia | SyntaxKind.MultiLineCommentTrivia)).Count(),
-                            ExitPoints = m.Body.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
+                            LineCount = m.ChildNodes().Count(),
+                            ExitPoints = m.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
+                            Complexity = CalculateComplexity(m),
                             ReferencedFields = referencedFields
-                            // ReferencedMethods = referencedMethods
                         };
 
                         analyzedMethods.Add(analyzedMethod);
                     }
-
-                    // TODO: Second analysis in methods to get referencedMethods for every method already analyzed
 
                     analyzedClasses.Add(new Class
                     {
@@ -109,6 +106,43 @@ namespace OOM.Core.Analyzers.CSharp
             }
 
             return analyzedNamespaces;
+        }
+
+        private int CalculateComplexity(SyntaxNode node)
+        {
+            var elementsKind = new[]
+			{  
+                SyntaxKind.WhileStatement,
+                SyntaxKind.ForStatement,
+                SyntaxKind.DoStatement,
+                SyntaxKind.ForEachStatement,
+                SyntaxKind.ParenthesizedLambdaExpression,
+                SyntaxKind.SimpleLambdaExpression,
+                SyntaxKind.DefaultExpression,
+                SyntaxKind.GotoStatement,
+                SyntaxKind.IfStatement,
+                SyntaxKind.CatchClause,
+                SyntaxKind.ContinueStatement
+            };
+
+            var contributorsKind = new[]
+			{  
+				SyntaxKind.CaseSwitchLabel, 
+				SyntaxKind.CoalesceExpression, 
+				SyntaxKind.ConditionalExpression, 
+				SyntaxKind.LogicalAndExpression, 
+				SyntaxKind.LogicalOrExpression, 
+				SyntaxKind.LogicalNotExpression
+			};
+
+            int nodes = node.ChildNodes().Count();
+            var elements = node.ChildNodes().Where(x => elementsKind.Contains(x.Kind()));
+
+            int edges = elements.Count() * 2;
+            foreach (var element in elements)
+                edges += element.DescendantNodes().Where(x => contributorsKind.Contains(x.Kind())).Count();
+
+            return edges - nodes + 1;
         }
     }
 }

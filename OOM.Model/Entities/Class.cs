@@ -68,6 +68,8 @@ namespace OOM.Model
                 var parameters = new Dictionary<string, object>();
                 parameters.Add("noc", ChildClasses.Count);
                 parameters.Add("dit", GetDepthOfInheritanceTree(this));
+                parameters.Add("aif", GetAttributeInheritanceFactor(this));
+                parameters.Add("mif", GetMethodInheritanceFactor(this));
                 parameters.Add("m.loc", Methods.Select(x => x.LineCount));
                 parameters.Add("m.ep", Methods.Select(x => x.ExitPoints));
                 return parameters;
@@ -84,6 +86,22 @@ namespace OOM.Model
                 maxDepth = Math.Max(GetDepthOfInheritanceTree(baseClass, currentDepth + 1), maxDepth);
 
             return maxDepth;
+        }
+
+        private int GetAttributeInheritanceFactor(Class baseClass)
+        {
+            // TODO: Get all available fields (including base classes) and all defined fields in the class
+            // MIF = 1 - (md / ma)
+
+            return 0;
+        }
+
+        private int GetMethodInheritanceFactor(Class baseClass)
+        {
+            // TODO: Get all available methods (including base classes) and all defined methods in the class
+            // MIF = 1 - (md / ma)
+
+            return 0;
         }
 
         #endregion
