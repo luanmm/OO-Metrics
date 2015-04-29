@@ -109,10 +109,10 @@ namespace OOM.Core.Repositories
                                 var savedFields = new List<Field>();
                                 foreach (var analyzedField in analyzedClass.Fields)
                                 {
-                                    var a = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
-                                    if (a == null)
+                                    var f = c.Fields.FirstOrDefault(x => x.FullyQualifiedIdentifier == analyzedField.FullyQualifiedIdentifier);
+                                    if (f == null)
                                     {
-                                        a = db.Fields.Add(new Field
+                                        f = db.Fields.Add(new Field
                                         {
                                             Name = analyzedField.Name,
                                             FullyQualifiedIdentifier = analyzedField.FullyQualifiedIdentifier,
@@ -122,7 +122,7 @@ namespace OOM.Core.Repositories
                                         });
                                         db.SaveChanges();
                                     }
-                                    savedFields.Add(a);
+                                    savedFields.Add(f);
                                 }
 
                                 foreach (var analyzedMethod in analyzedClass.Methods)
@@ -138,6 +138,7 @@ namespace OOM.Core.Repositories
                                             Qualification = analyzedMethod.Qualification,
                                             LineCount = analyzedMethod.LineCount,
                                             ExitPoints = analyzedMethod.ExitPoints,
+                                            Complexity = analyzedMethod.Complexity,
                                             ReferencedFields = savedFields.Where(x => analyzedMethod.ReferencedFields.Any(y => y.FullyQualifiedIdentifier == x.FullyQualifiedIdentifier)).ToList(),
                                             ClassId = c.Id
                                         });
@@ -159,8 +160,6 @@ namespace OOM.Core.Repositories
                                     db.SaveChanges();
                                 }
                             }
-                            else
-                                throw new Exception("Testing it.");
                         }
 
                         dbContextTransaction.Commit();

@@ -74,17 +74,15 @@ namespace OOM.Core.Analyzers.CSharp
                                     .Select(x => x.Symbol.ToDisplayString())
                                     .Contains(f.FullyQualifiedIdentifier)));
 
-                        var analyzedMethod = new Method
+                        analyzedMethods.Add(new Method
                         {
                             Name = ms.Name,
                             FullyQualifiedIdentifier = ms.ToDisplayString(),
-                            LineCount = m.ChildNodes().Count(),
-                            ExitPoints = m.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
-                            Complexity = CalculateComplexity(m),
+                            LineCount = m.Body.DescendantNodes().OfType<StatementSyntax>().Count(),
+                            ExitPoints = m.Body.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
+                            Complexity = CalculateComplexity(m.Body),
                             ReferencedFields = referencedFields
-                        };
-
-                        analyzedMethods.Add(analyzedMethod);
+                        });
                     }
 
                     analyzedClasses.Add(new Class
@@ -108,41 +106,29 @@ namespace OOM.Core.Analyzers.CSharp
             return analyzedNamespaces;
         }
 
-        private int CalculateComplexity(SyntaxNode node)
+        private int CalculateComplexity(BlockSyntax block)
         {
+            // Based on: http://www.aivosto.com/project/help/pm-complexity.html
+
             var elementsKind = new[]
 			{  
-                SyntaxKind.WhileStatement,
-                SyntaxKind.ForStatement,
-                SyntaxKind.DoStatement,
-                SyntaxKind.ForEachStatement,
-                SyntaxKind.ParenthesizedLambdaExpression,
-                SyntaxKind.SimpleLambdaExpression,
-                SyntaxKind.DefaultExpression,
-                SyntaxKind.GotoStatement,
+                // Common decisions keywords
                 SyntaxKind.IfStatement,
-                SyntaxKind.CatchClause,
-                SyntaxKind.ContinueStatement
-            };
+                SyntaxKind.SwitchStatement,
+                SyntaxKind.ForStatement,
+                SyntaxKind.ForEachStatement,
+                SyntaxKind.DoStatement,
+                SyntaxKind.WhileStatement,
+                SyntaxKind.TryStatement,
 
-            var contributorsKind = new[]
-			{  
-				SyntaxKind.CaseSwitchLabel, 
-				SyntaxKind.CoalesceExpression, 
-				SyntaxKind.ConditionalExpression, 
+                // Logical operations keywords
 				SyntaxKind.LogicalAndExpression, 
 				SyntaxKind.LogicalOrExpression, 
-				SyntaxKind.LogicalNotExpression
-			};
-
-            int nodes = node.ChildNodes().Count();
-            var elements = node.ChildNodes().Where(x => elementsKind.Contains(x.Kind()));
-
-            int edges = elements.Count() * 2;
-            foreach (var element in elements)
-                edges += element.DescendantNodes().Where(x => contributorsKind.Contains(x.Kind())).Count();
-
-            return edges - nodes + 1;
+				SyntaxKind.LogicalNotExpression,
+            };
+            
+            var decisions = block.DescendantNodes().Where(x => elementsKind.Contains(x.Kind())).Count();
+            return decisions + 1;
         }
     }
 }
