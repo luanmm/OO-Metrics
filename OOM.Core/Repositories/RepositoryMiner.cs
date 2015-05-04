@@ -71,6 +71,7 @@ namespace OOM.Core.Repositories
         {
             using (var db = new OOMetricsContext())
             {
+                db.Configuration.AutoDetectChangesEnabled = false;
                 using (var dbContextTransaction = db.Database.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
                     try

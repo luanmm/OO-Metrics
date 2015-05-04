@@ -105,7 +105,29 @@ namespace OOM.Web.Controllers
         {
             try
             {
+                _db.Configuration.AutoDetectChangesEnabled = false;
+
                 var project = _db.Projects.Find(id);
+                if (project == null)
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                foreach (var r in project.Revisions)
+                {
+                    foreach (var ns in r.Namespaces)
+                    {
+                        foreach (var c in ns.Classes)
+                        {
+                            _db.Fields.RemoveRange(_db.Fields.Where(x => x.ClassId == c.Id));
+                            _db.Methods.RemoveRange(_db.Methods.Where(x => x.ClassId == c.Id));
+                        }
+
+                        _db.Classes.RemoveRange(_db.Classes.Where(x => x.NamespaceId == ns.Id));
+                    }
+
+                    _db.Namespaces.RemoveRange(_db.Namespaces.Where(x => x.RevisionId == r.Id));
+                }
+
+                _db.Revisions.RemoveRange(_db.Revisions.Where(x => x.ProjectId == project.Id));
                 _db.Projects.Remove(project);
                 _db.SaveChanges();
             }
