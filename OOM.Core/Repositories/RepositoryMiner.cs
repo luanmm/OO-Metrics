@@ -3,6 +3,7 @@ using OOM.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity.Validation;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ namespace OOM.Core.Repositories
         {
             Project project = null;
             string lastRevisionRID = null;
+            int lastRevisionNumber = 0;
 
             using (var db = new OOMetricsContext())
             {
@@ -26,7 +28,10 @@ namespace OOM.Core.Repositories
 
                 var lastRevision = db.Revisions.Where(x => x.ProjectId == projectId).OrderByDescending(r => r.CreatedAt).FirstOrDefault();
                 if (lastRevision != null)
+                {
+                    lastRevisionNumber = lastRevision.Number;
                     lastRevisionRID = lastRevision.RID;
+                }
             }
 
             using (var repository = RepositoryFactory.CreateRepository(project.RepositoryProtocol, new RepositoryConfiguration(project.URI, project.User, project.Password)))
@@ -51,6 +56,7 @@ namespace OOM.Core.Repositories
 
                     PersistAnalyzedData(new Revision
                     {
+                        Number = ++lastRevisionNumber,
                         RID = revision.RID,
                         Message = revision.Message,
                         Author = revision.Author,
@@ -164,8 +170,14 @@ namespace OOM.Core.Repositories
 
                         dbContextTransaction.Commit();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        if (ex is DbEntityValidationException)
+                        {
+                            var dbEx = (DbEntityValidationException)ex;
+                            Console.WriteLine(String.Format("Entity validation error: {0}", dbEx.Message));
+                        }
+
                         dbContextTransaction.Rollback();
                     }
                 }

@@ -12,7 +12,5 @@ namespace OOM.Model
         Private = 1,
         Protected = 2,
         Public = 4,
-        Internal = 8,
-        Friend = 16,
     }
 }

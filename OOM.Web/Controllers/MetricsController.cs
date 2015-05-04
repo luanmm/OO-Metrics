@@ -198,13 +198,18 @@ namespace OOM.Web.Controllers
             var data = new List<object>();
             var metric = _db.Metrics.Find(metricId);
             var relatedRevisions = FindRelatedRevisions(revision, element);
+
+            decimal lastResult = Decimal.MinValue;
             foreach (var relatedRevision in relatedRevisions)
             {
                 var result = EvaluateMetric(metric, relatedRevision.Item2);
+                if (result == lastResult)
+                    continue;
+
                 data.Add(new
                 {
                     revision = new {
-                        number = relatedRevision.Item1.Id, // TODO: Number of revision (incremental)
+                        number = relatedRevision.Item1.Number,
                         rid = relatedRevision.Item1.RID,
                         author = relatedRevision.Item1.Author,
                         message = relatedRevision.Item1.Message,
@@ -212,6 +217,8 @@ namespace OOM.Web.Controllers
                     },
                     value = result
                 });
+
+                lastResult = result;
             }
 
             return Json(data, JsonRequestBehavior.AllowGet);

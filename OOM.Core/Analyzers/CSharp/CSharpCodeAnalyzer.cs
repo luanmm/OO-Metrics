@@ -54,15 +54,17 @@ namespace OOM.Core.Analyzers.CSharp
                         {
                             Name = f.Name,
                             FullyQualifiedIdentifier = f.ToDisplayString(),
+                            Encapsulation = ExtractEncapsulationTypes(f),
+                            Qualification = ExtractQualificationTypes(f),
                         });
                     }
 
                     var analyzedMethods = new List<Method>();
-                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                    var methods = c.DescendantNodes().OfType<MethodDeclarationSyntax>().Where(m => m.Body != null);
                     foreach (var m in methods)
                     {
                         var ms = semanticModel.GetDeclaredSymbol(m) as IMethodSymbol;
-                        if (ms == null)
+                        if (ms == null || ms.MethodKind != MethodKind.Ordinary)
                             continue;
 
                         var referencedFields = new List<Field>(
@@ -78,6 +80,8 @@ namespace OOM.Core.Analyzers.CSharp
                         {
                             Name = ms.Name,
                             FullyQualifiedIdentifier = ms.ToDisplayString(),
+                            Encapsulation = ExtractEncapsulationTypes(ms),
+                            Qualification = ExtractQualificationTypes(ms),
                             LineCount = m.Body.DescendantNodes().OfType<StatementSyntax>().Count(),
                             ExitPoints = m.Body.DescendantNodes().OfType<ReturnStatementSyntax>().Count(),
                             Complexity = CalculateComplexity(m.Body),
@@ -89,6 +93,8 @@ namespace OOM.Core.Analyzers.CSharp
                     {
                         Name = cs.Name,
                         FullyQualifiedIdentifier = cs.ToDisplayString(),
+                        Encapsulation = ExtractEncapsulationTypes(cs),
+                        Qualification = ExtractQualificationTypes(cs),
                         Methods = analyzedMethods,
                         Fields = analyzedFields,
                         BaseClass = cs.BaseType != null ? new Class { FullyQualifiedIdentifier = cs.BaseType.ToDisplayString() } : null
@@ -104,6 +110,49 @@ namespace OOM.Core.Analyzers.CSharp
             }
 
             return analyzedNamespaces;
+        }
+
+        private EncapsulationTypes ExtractEncapsulationTypes(ISymbol symbol)
+        {
+            if (symbol.DeclaredAccessibility.HasFlag(Accessibility.Private))
+                return EncapsulationTypes.Private;
+
+            if (symbol.DeclaredAccessibility.HasFlag(Accessibility.Public))
+                return EncapsulationTypes.Public;
+
+            if (symbol.DeclaredAccessibility.HasFlag(Accessibility.Protected) ||
+                symbol.DeclaredAccessibility.HasFlag(Accessibility.ProtectedAndFriend) ||
+                symbol.DeclaredAccessibility.HasFlag(Accessibility.ProtectedAndInternal) ||
+                symbol.DeclaredAccessibility.HasFlag(Accessibility.ProtectedOrFriend) ||
+                symbol.DeclaredAccessibility.HasFlag(Accessibility.ProtectedOrInternal))
+                return EncapsulationTypes.Protected;
+
+            return default(EncapsulationTypes);
+        }
+
+        private QualificationTypes ExtractQualificationTypes(ISymbol symbol)
+        {
+            var types = default(QualificationTypes);
+
+            if (symbol.IsAbstract)
+                types = types | QualificationTypes.Abstract;
+
+            if (symbol.IsExtern)
+                types = types | QualificationTypes.Extern;
+
+            if (symbol.IsOverride)
+                types = types | QualificationTypes.Override;
+
+            if (symbol.IsSealed)
+                types = types | QualificationTypes.Sealed;
+
+            if (symbol.IsStatic)
+                types = types | QualificationTypes.Static;
+
+            if (symbol.IsVirtual)
+                types = types | QualificationTypes.Virtual;
+
+            return types;
         }
 
         private int CalculateComplexity(BlockSyntax block)

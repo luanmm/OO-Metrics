@@ -12,10 +12,10 @@ namespace OOM.Model
         [Key]
         public int Id { get; set; }
 
-        [Required, MaxLength(250)]
+        [Required, StringLength(500)]
         public string Name { get; set; }
 
-        [Required, MaxLength(500)]
+        [Required, StringLength(500)]
         public string Expression { get; set; }
 
         [Display(Name = "Target element type")]

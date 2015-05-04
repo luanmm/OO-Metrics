@@ -23,6 +23,9 @@
                 <table class="table table-hover table-bordered">
                     <tr>
                         <th>
+                            #
+                        </th>
+                        <th>
                             @Html.DisplayNameFor(model => model.RID)
                         </th>
                         <th>
@@ -40,6 +43,9 @@
                     @foreach (var revision in Model)
                     {
                         <tr>
+                            <td>
+                                @Html.DisplayFor(m => revision.Number)
+                            </td>
                             <td>
                                 @Html.DisplayFor(m => revision.RID)
                             </td>

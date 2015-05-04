@@ -24,10 +24,10 @@ namespace OOM.Model
 
         public int? BaseClassId { get; set; }
 
-        [Required, MaxLength(250)]
+        [Required, StringLength(500)]
         public string Name { get; set; }
 
-        [Display(Name = "Identifier"), Required, MaxLength(250)]
+        [Display(Name = "Identifier"), Required, StringLength(1000)]
         public string FullyQualifiedIdentifier { get; set; }
 
         [Required]
@@ -66,10 +66,21 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
-                parameters.Add("noc", ChildClasses.Count);
+                parameters.Add("noa", Fields.Count);
+                parameters.Add("nom", Methods.Count);
+                parameters.Add("wmc", Methods.Sum(x => x.Complexity));
                 parameters.Add("dit", GetDepthOfInheritanceTree(this));
                 parameters.Add("aif", GetAttributeInheritanceFactor(this));
                 parameters.Add("mif", GetMethodInheritanceFactor(this));
+                parameters.Add("noc", ChildClasses.Count);
+                parameters.Add("rfc", Methods.Where(x => x.IsPublic).Count());
+                parameters.Add("lcom", GetLackOfCohesionOfMethods(this));
+
+                // TODO: MHF (http://www.aivosto.com/project/help/pm-oo-mood.html)
+                // TODO: MIF
+                // TODO: CF
+                // TODO: PF
+
                 parameters.Add("m.loc", Methods.Select(x => x.LineCount));
                 parameters.Add("m.ep", Methods.Select(x => x.ExitPoints));
                 return parameters;
@@ -102,6 +113,17 @@ namespace OOM.Model
             // MIF = 1 - (md / ma)
 
             return 0;
+        }
+
+        private int GetLackOfCohesionOfMethods(Class baseClass)
+        {
+            // Based on: http://www.reimers.dk/jacob-reimers-blog/calculating-lack-of-cohesion-of-methods-with-roslyn
+
+            var memberCount = baseClass.Methods.Count;
+            var fieldUsage = baseClass.Fields.Sum(x => x.ReferencingMethods.Count);
+            var fieldCount = baseClass.Fields.Count;
+
+            return (memberCount - fieldUsage / fieldCount) / (memberCount - 1);
         }
 
         #endregion

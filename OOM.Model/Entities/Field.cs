@@ -19,10 +19,10 @@ namespace OOM.Model
 
         public int ClassId { get; set; }
 
-        [Required, MaxLength(250)]
+        [Required, StringLength(500)]
         public string Name { get; set; }
 
-        [Display(Name = "Identifier"), Required, MaxLength(250)]
+        [Display(Name = "Identifier"), Required, StringLength(1000)]
         public string FullyQualifiedIdentifier { get; set; }
 
         [Required]

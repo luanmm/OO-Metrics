@@ -19,13 +19,16 @@ namespace OOM.Model
 
         public int ProjectId { get; set; }
 
-        [Required, MaxLength(50)]
+        [Required, MaxLength]
         public string RID { get; set; }
 
-        [StringLength(500)]
+        [Required]
+        public int Number { get; set; }
+
+        [MaxLength]
         public string Message { get; set; }
 
-        [StringLength(250)]
+        [MaxLength]
         public string Author { get; set; }
 
         [Display(Name = "Created at"), DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}")]

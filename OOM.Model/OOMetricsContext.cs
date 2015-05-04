@@ -17,7 +17,8 @@ namespace OOM.Model
             : base(connectionString)
         {
             //Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
-            Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
+            //Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
+            Database.SetInitializer<OOMetricsContext>(null);
         }
 
         public virtual DbSet<Project> Projects { get; set; }

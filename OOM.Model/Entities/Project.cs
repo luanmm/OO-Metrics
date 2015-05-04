@@ -17,19 +17,19 @@ namespace OOM.Model
         [Key]
         public int Id { get; set; }
 
-        [Required, MaxLength(250)]
+        [Required, StringLength(500)]
         public string Name { get; set; }
 
         [Display(Name = "Repository protocol")]
         public RepositoryProtocol RepositoryProtocol { get; set; }
 
-        [Required, MaxLength(500)]
+        [Required, StringLength(1000)]
         public string URI { get; set; }
 
-        [MaxLength(250)]
+        [StringLength(250)]
         public string User { get; set; }
 
-        [MaxLength(250)]
+        [StringLength(250)]
         public string Password { get; set; }
 
         public virtual ICollection<Revision> Revisions { get; set; }

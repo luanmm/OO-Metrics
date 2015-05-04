@@ -17,37 +17,6 @@
             <h1>Revision details</h1>
             <br />
             <div>
-                <dl class="dl-horizontal">
-                    <dt>
-                        @Html.DisplayNameFor(model => model.RID)
-                    </dt>
-                    <dd>
-                        @Html.DisplayFor(model => model.RID)
-                    </dd>
-
-                    <dt>
-                        @Html.DisplayNameFor(model => model.Message)
-                    </dt>
-                    <dd>
-                        @Html.DisplayFor(model => model.Message)
-                    </dd>
-
-                    <dt>
-                        @Html.DisplayNameFor(model => model.Author)
-                    </dt>
-                    <dd>
-                        @Html.DisplayFor(model => model.Author)
-                    </dd>
-
-                    <dt>
-                        @Html.DisplayNameFor(model => model.CreatedAt)
-                    </dt>
-                    <dd>
-                        @Html.DisplayFor(model => model.CreatedAt)
-                    </dd>
-                </dl>
-                <br />
-                <h2>Graph</h2>
                 <style>
                     svg {
                         font: 10px sans-serif;
@@ -75,38 +44,48 @@
                         stroke: #dedede;
                     }
 
-                    .node {
-                        cursor: zoom-in;
-                    }
-
-                        .node.selected {
-                            cursor: zoom-out;
-                        }
-
                     #revision-graph {
                         width: 1140px;
                         height: 600px;
                         position: relative;
+                        overflow: hidden;
                     }
 
-                        #revision-graph .graph-details {
+                        #revision-graph div.details-panel {
                             position: absolute;
-                            top: 15px;
-                            left: 15px;
-                            font-style: oblique;
-                            font-size: 18pt;
-                            font-family: 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
+                            top: 0;
+                            width: 550px;
+                            height: 600px;
+                            padding: 20px 20px 20px 188px;
+                            -ms-word-wrap: break-word;
+                            word-wrap: break-word;
                         }
 
-                        #revision-graph .graph-toolbar {
-                            position: absolute;
-                            right: 15px;
-                            top: 15px;
+                        #revision-graph div.details-panel p.root-name,
+                        #revision-graph div.details-panel div.root-description {
+                            color: #fefefe;
+                            margin-bottom: 25px;
                         }
 
-                            #revision-graph .graph-toolbar a {
-                                margin-left: 3px;
-                            }
+                        #revision-graph div.element-details {
+                            position: absolute;
+                            top: 25px;
+                            right: 25px;
+                        }
+
+                    #revision-graph .node {
+                        cursor: zoom-in;
+                    }
+
+                    #revision-graph .node.root {
+                        cursor: zoom-out;
+                    }
+
+                    text.element-name {
+                        font: 12pt sans-serif;
+                        font-style: oblique;
+                        font-weight: 500;
+                    }
 
                     #history-chart {
                         width: 558px;
@@ -114,27 +93,7 @@
                     }
                 </style>
 
-                <div id="revision-graph">
-                    <div class="graph-details" style="display:none;">
-                        <div class="panel panel-primary">
-                            <div class="panel-heading"></div>
-                            <div class="panel-body"></div>
-                        </div>
-                    </div>
-                    <div class="graph-toolbar">
-                        <!-- TODO: Fix the centering problem of the "container" shape in the rendered SVG
-                        <a href="#zoom-in" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom in" role="button">
-                            <span class="fa fa-search-plus" aria-hidden="true"></span>
-                        </a>
-                        <a href="#zoom-out" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Zoom out" role="button">
-                            <span class="fa fa-search-minus" aria-hidden="true"></span>
-                        </a>
-                        -->
-                        <a href="#zoom-none" class="btn btn-primary btn-xs" data-toggle="tooltip" title="1:1" role="button">
-                            <span class="fa fa-crosshairs" aria-hidden="true"></span>
-                        </a>
-                    </div>
-                </div>
+                <div id="revision-graph"></div>
             </div>
         </div>
     </div>
@@ -153,7 +112,7 @@
                         <div class="form-group">
                             <label for="metric-name" class="control-label">Metric</label>
                             <select class="form-control" id="metric-name" name="metric-name">
-                                <option>Select...</option>
+                                <option value="">Select...</option>
                             </select>
                         </div>
                     </fieldset>
@@ -168,197 +127,60 @@
 {
     @Scripts.Render("~/bundles/d3")
     <script>
-        function renderHistoryChart(data) {
-            var margin = { top: 10, right: 10, bottom: 40, left: 40 },
-                width = 558 - margin.left - margin.right,
-                height = 300 - margin.top - margin.bottom;
+    var renderHistoryChart = function (selector, data) {
+        var margin = { top: 10, right: 10, bottom: 40, left: 40 },
+            width = 558 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
 
-            var x = d3.scale.ordinal()
-                .rangeRoundBands([0, width], .1);
+        var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .1);
 
-            var y = d3.scale.linear()
-                .range([height, 0]);
+        var y = d3.scale.linear()
+            .range([height, 0]);
 
-            var xAxis = d3.svg.axis()
-                .scale(x)
-                .orient("bottom");
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom');
 
-            var yAxis = d3.svg.axis()
-                .scale(y)
-                .orient("left")
-                .ticks(10);
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left')
+            .ticks(10);
 
-            var svg = d3.select("#history-chart").append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-              .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        d3.select(selector).selectAll('svg').remove();
 
-            x.domain(data.map(function (d) { return d.revision.number; }));
-            y.domain([0, d3.max(data, function (d) { return d.value; })]);
+        var svg = d3.select(selector).append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
+        x.domain(data.map(function (d) { return d.revision.number; }));
+        y.domain([0, d3.max(data, function (d) { return d.value; })]);
 
-            svg.append("g")
-                .attr("class", "y axis")
-                .call(yAxis);
+        svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis);
 
-            svg.selectAll(".bar")
-                .data(data)
-                .enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", function (d) { return x(d.revision.number); })
-                .attr("width", x.rangeBand())
-                .attr("y", height)
-                .attr("height", 0)
-                .transition().duration(1000)
-                .attr("y", function (d) { return y(d.value); })
-                .attr("height", function (d) { return height - y(d.value); });
-        }
+        svg.append('g')
+            .attr('class', 'y axis')
+            .call(yAxis);
 
-        // t: current time, b: begInnIng value, c: change In value, d: duration
-        $.easing.jswing = $.easing.swing;
+        svg.selectAll('.bar')
+            .data(data)
+            .enter().append('rect')
+            .attr('class', 'bar')
+            .attr('x', function (d) { return x(d.revision.number); })
+            .attr('width', x.rangeBand())
+            .attr('y', height)
+            .attr('height', 0)
+            .transition().duration(1000)
+            .attr('y', function (d) { return y(d.value); })
+            .attr('height', function (d) { return height - y(d.value); });
+    };
 
-        $.extend($.easing,
-        {
-            def: 'easeOutQuad',
-            swing: function (x, t, b, c, d) {
-                //alert($.easing.default);
-                return $.easing[$.easing.def](x, t, b, c, d);
-            },
-            easeInQuad: function (x, t, b, c, d) {
-                return c * (t /= d) * t + b;
-            },
-            easeOutQuad: function (x, t, b, c, d) {
-                return -c * (t /= d) * (t - 2) + b;
-            },
-            easeInOutQuad: function (x, t, b, c, d) {
-                if ((t /= d / 2) < 1) return c / 2 * t * t + b;
-                return -c / 2 * ((--t) * (t - 2) - 1) + b;
-            },
-            easeInCubic: function (x, t, b, c, d) {
-                return c * (t /= d) * t * t + b;
-            },
-            easeOutCubic: function (x, t, b, c, d) {
-                return c * ((t = t / d - 1) * t * t + 1) + b;
-            },
-            easeInOutCubic: function (x, t, b, c, d) {
-                if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
-                return c / 2 * ((t -= 2) * t * t + 2) + b;
-            },
-            easeInQuart: function (x, t, b, c, d) {
-                return c * (t /= d) * t * t * t + b;
-            },
-            easeOutQuart: function (x, t, b, c, d) {
-                return -c * ((t = t / d - 1) * t * t * t - 1) + b;
-            },
-            easeInOutQuart: function (x, t, b, c, d) {
-                if ((t /= d / 2) < 1) return c / 2 * t * t * t * t + b;
-                return -c / 2 * ((t -= 2) * t * t * t - 2) + b;
-            },
-            easeInQuint: function (x, t, b, c, d) {
-                return c * (t /= d) * t * t * t * t + b;
-            },
-            easeOutQuint: function (x, t, b, c, d) {
-                return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
-            },
-            easeInOutQuint: function (x, t, b, c, d) {
-                if ((t /= d / 2) < 1) return c / 2 * t * t * t * t * t + b;
-                return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
-            },
-            easeInSine: function (x, t, b, c, d) {
-                return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
-            },
-            easeOutSine: function (x, t, b, c, d) {
-                return c * Math.sin(t / d * (Math.PI / 2)) + b;
-            },
-            easeInOutSine: function (x, t, b, c, d) {
-                return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b;
-            },
-            easeInExpo: function (x, t, b, c, d) {
-                return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
-            },
-            easeOutExpo: function (x, t, b, c, d) {
-                return (t == d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
-            },
-            easeInOutExpo: function (x, t, b, c, d) {
-                if (t == 0) return b;
-                if (t == d) return b + c;
-                if ((t /= d / 2) < 1) return c / 2 * Math.pow(2, 10 * (t - 1)) + b;
-                return c / 2 * (-Math.pow(2, -10 * --t) + 2) + b;
-            },
-            easeInCirc: function (x, t, b, c, d) {
-                return -c * (Math.sqrt(1 - (t /= d) * t) - 1) + b;
-            },
-            easeOutCirc: function (x, t, b, c, d) {
-                return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
-            },
-            easeInOutCirc: function (x, t, b, c, d) {
-                if ((t /= d / 2) < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
-                return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1) + b;
-            },
-            easeInElastic: function (x, t, b, c, d) {
-                var s = 1.70158; var p = 0; var a = c;
-                if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3;
-                if (a < Math.abs(c)) { a = c; var s = p / 4; }
-                else var s = p / (2 * Math.PI) * Math.asin(c / a);
-                return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
-            },
-            easeOutElastic: function (x, t, b, c, d) {
-                var s = 1.70158; var p = 0; var a = c;
-                if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3;
-                if (a < Math.abs(c)) { a = c; var s = p / 4; }
-                else var s = p / (2 * Math.PI) * Math.asin(c / a);
-                return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
-            },
-            easeInOutElastic: function (x, t, b, c, d) {
-                var s = 1.70158; var p = 0; var a = c;
-                if (t == 0) return b; if ((t /= d / 2) == 2) return b + c; if (!p) p = d * (.3 * 1.5);
-                if (a < Math.abs(c)) { a = c; var s = p / 4; }
-                else var s = p / (2 * Math.PI) * Math.asin(c / a);
-                if (t < 1) return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
-                return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p) * .5 + c + b;
-            },
-            easeInBack: function (x, t, b, c, d, s) {
-                if (s == undefined) s = 1.70158;
-                return c * (t /= d) * t * ((s + 1) * t - s) + b;
-            },
-            easeOutBack: function (x, t, b, c, d, s) {
-                if (s == undefined) s = 1.70158;
-                return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
-            },
-            easeInOutBack: function (x, t, b, c, d, s) {
-                if (s == undefined) s = 1.70158;
-                if ((t /= d / 2) < 1) return c / 2 * (t * t * (((s *= (1.525)) + 1) * t - s)) + b;
-                return c / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2) + b;
-            },
-            easeInBounce: function (x, t, b, c, d) {
-                return c - $.easing.easeOutBounce(x, d - t, 0, c, d) + b;
-            },
-            easeOutBounce: function (x, t, b, c, d) {
-                if ((t /= d) < (1 / 2.75)) {
-                    return c * (7.5625 * t * t) + b;
-                } else if (t < (2 / 2.75)) {
-                    return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
-                } else if (t < (2.5 / 2.75)) {
-                    return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
-                } else {
-                    return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
-                }
-            },
-            easeInOutBounce: function (x, t, b, c, d) {
-                if (t < d / 2) return $.easing.easeInBounce(x, t * 2, 0, c, d) * .5 + b;
-                return $.easing.easeOutBounce(x, t * 2 - d, 0, c, d) * .5 + c * .5 + b;
-            }
-        });
-
-        var width = 1140,
-            height = 600,
-            centered;
-
+    var renderExplorer = function (selector) {
         var selectNodeTitle = function (group) {
             if (group === 2)
                 return 'Namespace';
@@ -395,229 +217,221 @@
             return '@Url.Content("~/Content/images/icon-revision.svg")';
         };
 
-        var zooming = function () {
-            container.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
-        };
+        var width = 1140,
+            height = 600,
+            offset = width / 7,
+            link,
+            node;
 
-        var nodeClicked = function (d) {
-            var x, y, k, $panel = $("#revision-graph .graph-details");
+        d3.select(selector).selectAll('*').remove();
 
-            $panel.hide();
+        var container = d3.select(selector);
 
-            if (d && centered !== d) {
-                x = d.x;
-                y = d.y;
-                k = 4;
-                centered = d;
+        var svg = container
+            .append('svg:svg')
+            .attr('width', width)
+            .attr('height', height);
 
-                $panel
-                    .html(d.name + '<a style="margin-left:10px;" class="btn btn-primary btn-xs btn-modal-element-details" data-name="' + d.name + '" data-element-type="' + selectNodeTitle(d.group).toLowerCase() + '" data-element-id="' + d.id + '" data-revision-id="@Model.Id" data-toggle="tooltip" title="Element details" role="button"><span class="fa fa-eye" aria-hidden="true"></span></a>')
-                    .css({
-                        left: (width / 2) - 60,
-                        top: (height / 2) - ($panel.outerHeight() / 2) - 2,
-                        color: selectNodeColor(d.group)
-                    })
-                    .fadeIn(1200, "easeInBack")
-                    .children('a').tooltip();
-            } else {
-                x = width / 2;
-                y = height / 2;
-                k = 1;
-                centered = null;
-            }
-
-            d3.selectAll(".node")
-                .classed("selected", centered && function (d) { return d === centered; });
-
-            d3.selectAll(".node,.link")
-                .transition()
-                .duration(750)
-                .style("opacity", centered && function (d) { return (d === centered) ? 1.0 : 0.2; });
-
-            container.transition()
-                .duration(750)
-                .attr("transform", "translate(" + width / 2.5 + "," + height / 2 + ") scale(" + k + ") translate(" + -x + "," + -y + ")");
-        }
+        svg.append('svg:rect')
+            .style('fill', '#f3f3f3')
+            .attr('width', width)
+            .attr('height', height);
 
         var force = d3.layout.force()
-            .charge(-120)
-            .linkDistance(30)
+            .on('tick', function () {
+                link.attr('x1', function (d) { return d.source.x; })
+                    .attr('y1', function (d) { return d.source.y; })
+                    .attr('x2', function (d) { return d.target.x; })
+                    .attr('y2', function (d) { return d.target.y; })
+                    .attr('transform', function (d) { return 'translate(' + offset + ', 0)'; });
+
+                node.attr('transform', function (d) { return 'translate(' + (d.x + offset) + ', ' + d.y + ')'; });
+            })
+            .charge(function (d) { return -30 + (this.nodes().length - 1) * -5; })
+            .linkDistance(70)
             .size([width, height]);
 
-        var svg = d3.select("#revision-graph").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+        var elementName = svg.append('svg:text')
+            .attr('class', 'element-name')
+            .attr('x', width - 25)
+            .attr('y', height - 25)
+            .attr('text-anchor', 'end')
+            //.attr('text-size', '12pt')
+            .style('opacity', 0);
 
-        var zoom = d3.behavior.zoom()
-            .size([width, height])
-            .scaleExtent([1, 10])
-            .on("zoom", zooming);
+        var loadRootNode = function (type, id) {
+            $(selector).mask();
 
-        svg.append("rect")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            //.call(zoom)
-            //.on("mousedown.zoom", null)
-            //.on("mousemove.zoom", null)
-            //.on("dblclick.zoom", null)
-            //.on("touchstart.zoom", null)
-            //.on("wheel.zoom", null)
-            //.on("mousewheel.zoom", null)
-            //.on("MozMousePixelScroll.zoom", null)
-            //.attr("rx", "3")
-            //.attr("ry", "3")
-            .attr("fill", "#f3f3f3");
+            d3.json('@Url.Action("Explore", "Revisions")?elementType=' + type + '&elementId=' + id, function (error, data) {
+                    var root = data.nodes[0];
+                    root.fixed = true;
+                    root.x = width / 2;
+                    root.y = height / 2;
 
-        var container = svg.append("g");
+                    force
+                        .gravity(Math.atan(data.nodes.length - 1 / 50) / Math.PI * 0.4)
+                        .nodes(data.nodes)
+                        .links(data.links)
+                        .start();
 
-        d3.json('@Url.Action("Graph", "Revisions", new { id = Model.Id })', function (error, graph) {
-            force
-                .nodes(graph.nodes)
-                .links(graph.links)
-                .start();
+                    svg.selectAll('line.link').remove();
 
-            var link = container.selectAll(".link")
-                .data(graph.links)
-                .enter().append("line")
-                .attr("class", "link")
-                .style("stroke-width", function (d) { return Math.sqrt(d.value); });
+                    link = svg.selectAll('line.link').data(data.links).enter()
+                        .insert('svg:line', '.node')
+                        .attr('class', 'link')
+                        .attr('x1', function (d) { return d.source.x; })
+                        .attr('y1', function (d) { return d.source.y; })
+                        .attr('x2', function (d) { return d.target.x; })
+                        .attr('y2', function (d) { return d.target.y; });
 
-            var node = container.selectAll(".node")
-                .data(graph.nodes)
-                .enter().append("g")
-                .attr("class", "node")
-                //.call(force.drag)
-                .on("click", nodeClicked);
+                    svg.selectAll('image.node').remove();
 
-            node.append("image")
-                .attr("xlink:href", function (d) { return selectNodeImage(d.group); })
-                .attr("x", -12)
-                .attr("y", -12)
-                .attr("width", 24)
-                .attr("height", 24);
+                    node = svg.selectAll('image.node').data(data.nodes).enter()
+                        .append('svg:image')
+                        .attr('class', function (d) { return d.fixed === true ? 'node root' : 'node'; })
+                        .attr('xlink:href', function (d) { return selectNodeImage(d.group); })
+                        .attr('width', function (d) { return d.fixed === true ? 38 : 32; })
+                        .attr('height', function (d) { return d.fixed === true ? 38 : 32; })
+                        .attr('x', function (d) { return -parseInt(this.getAttribute('width')) / 2; })
+                        .attr('y', function (d) { return -parseInt(this.getAttribute('height')) / 2; })
+                        .on('click', function (d) {
+                            var type, id;
+                            if (d.root === true)
+                                return;
 
-            var $container = $("#revision-graph");
-            $container.mask();
+                            if (d.parent) {
+                                type = selectNodeTitle(d.parent.group);
+                                id = d.parent.id;
+                            }
+                            else {
+                                type = selectNodeTitle(d.group);
+                                id = d.id;
+                            }
 
-            force.on("tick", function () {
-                link.attr("x1", function (d) { return d.source.x; })
-                    .attr("y1", function (d) { return d.source.y; })
-                    .attr("x2", function (d) { return d.target.x; })
-                    .attr("y2", function (d) { return d.target.y; });
+                            loadRootNode(type, id);
+                        });
 
-                node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
-            }).on("end", function () {
-                $container.unmask();
-            });
+                    svg.selectAll('.node:not(.root)')
+                        .call(force.drag)
+                        .on('mouseover', function (d) {
+                            elementName
+                                .style('opacity', 0)
+                                .text(d.name)
+                                .style('fill', function () { return selectNodeColor(d.group); })
+                                .transition()
+                                .duration(50)
+                                .style('opacity', 1);
+                        })
+                        .on('mouseout', function (d) {
+                            elementName.transition()
+                                .duration(500)
+                                .style('opacity', 0);
+                        });
 
-            /*
-            $('a[href="#zoom-in"]').on("click", function (e) {
-                e.preventDefault();
+                    container.selectAll('div.details-panel').remove();
 
-                var $this = $(this);
-                $this.add($this.siblings('a')).addClass("disabled");
+                    var detailsPanel = container.append('div');
 
-                var translate = zoom.translate() || [0, 0];
-                var scale = (zoom.scale() || 1) + 1;
+                    detailsPanel
+                        .attr('class', 'details-panel')
+                        .style('background', function (d) { return selectNodeColor(root.group); })
+                        .style('left', function (d) { return -(width / 2) + 'px'; })
+                        .transition()
+                        .duration(3000)
+                        .ease('elastic')
+                        .style('left', -(width / 7) + 'px');
 
-                container.transition()
-                    .duration(600)
-                    .call(zoom.translate(translate).event)
-                    .call(zoom.scale(scale > 10 ? 10 : scale).event)
-                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
-            });
+                    detailsPanel.append('p')
+                        .attr('class', 'root-name')
+                        .html('<strong>' + root.name + '</strong>');
 
-            $('a[href="#zoom-out"]').on("click", function (e) {
-                e.preventDefault();
+                    detailsPanel.append('div')
+                        .attr('class', 'root-description')
+                        .html(root.description);
 
-                var $this = $(this);
-                $this.add($this.siblings('a')).addClass("disabled");
+                    container.selectAll('div.element-details').remove();
 
-                var translate = zoom.translate() || [0, 0];
-                var scale = (zoom.scale() || 1) - 1;
-                container.transition()
-                    .duration(600)
-                    .call(zoom.translate(translate).event)
-                    .call(zoom.scale(scale < 1 ? 1 : scale).event)
-                    .each("end", function () { $this.add($this.siblings('a')).removeClass("disabled"); });
-            });
-            */
+                    if (root.root !== true) {
+                        container.append('div')
+                            .attr('class', 'element-details')
+                            .html('<a class="btn btn-primary btn-xs btn-modal-element-details" data-name="' + root.name + '" data-element-type="' + selectNodeTitle(root.group).toLowerCase() + '" data-element-id="' + root.id + '" data-revision-id="@Model.Id" role="button"><span class="fa fa-eye" aria-hidden="true"></span> Element details</a>');
+                    }
 
-            $('a[href="#zoom-none"]').on("click", function (e) {
-                e.preventDefault();
-                var n = d3.select(".node.selected");
-                if (n) n.on("click")();
-            });
+                    $(selector).unmask();
+                });
+            };
+
+            loadRootNode(null, '@Model.Id');
+    };
+
+    renderExplorer('#revision-graph');
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    $(document).on('click', 'a.btn-modal-element-details', function (e) {
+        e.preventDefault();
+
+        var $this = $(this);
+        var $modal = $('#modal-element-details');
+
+        var $metricsField = $('#metric-name');
+        $metricsField.children().slice(1).remove();
+        $metricsField.attr('data-element-type', $this.attr('data-element-type'));
+        $metricsField.attr('data-element-id', $this.attr('data-element-id'));
+        $metricsField.attr('data-revision-id', $this.attr('data-revision-id'));
+
+        $('#history-chart').html('');
+
+        $modal.find('.modal-title').html('Details of &quot;' + $this.attr('data-name') + '&quot; ' + $this.attr('data-element-type'));
+        $modal.modal('show');
+        $modal.mask();
+
+        $.get('@Url.Action("ByElementType", "Metrics")', {
+            elementType: $this.attr('data-element-type')
+        })
+        .done(function (metrics) {
+            for (var m in metrics) {
+                $metricsField.append('<option value="' + metrics[m].value + '">' + metrics[m].name + '</option>');
+            }
+        })
+        .fail(function () {
+            $modal.modal('hide');
+            alert('An error has occurred getting metrics information.');
+        })
+        .always(function () {
+            $modal.unmask();
         });
+    });
 
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
+    $(document).on('change', 'select#metric-name', function (e) {
+        e.preventDefault();
+
+        var $this = $(this);
+        var metric = $this.val();
+        if (!metric)
+            return;
+
+        $('#history-chart').html('');
+
+        var $modal = $('#modal-element-details');
+        $modal.mask();
+
+        $.get('@Url.Action("History", "Metrics")', {
+            elementType: $this.attr('data-element-type'),
+            elementId: $this.attr('data-element-id'),
+            revisionId: $this.attr('data-revision-id'),
+            metricId: metric
+        })
+        .done(function (data) {
+            renderHistoryChart('#history-chart', data);
+        })
+        .fail(function () {
+            $modal.modal('hide');
+            alert('An error has occurred getting metrics information.');
+        })
+        .always(function () {
+            $modal.unmask();
         });
-
-        $(document).on('click', 'a.btn-modal-element-details', function (e) {
-            e.preventDefault();
-
-            var $this = $(this);
-            var $modal = $('#modal-element-details');
-
-            var $metricsField = $('#metric-name');
-            $metricsField.children().slice(1).remove();
-            $metricsField.attr('data-element-type', $this.attr('data-element-type'));
-            $metricsField.attr('data-element-id', $this.attr('data-element-id'));
-            $metricsField.attr('data-revision-id', $this.attr('data-revision-id'));
-
-            $('#history-chart').html('');
-
-            $modal.find('.modal-title').html('Details of &quot;' + $this.attr('data-name') + '&quot; ' + $this.attr('data-element-type'));
-            $modal.modal('show');
-            $modal.mask();
-
-            $.get('@Url.Action("ByElementType", "Metrics")', {
-                elementType: $this.attr('data-element-type')
-            })
-            .done(function (metrics) {
-                for (var m in metrics) {
-                    $metricsField.append('<option value="' + metrics[m].value + '">' + metrics[m].name + '</option>');
-                }
-            })
-            .fail(function () {
-                $modal.modal('hide');
-                alert('An error has occurred getting metrics information.');
-            })
-            .always(function () {
-                $modal.unmask();
-            });
-        });
-
-        $(document).on('change', 'select#metric-name', function (e) {
-            e.preventDefault();
-
-            var $this = $(this);
-            var metric = $this.val();
-            if (!metric)
-                return;
-
-            $('#history-chart').html('');
-
-            var $modal = $('#modal-element-details');
-            $modal.mask();
-
-            $.get('@Url.Action("History", "Metrics")', {
-                elementType: $this.attr('data-element-type'),
-                elementId: $this.attr('data-element-id'),
-                revisionId: $this.attr('data-revision-id'),
-                metricId: metric
-            })
-            .done(function (data) {
-                renderHistoryChart(data);
-            })
-            .fail(function () {
-                $modal.modal('hide');
-                alert('An error has occurred getting metrics information.');
-            })
-            .always(function () {
-                $modal.unmask();
-            });
-        });
+    });
     </script>
 }

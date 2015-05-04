@@ -43,89 +43,134 @@ namespace OOM.Web.Controllers
             return View(revision);
         }
 
-        // GET: /Revisions/Graph/5
-        public JsonResult Graph(int id)
+        // GET: /Revisions/Explore/?elementType=class&elementId=8
+        public JsonResult Explore(ElementType? elementType, int elementId)
+        {
+            ElementType type = elementType.HasValue ? elementType.Value : 0;
+            int group = GetGroupByElementType(type);
+            object result = null;
+            switch (type)
+            {
+                case ElementType.Namespace:
+                    var ns = _db.Namespaces.Find(elementId);
+                    result = AssemblyExplorerStructure(new
+                    {
+                        id = ns.Id,
+                        name = ns.Name,
+                        description = ns.FullyQualifiedIdentifier,
+                        group = group,
+                        parent = new { group = GetGroupByElementType(null), id = ns.RevisionId }
+                    }, ns.Classes);
+                    break;
+                case ElementType.Class:
+                    var c = _db.Classes.Find(elementId);
+                    result = AssemblyExplorerStructure(new
+                    {
+                        id = c.Id,
+                        name = c.Name,
+                        description = c.FullyQualifiedIdentifier,
+                        group = group,
+                        parent = new { group = GetGroupByElementType(ElementType.Namespace), id = c.NamespaceId }
+                    }, c.Fields.Cast<IElement>().Concat(c.Methods));
+                    break;
+                case ElementType.Field:
+                    var f = _db.Fields.Find(elementId);
+                    result = AssemblyExplorerStructure(new
+                    {
+                        id = f.Id,
+                        name = f.Name,
+                        description = f.FullyQualifiedIdentifier,
+                        group = group,
+                        parent = new { group = GetGroupByElementType(ElementType.Class), id = f.ClassId }
+                    }, null);
+                    break;
+                case ElementType.Method:
+                    var m = _db.Methods.Find(elementId);
+                    result = AssemblyExplorerStructure(new
+                    {
+                        id = m.Id,
+                        name = m.Name,
+                        description = m.FullyQualifiedIdentifier,
+                        group = group,
+                        parent = new { group = GetGroupByElementType(ElementType.Class), id = m.ClassId }
+                    }, null);
+                    break;
+                default:
+                    var r = _db.Revisions.Find(elementId);
+                    result = AssemblyExplorerStructure(new
+                    {
+                        id = r.Id,
+                        name = String.Format("Revision #{0}", r.Number),
+                        description = String.Format("<p>{0}</p><p><strong>Author:</strong> {1}</p><p><strong>Date:</strong> {2:dd/mm/yyyy}</p>", r.Message, r.Author, r.CreatedAt),
+                        group = group,
+                        root = true
+                    }, r.Namespaces);
+                    break;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        private int GetGroupByElementType(ElementType? elementType)
+        {
+            ElementType type = elementType.HasValue ? elementType.Value : 0;
+            int group = 0;
+            switch (type)
+            {
+                case ElementType.Namespace:
+                    group = 2;
+                    break;
+                case ElementType.Class:
+                    group = 3;
+                    break;
+                case ElementType.Field:
+                    group = 4;
+                    break;
+                case ElementType.Method:
+                    group = 5;
+                    break;
+                default:
+                    group = 1;
+                    break;
+            }
+
+            return group;
+        }
+
+        private object AssemblyExplorerStructure(object rootData, IEnumerable<IElement> children)
         {
             var nodes = new List<object>();
             var links = new List<object>();
 
-            var revision = _db.Revisions.Find(id);
             var revisionNodeIndex = nodes.Count;
-            nodes.Add(new
-            {
-                name = "This revision.",
-                group = 1
-            });
+            nodes.Add(rootData);
 
-            foreach (var ns in revision.Namespaces)
+            if (children != null)
             {
-                var namespaceNodeIndex = nodes.Count;
-                nodes.Add(new
+                foreach (var child in children)
                 {
-                    name = ns.FullyQualifiedIdentifier,
-                    group = 2,
-                    id = ns.Id
-                });
-                links.Add(new
-                {
-                    source = revisionNodeIndex,
-                    target = namespaceNodeIndex
-                });
+                    var nodeIndex = nodes.Count;
 
-                foreach (var c in ns.Classes)
-                {
-                    var classNodeIndex = nodes.Count;
                     nodes.Add(new
                     {
-                        name = c.Name,
-                        group = 3,
-                        id = c.Id
+                        id = child.Id,
+                        name = child.FullyQualifiedIdentifier,
+                        group = GetGroupByElementType(child.Type)
                     });
+
                     links.Add(new
                     {
-                        source = namespaceNodeIndex,
-                        target = classNodeIndex
+                        source = revisionNodeIndex,
+                        target = nodeIndex
                     });
-
-                    foreach (var f in c.Fields)
-                    {
-                        var fieldNodeIndex = nodes.Count;
-                        nodes.Add(new
-                        {
-                            name = f.Name,
-                            group = 4,
-                            id = f.Id
-                        });
-                        links.Add(new
-                        {
-                            source = classNodeIndex,
-                            target = fieldNodeIndex
-                        });
-                    }
-
-                    foreach (var m in c.Methods)
-                    {
-                        var methodNodeIndex = nodes.Count;
-                        nodes.Add(new
-                        {
-                            name = m.Name,
-                            group = 5,
-                            id = m.Id
-                        });
-                        links.Add(new
-                        {
-                            source = classNodeIndex,
-                            target = methodNodeIndex
-                        });
-                    }
                 }
             }
 
-            return Json(new
+            return new
             {
                 nodes = nodes,
                 links = links
-            }, JsonRequestBehavior.AllowGet);
+            };
         }
 
         protected override void Dispose(bool disposing)
