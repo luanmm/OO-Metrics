@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
@@ -66,6 +68,7 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
+
                 parameters.Add("noa", Fields.Count);
                 parameters.Add("nom", Methods.Count);
                 parameters.Add("wmc", Methods.Sum(x => x.Complexity));
@@ -81,8 +84,14 @@ namespace OOM.Model
                 // TODO: CF
                 // TODO: PF
 
-                parameters.Add("m.loc", Methods.Select(x => x.LineCount));
-                parameters.Add("m.ep", Methods.Select(x => x.ExitPoints));
+                var fps = ElementParameter.ListParameters("f", Fields);
+                foreach (var fp in fps)
+                    parameters.Add(fp.Key, fp.Value);
+
+                var mps = ElementParameter.ListParameters("m", Methods);
+                foreach (var mp in mps)
+                    parameters.Add(mp.Key, mp.Value);
+
                 return parameters;
             }
         }
@@ -119,11 +128,18 @@ namespace OOM.Model
         {
             // Based on: http://www.reimers.dk/jacob-reimers-blog/calculating-lack-of-cohesion-of-methods-with-roslyn
 
-            var memberCount = baseClass.Methods.Count;
-            var fieldUsage = baseClass.Fields.Sum(x => x.ReferencingMethods.Count);
-            var fieldCount = baseClass.Fields.Count;
+            try
+            {
+                var memberCount = baseClass.Methods.Count;
+                var fieldUsage = baseClass.Fields.Sum(x => x.ReferencingMethods.Count);
+                var fieldCount = baseClass.Fields.Count;
 
-            return (memberCount - fieldUsage / fieldCount) / (memberCount - 1);
+                return (memberCount - fieldUsage / fieldCount) / (memberCount - 1);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
 
         #endregion

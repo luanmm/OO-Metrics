@@ -64,9 +64,11 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
+
                 parameters.Add("loc", LineCount);
                 parameters.Add("ep", ExitPoints);
                 parameters.Add("c", Complexity);
+
                 return parameters;
             }
         }

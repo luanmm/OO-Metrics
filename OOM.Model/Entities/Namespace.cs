@@ -40,7 +40,13 @@ namespace OOM.Model
             get
             {
                 var parameters = new Dictionary<string, object>();
+
                 // TODO: Implement parameters for this element type
+
+                var cps = ElementParameter.ListParameters("c", Classes);
+                foreach (var cp in cps)
+                    parameters.Add(cp.Key, cp.Value);
+
                 return parameters;
             }
         }
