@@ -66,17 +66,18 @@ namespace OOM.Tests
             {
                 //var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oo-metrics.git";
                 //var repositoryUri = "https://luanmm@bitbucket.org/idealizers/raf.git";
-                var repositoryUri = "https://github.com/dotnet/corefx.git";
+                //var repositoryUri = "https://github.com/dotnet/corefx.git";
+                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oosystemsample.git";
                 var project = db.Projects.FirstOrDefault(x => x.URI.Equals(repositoryUri, StringComparison.InvariantCultureIgnoreCase));
                 if (project == null)
                 {
                     project = db.Projects.Add(new Project
                     {
-                        Name = ".NET Core", //"RaF", // OO-Metrics
+                        Name = "Sistema OO de exemplo", //".NET Core", //"RaF", // OO-Metrics
                         URI = repositoryUri,
                         RepositoryProtocol = RepositoryProtocol.Git,
-                        //User = "luanmm",
-                        //Password = "bLitbucket?!"
+                        User = "luanmm",
+                        Password = "bLitbucket?!"
                     });
                     db.SaveChanges();
                 }

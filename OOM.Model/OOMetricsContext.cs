@@ -16,9 +16,9 @@ namespace OOM.Model
         public OOMetricsContext(string connectionString)
             : base(connectionString)
         {
-            //Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
+            Database.SetInitializer<OOMetricsContext>(new CreateDatabaseIfNotExists<OOMetricsContext>());
             //Database.SetInitializer<OOMetricsContext>(new DropCreateDatabaseAlways<OOMetricsContext>());
-            Database.SetInitializer<OOMetricsContext>(null);
+            //Database.SetInitializer<OOMetricsContext>(null);
         }
 
         public virtual DbSet<Project> Projects { get; set; }
@@ -28,6 +28,7 @@ namespace OOM.Model
         public virtual DbSet<Field> Fields { get; set; }
         public virtual DbSet<Method> Methods { get; set; }
         public virtual DbSet<Metric> Metrics { get; set; }
+        public virtual DbSet<MetricResult> MetricsResult { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

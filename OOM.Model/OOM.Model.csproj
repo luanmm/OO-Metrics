@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\MetricResult.cs" />
     <Compile Include="Extensions\ElementParameter.cs" />
     <Compile Include="Interfaces\IElement.cs" />
     <Compile Include="Enums\ElementType.cs" />

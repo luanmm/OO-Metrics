@@ -61,7 +61,11 @@ namespace OOM.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    EvaluateMetric(metric, (IElement)Activator.CreateInstance(metric.TargetType.ToElement()));
+                    var sampleElement = (IElement)Activator.CreateInstance(metric.TargetType.ToElement());
+                    if (sampleElement == null)
+                        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                    ExpressionEvaluator.Instance.Evaluate(metric.Expression, sampleElement.Parameters);
 
                     _db.Metrics.Add(metric);
                     _db.SaveChanges();
@@ -113,7 +117,13 @@ namespace OOM.Web.Controllers
             {
                 try
                 {
-                    EvaluateMetric(metricToUpdate, (IElement)Activator.CreateInstance(metricToUpdate.TargetType.ToElement()));
+                    var sampleElement = (IElement)Activator.CreateInstance(metricToUpdate.TargetType.ToElement());
+                    if (sampleElement == null)
+                        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                    ExpressionEvaluator.Instance.Evaluate(metricToUpdate.Expression, sampleElement.Parameters);
+
+                    _db.MetricsResult.RemoveRange(_db.MetricsResult.Where(x => x.MetricId == metricToUpdate.Id));
 
                     _db.Entry(metricToUpdate).State = EntityState.Modified;
                     _db.SaveChanges();
@@ -163,6 +173,11 @@ namespace OOM.Web.Controllers
             try
             {
                 var metric = _db.Metrics.Find(id);
+                if (metric == null)
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                _db.MetricsResult.RemoveRange(_db.MetricsResult.Where(x => x.MetricId == metric.Id));
+
                 _db.Metrics.Remove(metric);
                 _db.SaveChanges();
             }
@@ -253,12 +268,23 @@ namespace OOM.Web.Controllers
             throw new ArgumentException("This element is not from an expected type.");
         }
 
-        private decimal EvaluateMetric(Metric metric, IElement element = null)
+        private decimal EvaluateMetric(Metric metric, IElement element)
         {
-            if (element == null)
-                return ExpressionEvaluator.Instance.Evaluate(metric.Expression);
+            var cachedResult = _db.MetricsResult.FirstOrDefault(x => x.ElementId == element.Id && x.ElementType.HasFlag(element.Type) && x.MetricId == metric.Id);
+            if (cachedResult != null)
+                return cachedResult.Result;
 
-            return ExpressionEvaluator.Instance.Evaluate(metric.Expression, element.Parameters);
+            var result = ExpressionEvaluator.Instance.Evaluate(metric.Expression, element.Parameters);
+            _db.MetricsResult.Add(new MetricResult
+            {
+                ElementId = element.Id,
+                ElementType = element.Type,
+                MetricId = metric.Id,
+                Result = result
+            });
+            _db.SaveChanges();
+
+            return result;
         }
 
         #endregion
