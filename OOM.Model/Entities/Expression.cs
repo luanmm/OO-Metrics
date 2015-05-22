@@ -6,8 +6,8 @@ using System.Data.Entity.Spatial;
 
 namespace OOM.Model
 {
-    [Table("Metric")]
-    public partial class Metric : IEntity<int>
+    [Table("Expression")]
+    public partial class Expression : IEntity<int>
     {
         [Key]
         public int Id { get; set; }
@@ -16,7 +16,7 @@ namespace OOM.Model
         public string Name { get; set; }
 
         [Required, StringLength(500)]
-        public string Expression { get; set; }
+        public string Formula { get; set; }
 
         [Display(Name = "Target element type")]
         public ElementType TargetType { get; set; }

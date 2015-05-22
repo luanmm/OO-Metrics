@@ -27,8 +27,8 @@ namespace OOM.Model
         public virtual DbSet<Class> Classes { get; set; }
         public virtual DbSet<Field> Fields { get; set; }
         public virtual DbSet<Method> Methods { get; set; }
-        public virtual DbSet<Metric> Metrics { get; set; }
-        public virtual DbSet<MetricResult> MetricsResult { get; set; }
+        public virtual DbSet<Expression> Expressions { get; set; }
+        public virtual DbSet<ExpressionResult> ExpressionsResult { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

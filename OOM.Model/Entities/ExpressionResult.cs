@@ -6,13 +6,13 @@ using System.Data.Entity.Spatial;
 
 namespace OOM.Model
 {
-    [Table("MetricResult")]
-    public partial class MetricResult : IEntity<int>
+    [Table("ExpressionResult")]
+    public partial class ExpressionResult : IEntity<int>
     {
         [Key]
         public int Id { get; set; }
 
-        public int MetricId { get; set; }
+        public int ExpressionId { get; set; }
 
         public int ElementId { get; set; }
 
@@ -20,6 +20,6 @@ namespace OOM.Model
 
         public decimal Result { get; set; }
 
-        public virtual Metric Metric { get; set; }
+        public virtual Expression Expression { get; set; }
     }
 }

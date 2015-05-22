@@ -51,19 +51,19 @@ namespace OOM.Core.Math
 
         public decimal Evaluate(string expression, IDictionary<string, object> parameters = null)
         {
+            var e = new Expression(expression, EvaluateOptions.IgnoreCase);
+            e.EvaluateFunction += EvaluateFunction;
+
+            if (parameters != null)
+                e.Parameters = new Dictionary<string, object>(parameters);
+
             try
             {
-                var e = new Expression(expression, EvaluateOptions.IgnoreCase);
-
-                if (parameters != null)
-                    e.Parameters = new Dictionary<string, object>(parameters);
-
-                e.EvaluateFunction += EvaluateFunction;
                 return Convert.ToDecimal(e.Evaluate());
             }
             catch (Exception ex)
             {
-                throw new ExpressionEvaluationException("The expression evaluation wasn't successful. Maybe the expression has something wrong...", ex);
+                throw new ExpressionEvaluationException(String.Format("The expression evaluation wasn't successful. Maybe the expression has something wrong... it says: \"{0}\"", e.Error), ex);
             }
         }
 
@@ -79,7 +79,8 @@ namespace OOM.Core.Math
 
             try
             {
-                args.Result = _evaluateFunctions[key].Invoke(args.EvaluateParameters());
+                var parameters = args.EvaluateParameters();
+                args.Result = _evaluateFunctions[key].Invoke(SanitizeParameters(ref parameters));
             }
             catch (Exception) { }
         }
@@ -197,7 +198,7 @@ namespace OOM.Core.Math
             else
             {
                 if (!parameters[0].GetType().IsArray)
-                    throw new Exception();
+                    return parameters[0];
 
                 foreach (var parameter in (Array)parameters[0])
                     result = Numbers.Add(result, parameter);
@@ -222,7 +223,7 @@ namespace OOM.Core.Math
             else
             {
                 if (!parameters[0].GetType().IsArray)
-                    throw new Exception();
+                    return parameters[0];
 
                 var a = (Array)parameters[0];
                 totalCount = a.Length;
@@ -247,7 +248,7 @@ namespace OOM.Core.Math
             else
             {
                 if (!parameters[0].GetType().IsArray)
-                    throw new Exception();
+                    return parameters[0];
 
                 foreach (var parameter in (Array)parameters[0])
                     result = Numbers.Max(result, parameter);
@@ -270,7 +271,7 @@ namespace OOM.Core.Math
             else
             {
                 if (!parameters[0].GetType().IsArray)
-                    throw new Exception();
+                    return parameters[0];
 
                 foreach (var parameter in (Array)parameters[0])
                     result = Numbers.Min(result, parameter);
@@ -306,6 +307,17 @@ namespace OOM.Core.Math
         private long LCM(long a, long b)
         {
             return (a * b) / GCD(a, b);
+        }
+
+        private object[] SanitizeParameters(ref object[] parameters)
+        {
+            for (long i = 0; i < parameters.LongLength; i++)
+            {
+                if (parameters[i] is Double && Double.IsNaN((Double)parameters[i]))
+                    parameters[i] = 0d;
+            }
+            
+            return parameters;
         }
 
         #endregion
