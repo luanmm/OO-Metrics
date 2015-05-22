@@ -1,12 +1,12 @@
-﻿@model OOM.Model.Metric
+﻿@model OOM.Model.Expression
 
 @{
-    ViewBag.Title = "Delete a metric";
+    ViewBag.Title = "Delete an expression";
 }
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-    <li>@Html.ActionLink("Metrics", "List")</li>
+    <li>@Html.ActionLink("Expressions", "List")</li>
     <li class="active">Delete</li>
 </ul>
 <h2>Delete</h2>
@@ -22,11 +22,11 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Expression)
+            @Html.DisplayNameFor(model => model.Formula)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Expression)
+            @Html.DisplayFor(model => model.Formula)
         </dd>
 
         <dt>

@@ -1,18 +1,18 @@
-﻿@model IEnumerable<OOM.Model.Metric>
+﻿@model IEnumerable<OOM.Model.Expression>
 
 @{
-    ViewBag.Title = "List of metrics";
+    ViewBag.Title = "List of expressions";
 }
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-    <li class="active">Metrics</li>
+    <li class="active">Expressions</li>
 </ul>
 <div class="page-header">
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                Metrics
+                Expressions
                 <div class="pull-right">
                     <a href="@Url.Action("Create")" class="btn btn-primary">
                         <i class="icon-star icon-white"></i> Create new
@@ -27,7 +27,7 @@
                             @Html.DisplayNameFor(m => m.Name)
                         </th>
                         <th>
-                            @Html.DisplayNameFor(m => m.Expression)
+                            @Html.DisplayNameFor(m => m.Formula)
                         </th>
                         <th>
                             @Html.DisplayNameFor(m => m.TargetType)
@@ -35,28 +35,28 @@
                         <th></th>
                     </tr>
 
-                    @foreach (var metric in Model)
+                    @foreach (var expression in Model)
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(m => metric.Name)
+                                @Html.DisplayFor(m => expression.Name)
                             </td>
                             <td>
                                 <span class="math-expression">
-                                    @Html.DisplayFor(m => metric.Expression)
+                                    @Html.DisplayFor(m => expression.Formula)
                                 </span>
                             </td>
                             <td>
-                                @Html.DisplayFor(m => metric.TargetType)
+                                @Html.DisplayFor(m => expression.TargetType)
                             </td>
                             <td style="text-align: center;">
-                                <a href="@Url.Action("Edit", new { id = metric.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Edit" role="button">
+                                <a href="@Url.Action("Edit", new { id = expression.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Edit" role="button">
                                     <span class="fa fa-pencil" aria-hidden="true"></span>
                                 </a>
-                                <a href="@Url.Action("Details", new { id = metric.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
+                                <a href="@Url.Action("Details", new { id = expression.Id })" class="btn btn-primary btn-xs" data-toggle="tooltip" title="Details" role="button">
                                     <span class="fa fa-eye" aria-hidden="true"></span>
                                 </a>
-                                <a href="@Url.Action("Delete", new { id = metric.Id })" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Delete" role="button">
+                                <a href="@Url.Action("Delete", new { id = expression.Id })" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Delete" role="button">
                                     <span class="fa fa-trash" aria-hidden="true"></span>
                                 </a>
                             </td>

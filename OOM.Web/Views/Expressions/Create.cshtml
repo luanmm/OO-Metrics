@@ -1,17 +1,17 @@
-﻿@model OOM.Model.Metric
+﻿@model OOM.Model.Expression
 
 @{
-    ViewBag.Title = "Edit metric";
+    ViewBag.Title = "Create a new expression";
 }
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-    <li>@Html.ActionLink("Metrics", "List")</li>
-    <li class="active">Edit</li>
+    <li>@Html.ActionLink("Expressions", "List")</li>
+    <li class="active">Create</li>
 </ul>
-<h2>Edit</h2>
+<h1>Create</h1>
 <div class="well bs-component">
-    <form class="form-horizontal" action="@Url.Action("Edit")" method="post">
+    <form class="form-horizontal" action="@Url.Action("Create")" method="post">
         <fieldset>
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true)
@@ -35,10 +35,10 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="form-group">
-                        @Html.LabelFor(model => model.Expression, new { @class = "control-label col-md-4" })
+                        @Html.LabelFor(model => model.Formula, new { @class = "control-label col-md-4" })
                         <div class="col-md-8">
-                            @Html.TextAreaFor(model => model.Expression, new { @class = "form-control", @rows = 8 })
-                            @Html.ValidationMessageFor(model => model.Expression)
+                            @Html.TextAreaFor(model => model.Formula, new { @class = "form-control", @rows = 8 })
+                            @Html.ValidationMessageFor(model => model.Formula)
                         </div>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
     @Scripts.Render("~/bundles/mathjax")
     <script>
         $(function () {
-            $('#Expression').on('input keyup', function () {
+            $('#Formula').on('input keyup', function () {
                 var $this = $(this);
 
                 clearTimeout($this.data('timer'));

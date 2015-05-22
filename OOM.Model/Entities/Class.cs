@@ -69,8 +69,8 @@ namespace OOM.Model
             {
                 var parameters = new Dictionary<string, object>();
 
-                parameters.Add("noa", Fields.Count);
-                parameters.Add("nom", Methods.Count);
+                parameters.Add("qf", Fields.Count);
+                parameters.Add("qm", Methods.Count);
                 parameters.Add("wmc", Methods.Sum(x => x.Complexity));
                 parameters.Add("dit", GetDepthOfInheritanceTree(this));
                 parameters.Add("aif", GetAttributeInheritanceFactor(this));
@@ -78,11 +78,8 @@ namespace OOM.Model
                 parameters.Add("noc", ChildClasses.Count);
                 parameters.Add("rfc", Methods.Where(x => x.IsPublic).Count());
                 parameters.Add("lcom", GetLackOfCohesionOfMethods(this));
-
-                // TODO: MHF (http://www.aivosto.com/project/help/pm-oo-mood.html)
-                // TODO: MIF
-                // TODO: CF
-                // TODO: PF
+                parameters.Add("mhf", GetMethodHidingFactor(this));
+                parameters.Add("pf", GetPolymorphismFactor(this));
 
                 var fps = ElementParameter.ListParameters("f", Fields);
                 foreach (var fp in fps)
@@ -120,6 +117,20 @@ namespace OOM.Model
         {
             // TODO: Get all available methods (including base classes) and all defined methods in the class
             // MIF = 1 - (md / ma)
+
+            return 0;
+        }
+
+        private int GetMethodHidingFactor(Class baseClass)
+        {
+            // TODO: http://www.aivosto.com/project/help/pm-oo-mood.html
+
+            return 0;
+        }
+
+        private int GetPolymorphismFactor(Class baseClass)
+        {
+            // TODO: ...
 
             return 0;
         }

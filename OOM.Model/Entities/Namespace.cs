@@ -41,7 +41,7 @@ namespace OOM.Model
             {
                 var parameters = new Dictionary<string, object>();
 
-                // TODO: Implement parameters for this element type
+                parameters.Add("qc", Classes.Count);
 
                 var cps = ElementParameter.ListParameters("c", Classes);
                 foreach (var cp in cps)

@@ -11,17 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{E3F924
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{695E5257-6640-4DF6-9B18-A6DF2C3E9277}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{B4073C0E-3813-4A51-8C06-3E70719EB8FA}"
-	ProjectSection(SolutionItems) = preProject
-		PublishScripts\AzureWebsitePublishModule.psm1 = PublishScripts\AzureWebsitePublishModule.psm1
-		PublishScripts\Publish-WebApplicationWebsite.ps1 = PublishScripts\Publish-WebApplicationWebsite.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{79544BE2-EEE8-4958-A0F6-2A4929AB41DA}"
-	ProjectSection(SolutionItems) = preProject
-		PublishScripts\Configurations\OOMWeb-WAWS-dev.json = PublishScripts\Configurations\OOMWeb-WAWS-dev.json
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Model", "OOM.Model\OOM.Model.csproj", "{24701EA9-6DD7-4C6A-9C3B-FFECC74C68ED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOM.Core", "OOM.Core\OOM.Core.csproj", "{F25AEA72-1F44-4C46-AD72-BBE97CC123DF}"
@@ -57,7 +46,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{79544BE2-EEE8-4958-A0F6-2A4929AB41DA} = {B4073C0E-3813-4A51-8C06-3E70719EB8FA}
 		{24701EA9-6DD7-4C6A-9C3B-FFECC74C68ED} = {E3F92479-EA69-428F-9C3A-AC932184A97B}
 		{F25AEA72-1F44-4C46-AD72-BBE97CC123DF} = {00E7A7C9-F13B-4245-A82D-57663C368381}
 		{C45EB161-2976-4B53-BA91-EE897251265C} = {81DFA2F2-961A-4013-BEC8-E31D926C40BA}

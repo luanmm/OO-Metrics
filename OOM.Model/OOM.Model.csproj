@@ -48,13 +48,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\MetricResult.cs" />
+    <Compile Include="Entities\ExpressionResult.cs" />
     <Compile Include="Extensions\ElementParameter.cs" />
     <Compile Include="Interfaces\IElement.cs" />
     <Compile Include="Enums\ElementType.cs" />
     <Compile Include="Entities\Method.cs" />
     <Compile Include="Entities\Field.cs" />
-    <Compile Include="Entities\Metric.cs" />
+    <Compile Include="Entities\Expression.cs" />
     <Compile Include="Enums\EncapsulationTypes.cs" />
     <Compile Include="Enums\QualificationTypes.cs" />
     <Compile Include="Entities\Class.cs" />

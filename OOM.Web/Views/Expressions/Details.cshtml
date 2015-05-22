@@ -1,15 +1,15 @@
-﻿@model OOM.Model.Metric
+﻿@model OOM.Model.Expression
 
 @{
-    ViewBag.Title = "Metric details";
+    ViewBag.Title = "Expression details";
 }
 
 <ul class="breadcrumb">
     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-    <li>@Html.ActionLink("Metrics", "List")</li>
+    <li>@Html.ActionLink("Expressions", "List")</li>
     <li class="active">Details</li>
 </ul>
-<h2>Metric details</h2>
+<h2>Expression details</h2>
 <div>
     <dl class="dl-horizontal">
         <dt>
@@ -21,11 +21,11 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Expression)
+            @Html.DisplayNameFor(model => model.Formula)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Expression)
+            @Html.DisplayFor(model => model.Formula)
         </dd>
 
         <dt>

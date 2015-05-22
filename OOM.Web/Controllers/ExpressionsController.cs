@@ -11,25 +11,25 @@ using System.Web.Mvc;
 
 namespace OOM.Web.Controllers
 {
-    public class MetricsController : Controller
+    public class ExpressionsController : Controller
     {
         private OOMetricsContext _db = new OOMetricsContext();
 
         #region Actions
 
-        // GET: /Metrics
+        // GET: /Expressions
         public ActionResult Index()
         {
             return RedirectToAction("List");
         }
 
-        // GET: /Metrics/List
+        // GET: /Expressions/List
         public ActionResult List()
         {
-            return View(_db.Metrics.ToList());
+            return View(_db.Expressions.ToList());
         }
 
-        // GET: /Metrics/Details/5
+        // GET: /Expressions/Details/5
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -37,37 +37,37 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var metric = _db.Metrics.Find(id);
-            if (metric == null)
+            var expression = _db.Expressions.Find(id);
+            if (expression == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             }
 
-            return View(metric);
+            return View(expression);
         }
 
-        // GET: /Metrics/Create
+        // GET: /Expressions/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: /Metrics/Create
+        // POST: /Expressions/Create
         [HttpPost, ActionName("Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Name,Expression,TargetType")] Metric metric)
+        public ActionResult Create([Bind(Include = "Name,Formula,TargetType")] Expression expression)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var sampleElement = (IElement)Activator.CreateInstance(metric.TargetType.ToElement());
+                    var sampleElement = (IElement)Activator.CreateInstance(expression.TargetType.ToElement());
                     if (sampleElement == null)
                         return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-                    ExpressionEvaluator.Instance.Evaluate(metric.Expression, sampleElement.Parameters);
+                    ExpressionEvaluator.Instance.Evaluate(expression.Formula, sampleElement.Parameters);
 
-                    _db.Metrics.Add(metric);
+                    _db.Expressions.Add(expression);
                     _db.SaveChanges();
 
                     return RedirectToAction("Index");
@@ -82,10 +82,10 @@ namespace OOM.Web.Controllers
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
-            return View(metric);
+            return View(expression);
         }
 
-        // GET: /Metrics/Edit/5
+        // GET: /Expressions/Edit/5
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -93,16 +93,16 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var metric = _db.Metrics.Find(id);
-            if (metric == null)
+            var expression = _db.Expressions.Find(id);
+            if (expression == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             }
 
-            return View(metric);
+            return View(expression);
         }
 
-        // POST: /Metrics/Edit/5
+        // POST: /Expressions/Edit/5
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public ActionResult PostEdit(int? id)
@@ -112,20 +112,20 @@ namespace OOM.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var metricToUpdate = _db.Metrics.Find(id);
-            if (TryUpdateModel(metricToUpdate, "", new string[] { "Name", "Expression", "TargetType" }))
+            var expressionToUpdate = _db.Expressions.Find(id);
+            if (TryUpdateModel(expressionToUpdate, "", new string[] { "Name", "Formula", "TargetType" }))
             {
                 try
                 {
-                    var sampleElement = (IElement)Activator.CreateInstance(metricToUpdate.TargetType.ToElement());
+                    var sampleElement = (IElement)Activator.CreateInstance(expressionToUpdate.TargetType.ToElement());
                     if (sampleElement == null)
                         return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-                    ExpressionEvaluator.Instance.Evaluate(metricToUpdate.Expression, sampleElement.Parameters);
+                    ExpressionEvaluator.Instance.Evaluate(expressionToUpdate.Formula, sampleElement.Parameters);
 
-                    _db.MetricsResult.RemoveRange(_db.MetricsResult.Where(x => x.MetricId == metricToUpdate.Id));
+                    _db.ExpressionsResult.RemoveRange(_db.ExpressionsResult.Where(x => x.ExpressionId == expressionToUpdate.Id));
 
-                    _db.Entry(metricToUpdate).State = EntityState.Modified;
+                    _db.Entry(expressionToUpdate).State = EntityState.Modified;
                     _db.SaveChanges();
 
                     return RedirectToAction("Index");
@@ -140,10 +140,10 @@ namespace OOM.Web.Controllers
                 }
             }
 
-            return View(metricToUpdate);
+            return View(expressionToUpdate);
         }
 
-        // GET: /Metrics/Delete/5
+        // GET: /Expressions/Delete/5
         public ActionResult Delete(int? id, bool? saveChangesError = false)
         {
             if (id == null)
@@ -156,29 +156,29 @@ namespace OOM.Web.Controllers
                 ViewBag.ErrorMessage = "Delete failed. Try again, and if the problem persists see your system administrator.";
             }
 
-            var metric = _db.Metrics.Find(id);
-            if (metric == null)
+            var expression = _db.Expressions.Find(id);
+            if (expression == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotFound);
             }
 
-            return View(metric);
+            return View(expression);
         }
 
-        // POST: /Metrics/Delete/5
+        // POST: /Expressions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult PostDelete(int id)
         {
             try
             {
-                var metric = _db.Metrics.Find(id);
-                if (metric == null)
+                var expression = _db.Expressions.Find(id);
+                if (expression == null)
                     return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-                _db.MetricsResult.RemoveRange(_db.MetricsResult.Where(x => x.MetricId == metric.Id));
+                _db.ExpressionsResult.RemoveRange(_db.ExpressionsResult.Where(x => x.ExpressionId == expression.Id));
 
-                _db.Metrics.Remove(metric);
+                _db.Expressions.Remove(expression);
                 _db.SaveChanges();
             }
             catch (RetryLimitExceededException)
@@ -189,18 +189,18 @@ namespace OOM.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: /Metrics/ByElementType/?elementType=class
+        // GET: /Expressions/ByElementType/?elementType=class
         public JsonResult ByElementType(ElementType elementType)
         {
-            var metrics = _db.Metrics.Where(x => x.TargetType == elementType)
+            var expressions = _db.Expressions.Where(x => x.TargetType == elementType)
                 .OrderBy(x => x.Name)
                 .Select(x => new { value = x.Id, name = x.Name });
 
-            return Json(metrics, JsonRequestBehavior.AllowGet);
+            return Json(expressions, JsonRequestBehavior.AllowGet);
         }
 
-        // GET: /Metrics/History/?elementType=class&elementId=8&revisionId=5
-        public JsonResult History(ElementType elementType, int elementId, int revisionId, int metricId)
+        // GET: /Expressions/History/?elementType=class&elementId=8&revisionId=5
+        public JsonResult History(ElementType elementType, int elementId, int revisionId, int expressionId)
         {
             var revision = _db.Revisions.Find(revisionId);
             if (revision == null)
@@ -211,13 +211,13 @@ namespace OOM.Web.Controllers
                 throw new HttpException(400, "Bad request.");
 
             var data = new List<object>();
-            var metric = _db.Metrics.Find(metricId);
+            var expression = _db.Expressions.Find(expressionId);
             var relatedRevisions = FindRelatedRevisions(revision, element);
 
             decimal lastResult = Decimal.MinValue;
             foreach (var relatedRevision in relatedRevisions)
             {
-                var result = EvaluateMetric(metric, relatedRevision.Item2);
+                var result = EvaluateExpression(expression, relatedRevision.Item2);
                 if (result == lastResult)
                     continue;
 
@@ -268,18 +268,18 @@ namespace OOM.Web.Controllers
             throw new ArgumentException("This element is not from an expected type.");
         }
 
-        private decimal EvaluateMetric(Metric metric, IElement element)
+        private decimal EvaluateExpression(Expression expression, IElement element)
         {
-            var cachedResult = _db.MetricsResult.FirstOrDefault(x => x.ElementId == element.Id && x.ElementType.HasFlag(element.Type) && x.MetricId == metric.Id);
+            var cachedResult = _db.ExpressionsResult.FirstOrDefault(x => x.ElementId == element.Id && x.ElementType.HasFlag(element.Type) && x.ExpressionId == expression.Id);
             if (cachedResult != null)
                 return cachedResult.Result;
 
-            var result = ExpressionEvaluator.Instance.Evaluate(metric.Expression, element.Parameters);
-            _db.MetricsResult.Add(new MetricResult
+            var result = ExpressionEvaluator.Instance.Evaluate(expression.Formula, element.Parameters);
+            _db.ExpressionsResult.Add(new ExpressionResult
             {
                 ElementId = element.Id,
                 ElementType = element.Type,
-                MetricId = metric.Id,
+                ExpressionId = expression.Id,
                 Result = result
             });
             _db.SaveChanges();

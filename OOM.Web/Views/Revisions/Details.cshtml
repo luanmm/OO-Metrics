@@ -169,7 +169,7 @@
 
         svg.selectAll('.bar')
             .data(data)
-            .enter().append('rect')
+            .enter().append('svg:rect')
             .attr('class', 'bar')
             .attr('x', function (d) { return x(d.revision.number); })
             .attr('width', x.rangeBand())
@@ -178,6 +178,25 @@
             .transition().duration(1000)
             .attr('y', function (d) { return y(d.value); })
             .attr('height', function (d) { return height - y(d.value); });
+
+        svg.selectAll('.text')
+            .data(data)
+            .enter().append('svg:text')
+            .attr('class', 'text')
+            .text(function (d) { return Math.round(d.value * 100) / 100; })
+            .attr('dx', x.rangeBand() / 2)
+            .attr('dy', '1.5em')
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'white')
+            .attr('x', function (d) { return x(d.revision.number); })
+            .attr('width', x.rangeBand())
+            .attr('y', height)
+            .attr('height', 0)
+            .attr('opacity', 0)
+            .transition().duration(1000)
+            .attr('y', function (d) { return y(d.value); })
+            .attr('height', function (d) { return height - y(d.value); })
+            .attr('opacity', 1);
     };
 
     var renderExplorer = function (selector) {
