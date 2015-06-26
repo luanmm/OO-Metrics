@@ -1,6 +1,6 @@
 # OO-Metrics
 
-A simple and powerful tool to automate source code mining and extract object-oriented metrics to help in the software development process.
+A simple and powerful tool to automate source code mining and extract object-oriented metrics to help in the software development process and in the quality characteristics research.
 
 ## Motivation
 
