@@ -110,7 +110,7 @@
                 <form>
                     <fieldset>
                         <div class="form-group">
-                            <label for="metric-name" class="control-label">Metric</label>
+                            <label for="metric-name" class="control-label">Expression</label>
                             <select class="form-control" id="metric-name" name="metric-name">
                                 <option value="">Select...</option>
                             </select>
@@ -405,7 +405,7 @@
         $modal.modal('show');
         $modal.mask();
 
-        $.get('@Url.Action("ByElementType", "Metrics")', {
+        $.get('@Url.Action("ByElementType", "Expressions")', {
             elementType: $this.attr('data-element-type')
         })
         .done(function (metrics) {
@@ -426,8 +426,8 @@
         e.preventDefault();
 
         var $this = $(this);
-        var metric = $this.val();
-        if (!metric)
+        var expression = $this.val();
+        if (!expression)
             return;
 
         $('#history-chart').html('');
@@ -435,11 +435,11 @@
         var $modal = $('#modal-element-details');
         $modal.mask();
 
-        $.get('@Url.Action("History", "Metrics")', {
+        $.get('@Url.Action("History", "Expressions")', {
             elementType: $this.attr('data-element-type'),
             elementId: $this.attr('data-element-id'),
             revisionId: $this.attr('data-revision-id'),
-            metricId: metric
+            expressionId: expression
         })
         .done(function (data) {
             renderHistoryChart('#history-chart', data);

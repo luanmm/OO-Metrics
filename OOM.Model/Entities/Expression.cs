@@ -18,7 +18,7 @@ namespace OOM.Model
         [Required, StringLength(500)]
         public string Formula { get; set; }
 
-        [Display(Name = "Target element type")]
+        [Display(Name = "Scope")]
         public ElementType TargetType { get; set; }
     }
 }

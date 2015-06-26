@@ -43,7 +43,7 @@
                             </td>
                             <td>
                                 <span class="math-expression">
-                                    @Html.DisplayFor(m => expression.Formula)
+                                    <em>@Html.DisplayFor(m => expression.Formula)</em>
                                 </span>
                             </td>
                             <td>
@@ -71,6 +71,7 @@
 @section scripts {
     @Scripts.Render("~/bundles/mathjax")
     <script>
+        /*
         $('.math-expression').each(function () {
             var id = 'expression' + Math.floor(Math.random() * 26) + Date.now();
             var $this = $(this);
@@ -84,6 +85,7 @@
                 }
             );
         });
+        */
 
         $('[data-toggle="tooltip"]').tooltip();
     </script>
