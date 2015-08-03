@@ -64,20 +64,15 @@ namespace OOM.Tests
         {
             using (var db = new OOMetricsContext())
             {
-                //var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oo-metrics.git";
-                //var repositoryUri = "https://luanmm@bitbucket.org/idealizers/raf.git";
-                //var repositoryUri = "https://github.com/dotnet/corefx.git";
-                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oosystemsample.git";
+                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/oo-metrics.git";
                 var project = db.Projects.FirstOrDefault(x => x.URI.Equals(repositoryUri, StringComparison.InvariantCultureIgnoreCase));
                 if (project == null)
                 {
                     project = db.Projects.Add(new Project
                     {
-                        Name = "Sistema OO de exemplo", //".NET Core", //"RaF", // OO-Metrics
+                        Name = "OO-Metrics",
                         URI = repositoryUri,
-                        RepositoryProtocol = RepositoryProtocol.Git,
-                        User = "luanmm",
-                        Password = "bLitbucket?!"
+                        RepositoryProtocol = RepositoryProtocol.Git
                     });
                     db.SaveChanges();
                 }
@@ -85,49 +80,5 @@ namespace OOM.Tests
                 RepositoryMiner.ProcessRepository(project.Id);
             }
         }
-
-        /*
-        [TestMethod]
-        public void TestGitRepository()
-        {
-            using (var db = new OOMetricsContext())
-            { 
-                var repositoryUri = "https://luanmm@bitbucket.org/luanmm/repominer.git";
-                var project = db.Projects.FirstOrDefault(x => x.URI.Equals(repositoryUri, StringComparison.InvariantCultureIgnoreCase));
-                if (project == null)
-                {
-                    project = db.Projects.Add(new Project
-                    {
-                        Name = "RepoMiner",
-                        URI = repositoryUri,
-                        RepositoryProtocol = RepositoryProtocol.Git,
-                        User = "luanmm",
-                        Password = "bLitbucket?!"
-                    });
-                    db.SaveChanges();
-                }
-
-                var miner = new RepositoryMiner(project);
-                miner.StartMining();
-            }
-        }
-
-        [TestMethod]
-        public void TestMercurialRepository()
-        {
-            using (var mercurialRepository = RepositoryFactory.CreateRepository(RepositoryProtocol.Mercurial, new RepositoryConfiguration("https://luanmm@bitbucket.org/creaceed/mercurial-xcode-plugin")))
-            {
-                //Assert.IsTrue(mercurialRepository.Update());
-            }
-        }
-
-        [TestMethod]
-        public void TestSubversionRepository()
-        {
-            using (var svnRepository = RepositoryFactory.CreateRepository(RepositoryProtocol.Subversion, new RepositoryConfiguration("http://svg-edit.googlecode.com/svn/trunk/")))
-            {
-                //Assert.IsTrue(svnRepository.Update());
-            }
-        }*/
     }
 }
