@@ -8,4 +8,4 @@ This tool was created with an academic purpose, as the final project of the <a h
 
 ## License
 
-OO-Metrics (including this repository) is licensed under the [MIT license](LICENSE).
+All the available content in this repository is licensed under the [MIT license](LICENSE).
